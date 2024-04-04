@@ -1,0 +1,17 @@
+{
+  "name": "splotch",
+  "version-string": "1.0",
+  "builtin-baseline": "67e4272121ee24eb743d5b38b5e56004c6490aae",
+  "dependencies": [
+    {
+      "name": "freetype"
+    },
+    "openal-soft",
+    "sfml",
+    "gtest",
+    "fmt"
+  ],
+  "overrides": [
+    {"name": "freetype", "version": "2.10.0"}
+  ]
+}
