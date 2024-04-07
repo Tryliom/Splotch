@@ -3,14 +3,7 @@
 #include "Constants.h"
 #include "Packet.h"
 #include "Vec2.h"
-
-struct PlayerInputs
-{
-	bool Up = false;
-	bool Down = false;
-	bool Left = false;
-	bool Right = false;
-};
+#include "PlayerInputs.h"
 
 class GameManager
 {

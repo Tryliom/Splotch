@@ -26,12 +26,10 @@ public:
 	void Update();
 
 private:
-	void JoinLobby(ClientId clientId, PlayerName playerName, IconType iconType);
-	void AddToLobby(ServerData::Lobby& lobby, ClientId clientId, PlayerName playerName, IconType iconType);
+	void JoinLobby(ClientId clientId);
+	void AddToLobby(ServerData::Lobby& lobby, ClientId clientId);
 	void RemoveFromLobby(ClientId clientId);
 	void RemoveFromGame(ClientId clientId);
-	void ChangeDeck(ClientId clientId, DeckType deckType);
 	void StartGame(ClientId clientId);
 	void StartNewGame(ServerData::Game& game, ServerData::Lobby& lobby);
-	void SelectCard(ClientId clientId, CardIndex cardIndex);
 };

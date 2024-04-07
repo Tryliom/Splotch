@@ -2,26 +2,26 @@
 
 #include "Constants.h"
 #include "ClientId.h"
-#include "PlayerName.h"
-#include "MyPackets/LobbyInformationPacket.h"
+#include "PlayerInputs.h"
 
 #include <array>
 #include <vector>
 
 namespace ServerData
 {
+	struct RollbackInfo
+	{
+		PlayerInputs PlayerRoleInputs;
+		PlayerInputs HandRoleInputs;
+	};
+
 	struct Lobby
 	{
 		std::array<ClientId, 2> Players = { EMPTY_CLIENT_ID, EMPTY_CLIENT_ID };
-		std::array<PlayerName, 2> PlayerNames = { PlayerName{}, PlayerName{} };
-		std::array<IconType, 2> PlayerIcons = { IconType::Icon1, IconType::Icon1 };
-		DeckType ChosenDeckType = DeckType::Deck3x2;
 
 		[[nodiscard]] bool IsFull() const;
 		[[nodiscard]] bool IsEmpty() const;
 		[[nodiscard]] bool IsInLobby(const ClientId& clientId);
-
-		[[nodiscard]] MyPackets::LobbyInformationPacket* ToPacket(bool isHost) const;
 
 		void Reset();
 	};
@@ -29,19 +29,18 @@ namespace ServerData
 	struct Game
 	{
 		std::array<ClientId, 2> Players = { EMPTY_CLIENT_ID, EMPTY_CLIENT_ID };
-		std::vector<CardIconIndex> Cards;
+		std::array<PlayerInputs, 2> Inputs;
 
-		char CurrentTurn{};
-		std::array<CardIndex, 2> SelectedCards{};
-		std::array<char, 2> Scores{};
+		// Index of the player who is the hand role player
+		int HandRolePlayer;
+		// Index of the player who is the point role player
+		int PlayerRolePlayer;
+
+		// Rollback data per confirmed frame
+		std::vector<RollbackInfo> RollbackData;
 
 		explicit Game(const Lobby& lobbyData);
 
-		void SelectCard(CardIndex index);
-		void UnselectCards();
-
-		[[nodiscard]] bool HasSelectedTwoCards() const;
-		[[nodiscard]] bool IsGameOver() const;
 		[[nodiscard]] bool IsPlayerInGame(ClientId clientId) const;
 
 		void Reset();
