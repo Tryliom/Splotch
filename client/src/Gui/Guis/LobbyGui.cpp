@@ -21,7 +21,7 @@ LobbyGui::LobbyGui(Game& game, ScreenSizeValue width, ScreenSizeValue height) :
 	});
 	leaveButton.SetOnClick([this]()
 	{
-		_game.SendPacket(new MyPackets::LeaveLobbyPacket());
+		_game.SendPacket(new MyPackets::LeaveLobbyPacket(), Protocol::TCP);
 		_game.SetState(GameState::MAIN_MENU);
 	});
 

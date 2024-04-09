@@ -9,10 +9,10 @@
 
 namespace ServerData
 {
-	struct RollbackInfo
+	struct FinalInputs
 	{
-		PlayerInputs PlayerRoleInputs;
-		PlayerInputs HandRoleInputs;
+		PlayerInput PlayerRoleInputs;
+		PlayerInput HandRoleInputs;
 	};
 
 	struct Lobby
@@ -29,15 +29,17 @@ namespace ServerData
 	struct Game
 	{
 		std::array<ClientId, 2> Players = { EMPTY_CLIENT_ID, EMPTY_CLIENT_ID };
-		std::array<PlayerInputs, 2> Inputs;
 
 		// Index of the player who is the hand role player
-		int HandRolePlayer;
+		int HandRolePlayer{};
 		// Index of the player who is the point role player
-		int PlayerRolePlayer;
+		int PlayerRolePlayer{};
 
-		// Rollback data per confirmed frame
-		std::vector<RollbackInfo> RollbackData;
+		// Confirmed frame inputs
+		std::vector<FinalInputs> ConfirmFrames;
+
+		std::vector<PlayerInput> LastPlayer1Inputs;
+		std::vector<PlayerInput> LastPlayer2Inputs;
 
 		explicit Game(const Lobby& lobbyData);
 
@@ -45,5 +47,12 @@ namespace ServerData
 
 		void Reset();
 		void FromLobby(const Lobby& lobbyData);
+
+		void AddPlayerLastInputs(const std::vector<PlayerInputPerFrame>& inputs, ClientId clientId);
+
+		bool IsNextFrameReady() const;
+		void AddFrame();
+		FinalInputs GetLastFrame();
+
 	};
 }

@@ -34,6 +34,13 @@ void Game::Update(sf::Time elapsed, sf::Vector2f mousePosition)
 
 	while (Packet* packet = _networkManager.PopPacket())
 	{
+		if (packet->Type == static_cast<char>(PacketType::ConfirmUDPConnection))
+		{
+			_readyToPlay = true;
+			delete packet;
+			continue;
+		}
+
 		_gameManager.OnPacketReceived(*packet);
 		OnPacketReceived(*packet);
 
@@ -42,6 +49,17 @@ void Game::Update(sf::Time elapsed, sf::Vector2f mousePosition)
 		if (packetTypeValue >= 0 && packetTypeValue <= static_cast<char>(MyPackets::MyPacketType::COUNT))
 		{
 			delete packet;
+		}
+	}
+
+	if (!_readyToPlay)
+	{
+		_elapsedTime += elapsed;
+
+		if (_elapsedTime.asSeconds() >= _timeBeforeSendUdpAck)
+		{
+			_networkManager.SendUDPAcknowledgmentPacket();
+			_elapsedTime = sf::Time::Zero;
 		}
 	}
 }
@@ -60,7 +78,7 @@ void Game::SetState(GameState state)
 	if (state == GameState::LOBBY)
 	{
 		_gui = new LobbyGui(*this, _width, _height);
-		_networkManager.SendPacket(new MyPackets::JoinLobbyPacket());
+		_networkManager.SendPacket(new MyPackets::JoinLobbyPacket(), Protocol::TCP);
 	}
 
 	if (state == GameState::GAME)
@@ -84,9 +102,9 @@ void Game::Draw(sf::RenderTarget& target)
 	}
 }
 
-void Game::SendPacket(Packet* packet)
+void Game::SendPacket(Packet* packet, Protocol protocol)
 {
-	_networkManager.SendPacket(packet);
+	_networkManager.SendPacket(packet, protocol);
 }
 
 void Game::OnPacketReceived(Packet& packet)

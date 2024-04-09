@@ -3,6 +3,7 @@
 #include "gui/Gui.h"
 #include "Constants.h"
 #include "Player.h"
+#include "PlayerInputs.h"
 
 class Game;
 class GameManager;
@@ -15,6 +16,7 @@ class GameGui final :
 	GameManager& _gameManager;
 
 	Player _player;
+	PlayerInput _currentPlayerInput;
 
 	ScreenSizeValue _height;
 	ScreenSizeValue _width;
@@ -22,6 +24,7 @@ class GameGui final :
 	bool _gameOver = false;
 
 	void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override;
+	void OnCheckInputs(sf::Event event) override;
 
  public:
 	explicit GameGui(Game& game, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height);

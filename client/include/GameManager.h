@@ -5,6 +5,14 @@
 #include "Vec2.h"
 #include "PlayerInputs.h"
 
+#include <queue>
+
+struct FinalInputs
+{
+	PlayerInput PlayerRoleInput {};
+	PlayerInput HandRoleInput {};
+};
+
 class GameManager
 {
  public:
@@ -14,10 +22,11 @@ class GameManager
 	Math::Vec2F _playerPosition;
 	HandSlot _handSlot = HandSlot::SLOT_1;
 
-	PlayerInputs _playerInputs;
-	PlayerInputs _previousPlayerInputs;
-	PlayerInputs _handInputs;
-	PlayerInputs _previousHandInputs;
+	// Player inputs from my player (hand or player role)
+	std::queue<PlayerInput> _myPlayerInputs;
+
+	// Confirmed player inputs from server (hand and player role)
+	std::queue<FinalInputs> _confirmedPlayerInputs;
 
 	ScreenSizeValue _width;
 	ScreenSizeValue _height;
@@ -25,10 +34,11 @@ class GameManager
  public:
 	void OnPacketReceived(Packet& packet);
 
-	[[nodiscard]] PlayerInputs GetPlayerInputs() const;
-	[[nodiscard]] PlayerInputs GetPreviousPlayerInputs() const;
-	[[nodiscard]] PlayerInputs GetHandInputs() const;
-	[[nodiscard]] PlayerInputs GetPreviousHandInputs() const;
+	[[nodiscard]] PlayerInput GetPlayerInputs() const;
+	[[nodiscard]] PlayerInput GetHandInputs() const;
 
 	[[nodiscard]] Math::Vec2F GetPlayerPosition() const;
+
+	void AddPlayerInputs(PlayerInput playerInput);
+	std::vector<PlayerInputPerFrame> GetLastPlayerInputs();
 };

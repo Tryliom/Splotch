@@ -9,6 +9,12 @@
 #include <mutex>
 #include <array>
 
+struct UDPClient
+{
+	sf::IpAddress Address;
+	unsigned short Port;
+};
+
 class NetworkServerManager final : public ServerNetworkInterface
 {
 private:
@@ -26,8 +32,11 @@ private:
 	std::array<std::pair<ClientId, sf::TcpSocket*>, MAX_CLIENTS> _clients;
 	mutable std::mutex _mutexClients;
 
-	sf::TcpListener _listener;
+	std::array<std::pair<ClientId, UDPClient>, MAX_CLIENTS> _udpClients;
+	mutable std::mutex _mutexUdpClients;
 
+	sf::TcpListener _tcpListener;
+	sf::UdpSocket _udpSocket;
 
 public:
 	explicit NetworkServerManager(unsigned short port);
@@ -36,7 +45,7 @@ public:
 	std::atomic<bool> Running = true;
 
 	PacketData PopPacket() override;
-	void SendPacket(Packet* packet, const ClientId& clientId) override;
+	void SendPacket(Packet* packet, const ClientId& clientId, Protocol protocol) override;
 	ClientId PopDisconnectedClient() override;
 
 private:
@@ -44,4 +53,5 @@ private:
 
 	void AcceptNewClients();
 	void ReceivePacketFromClient(const ClientId& clientId);
+	void ReceivePacketFromUdp();
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Packet.h"
+#include "Protocol.h"
 
 class ClientNetworkInterface
 {
@@ -18,5 +19,10 @@ public:
 	 * @brief Send a packet to the server
 	 * @param packet The packet to send
 	 */
-	virtual void SendPacket(Packet* packet) = 0;
+	virtual void SendPacket(Packet* packet, Protocol protocol) = 0;
+
+	/**
+	 * @brief Send a UDP acknowledgment packet to the server with the client informations
+	 */
+	virtual void SendUDPAcknowledgmentPacket() = 0;
 };

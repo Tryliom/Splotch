@@ -10,17 +10,23 @@ NetworkClientManager::NetworkClientManager(std::string_view host, unsigned short
 	_running = true;
 	_socket = new sf::TcpSocket();
 
+	_udpSocket.setBlocking(false);
+
 	if (_socket->connect(host.data(), port) != sf::Socket::Done)
 	{
 		LOG_ERROR("Could not connect to server");
 		std::exit(EXIT_FAILURE);
 	}
 
+	UdpPort = port + 1;
+
 	std::thread receiveThread(&NetworkClientManager::ReceivePackets, this);
 	receiveThread.detach();
 
 	std::thread sendThread(&NetworkClientManager::SendPackets, this);
 	sendThread.detach();
+
+	//TODO: Add udp receive thread from server
 }
 
 void NetworkClientManager::ReceivePackets()
@@ -44,18 +50,39 @@ void NetworkClientManager::SendPackets()
 {
 	while (_running)
 	{
-		if (IsPacketToSendEmpty()) continue;
+		while (!IsPacketToSendEmpty())
+		{
+			std::scoped_lock lock(_sendMutex);
 
-		std::scoped_lock lock(_sendMutex);
+			auto packetProtocol = _packetToSend.front();
+			auto* packet = packetProtocol.Packet;
+			auto protocol = packetProtocol.Protocol;
+			auto* sfPacket = PacketManager::ToSfPacket(packet);
 
-		auto* packet = _packetToSend.front();
-		auto* sfPacket = PacketManager::ToSfPacket(packet);
+			_packetToSend.pop();
 
-		_packetToSend.pop();
-		_socket->send(*sfPacket);
+			if (protocol == Protocol::TCP)
+			{
+				_socket->send(*sfPacket);
+			}
+			else
+			{
+				_udpSocket.send(*sfPacket, _socket->getRemoteAddress(), UdpPort);
+			}
 
-		delete packet;
-		delete sfPacket;
+			delete packet;
+			delete sfPacket;
+		}
+
+		sf::IpAddress sender;
+		unsigned short port;
+		sf::Packet sfPacket;
+		if (_udpSocket.receive(sfPacket, sender, port) == sf::Socket::Done)
+		{
+			auto* packet = PacketManager::FromPacket(&sfPacket);
+			std::scoped_lock lock(_receivedMutex);
+			_packetReceived.push(packet);
+		}
 	}
 }
 
@@ -72,10 +99,18 @@ Packet* NetworkClientManager::PopPacket()
 	return packet;
 }
 
-void NetworkClientManager::SendPacket(Packet* packet)
+void NetworkClientManager::SendPacket(Packet* packet, Protocol protocol)
 {
 	std::scoped_lock lock(_sendMutex);
-	_packetToSend.push(packet);
+	_packetToSend.push({packet, protocol});
+}
+
+void NetworkClientManager::SendUDPAcknowledgmentPacket()
+{
+	std::scoped_lock lock(_sendMutex);
+	auto* packet = new UDPAcknowledgePacket(_socket->getLocalPort());
+
+	_packetToSend.push({packet, Protocol::UDP});
 }
 
 void NetworkClientManager::Stop()

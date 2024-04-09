@@ -1,11 +1,21 @@
 #pragma once
 
-#include <bitset>
+typedef std::uint8_t PlayerInput;
 
-struct PlayerInputs
+enum class PlayerInputTypes : std::uint8_t {
+	Up = 1 << 0,
+	Down = 1 << 1,
+	Right = 1 << 2,
+	Left = 1 << 3
+};
+
+inline bool IsKeyPressed(PlayerInput input, PlayerInputTypes key)
 {
-	std::bitset<1> Up = 0;
-	std::bitset<1> Down = 0;
-	std::bitset<1> Left = 0;
-	std::bitset<1> Right = 0;
+	return (static_cast<std::uint8_t>(input) & static_cast<std::uint8_t>(key)) != 0;
+}
+
+struct PlayerInputPerFrame
+{
+	int Frame;
+	PlayerInput Input;
 };

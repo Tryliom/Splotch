@@ -18,6 +18,11 @@ find_package(fmt CONFIG REQUIRED)
 OPTION(ENABLE_SANITIZERS "Enable sanitizers" OFF)
 OPTION(USE_TRACY "Enable Tracy profiling" OFF)
 
+IF (MSVC)
+    # Define ON_MSVC to use MSVC specific code
+    add_compile_definitions(ON_MSVC)
+ENDIF ()
+
 file(GLOB_RECURSE DATA_FILES
         "data/*.png"
         "data/*.jpg"
@@ -46,6 +51,21 @@ add_custom_target(
         DEPENDS ${Data_OUTPUT_FILES}
 )
 
+# Physics common library
+file(GLOB_RECURSE PHYSICS_COMMON_FILES libs/PhysicsCommon/include/*.h libs/PhysicsCommon/src/*.cpp)
+add_library(PhysicsCommon ${PHYSICS_COMMON_FILES})
+set_target_properties(PhysicsCommon PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(PhysicsCommon PUBLIC libs/PhysicsCommon/include/)
+target_include_directories(PhysicsCommon PUBLIC libs/Math/)
+
+# Physics library
+file(GLOB_RECURSE PHYSICS_ENGINE_FILES libs/Physics/include/*.h libs/Physics/src/*.cpp)
+add_library(PhysicsEngine ${PHYSICS_ENGINE_FILES})
+set_target_properties(PhysicsEngine PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(PhysicsEngine PUBLIC libs/Physics/include/)
+target_include_directories(PhysicsEngine PUBLIC libs/Math/)
+target_link_libraries(PhysicsEngine PUBLIC PhysicsCommon fmt::fmt)
+
 # Client
 file(GLOB_RECURSE CLIENT_FILES client/src/*.cpp client/include/*.h)
 add_library(ClientPart STATIC ${CLIENT_FILES})
@@ -63,20 +83,18 @@ endif()
 file(GLOB_RECURSE SERVER_FILES server/src/*.cpp server/include/*.h)
 add_library(ServerPart STATIC ${SERVER_FILES})
 target_include_directories(ServerPart PUBLIC server/include/)
-target_include_directories(ServerPart PUBLIC server/src/)
 
 # Common
 file(GLOB_RECURSE COMMON_FILES common/include/*.h common/src/*.cpp)
 add_library(Common STATIC ${COMMON_FILES})
 target_include_directories(Common PUBLIC common/include/)
-target_include_directories(Common PUBLIC common/src/)
+target_link_libraries(Common PUBLIC PhysicsCommon)
 
 # Network
 # Common
 file(GLOB_RECURSE NETWORK_COMMON_FILES network/common/include/*.h network/common/src/*.cpp)
 add_library(NetworkCommon STATIC ${NETWORK_COMMON_FILES})
 target_include_directories(NetworkCommon PUBLIC network/common/include/)
-target_include_directories(NetworkCommon PUBLIC network/common/src/)
 target_link_libraries(NetworkCommon PUBLIC sfml-system sfml-network)
 target_link_libraries(NetworkCommon PUBLIC Common)
 # Client
@@ -89,20 +107,6 @@ add_library(NetworkServer INTERFACE)
 set_target_properties(NetworkServer PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(NetworkServer INTERFACE network/server/include/)
 target_link_libraries(NetworkServer INTERFACE NetworkCommon)
-
-# Physics common library
-file(GLOB_RECURSE PHYSICS_COMMON_FILES libs/PhysicsCommon/include/*.h libs/PhysicsCommon/src/*.cpp)
-add_library(PhysicsCommon ${PHYSICS_COMMON_FILES})
-set_target_properties(PhysicsCommon PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(PhysicsCommon PUBLIC libs/PhysicsCommon/include/)
-
-# Physics library
-file(GLOB_RECURSE PHYSICS_ENGINE_FILES libs/Physics/include/*.h libs/Physics/src/*.cpp)
-add_library(PhysicsEngine ${PHYSICS_ENGINE_FILES})
-set_target_properties(PhysicsEngine PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(PhysicsEngine PUBLIC libs/Physics/include/)
-target_include_directories(PhysicsEngine PUBLIC libs/Math/)
-target_link_libraries(PhysicsEngine PUBLIC PhysicsCommon fmt::fmt)
 
 # Linking
 target_link_libraries(Common PUBLIC NetworkCommon)
@@ -121,6 +125,8 @@ target_link_libraries(allInOne PUBLIC ClientPart ServerPart)
 target_link_libraries(splitScreen PUBLIC ClientPart ServerPart)
 
 add_dependencies(client data_target)
+add_dependencies(allInOne data_target)
+add_dependencies(splitScreen data_target)
 
 file(GLOB_RECURSE TEST_FILES tests/*.cpp)
 foreach(test_file ${TEST_FILES} )

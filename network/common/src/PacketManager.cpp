@@ -5,7 +5,9 @@
 namespace PacketManager
 {
 	std::vector<Packet*> _allPacketTypes = {
-		new InvalidPacket()
+		new InvalidPacket(),
+		new UDPAcknowledgePacket(),
+		new ConfirmUDPConnectionPacket()
 	};
 
 	bool SendPacket(sf::TcpSocket& socket, Packet* packet)

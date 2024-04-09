@@ -50,8 +50,44 @@ namespace ServerData
 		HandRolePlayer = Math::Random::Range(0, 1);
 		PlayerRolePlayer = HandRolePlayer == 0 ? 1 : 0;
 
-		Inputs = { PlayerInputs(), PlayerInputs() };
+		ConfirmFrames.clear();
+	}
 
-		RollbackData.clear();
+	void Game::AddPlayerLastInputs(const std::vector<PlayerInputPerFrame>& inputs, ClientId clientId)
+	{
+		// Add the inputs to the last inputs according to the frame
+		for (const auto& input : inputs)
+		{
+			if (input.Frame < ConfirmFrames.size() + LastPlayer1Inputs.size()) continue;
+
+			if (clientId == Players[0])
+			{
+				LastPlayer1Inputs.push_back(input.Input);
+			}
+			else if (clientId == Players[1])
+			{
+				LastPlayer2Inputs.push_back(input.Input);
+			}
+		}
+	}
+
+	bool Game::IsNextFrameReady() const
+	{
+		return LastPlayer1Inputs.size() >= 1 && LastPlayer2Inputs.size() >= 1;
+	}
+
+	void Game::AddFrame()
+	{
+		// Add the frame to the confirmed frames
+		ConfirmFrames.push_back({ LastPlayer1Inputs[0], LastPlayer2Inputs[0] });
+
+		// Remove the frame from the last inputs
+		LastPlayer1Inputs.erase(LastPlayer1Inputs.begin());
+		LastPlayer2Inputs.erase(LastPlayer2Inputs.begin());
+	}
+
+	FinalInputs Game::GetLastFrame()
+	{
+		return ConfirmFrames.back();
 	}
 }

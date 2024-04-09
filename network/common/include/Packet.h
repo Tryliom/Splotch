@@ -8,6 +8,8 @@ enum class PacketType :
 	char
 {
 	Invalid,
+	UDPAcknowledge,
+	ConfirmUDPConnection,
 	COUNT // Always last
 };
 
@@ -65,6 +67,52 @@ class InvalidPacket final :
 	void Read(sf::Packet& packet) override
 	{
 	}
+};
+
+class UDPAcknowledgePacket final :
+	public Packet
+{
+ public:
+	UDPAcknowledgePacket() : Packet(static_cast<char>(PacketType::UDPAcknowledge)) {}
+	explicit UDPAcknowledgePacket(unsigned short port) : Packet(static_cast<char>(PacketType::UDPAcknowledge)), Port(port) {}
+
+	// Port of the sender in TCP, used to identify the client
+	unsigned short Port = 0;
+
+	[[nodiscard]] Packet* Clone() const override
+	{
+		return new UDPAcknowledgePacket();
+	}
+	[[nodiscard]] std::string ToString() const override
+	{
+		return "UDPAcknowledgePacket";
+	}
+	void Write(sf::Packet& packet) const override
+	{
+		packet << Port;
+	}
+	void Read(sf::Packet& packet) override
+	{
+		packet >> Port;
+	}
+};
+
+class ConfirmUDPConnectionPacket final :
+	public Packet
+{
+ public:
+	ConfirmUDPConnectionPacket() : Packet(static_cast<char>(PacketType::ConfirmUDPConnection)) {}
+
+	[[nodiscard]] Packet* Clone() const override
+	{
+		return new ConfirmUDPConnectionPacket();
+	}
+	[[nodiscard]] std::string ToString() const override
+	{
+		return "ConfirmUDPConnectionPacket";
+	}
+	void Write(sf::Packet& packet) const override {}
+	void Read(sf::Packet& packet) override {}
 };
 
 sf::Packet& operator<<(sf::Packet& packet, const Packet& myPacket);

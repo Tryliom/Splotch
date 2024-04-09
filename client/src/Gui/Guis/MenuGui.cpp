@@ -3,7 +3,7 @@
 #include "Game.h"
 #include "AssetManager.h"
 
-MenuGui::MenuGui(Game& game, ScreenSizeValue width, ScreenSizeValue height)
+MenuGui::MenuGui(Game& game, ScreenSizeValue width, ScreenSizeValue height) : _game(game)
 {
 	// Create buttons
 	auto playButton = Button(
@@ -13,7 +13,7 @@ MenuGui::MenuGui(Game& game, ScreenSizeValue width, ScreenSizeValue height)
 	);
 
 	playButton.SetText({
-		TextLine({CustomText{ .Text = "PLAY", .Style = sf::Text::Style::Bold, .Size = 24}})
+		TextLine({CustomText{ .Text = "CONNECTING..", .Style = sf::Text::Style::Bold, .Size = 24}})
 	});
 	playButton.SetOnClick([&game]() {
 		game.SetState(GameState::LOBBY);
@@ -46,4 +46,20 @@ MenuGui::MenuGui(Game& game, ScreenSizeValue width, ScreenSizeValue height)
 	);
 
 	_texts.emplace_back(title);
+}
+
+void MenuGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
+{
+	if (_game.IsReadyToPlay())
+	{
+		_buttons[0].SetText({
+			TextLine({CustomText{.Text = "PLAY", .Style = sf::Text::Style::Bold, .Size = 24}})
+		});
+	}
+	else
+	{
+		_buttons[0].SetText({
+			TextLine({CustomText{.Text = "CONNECTING..", .Style = sf::Text::Style::Bold, .Size = 24}})
+		});
+	}
 }

@@ -2,6 +2,7 @@
 
 #include "Packet.h"
 #include "ClientId.h"
+#include "Protocol.h"
 
 struct PacketData
 {
@@ -24,7 +25,7 @@ public:
 	 * @param packet The packet to send
 	 * @param clientIndex The index of the client to send the packet to
 	 */
-	virtual void SendPacket(Packet* packet, const ClientId& clientId) = 0;
+	virtual void SendPacket(Packet* packet, const ClientId& clientId, Protocol protocol) = 0;
 
 	virtual ClientId PopDisconnectedClient() = 0;
 };

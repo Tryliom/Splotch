@@ -64,8 +64,31 @@ int main()
 				break;
 			}
 
-			for (auto& game : games)
+			for (auto i = 0; i < 2; i++)
 			{
+				auto& game = games[i];
+
+				// WASD for player 1, arrow keys for player 2
+				if (event.type == sf::Event::KeyPressed && i == 1)
+				{
+					// If key is WASD, break
+					if (event.key.code == sf::Keyboard::Key::W || event.key.code == sf::Keyboard::Key::A
+						|| event.key.code == sf::Keyboard::Key::S || event.key.code == sf::Keyboard::Key::D)
+					{
+						break;
+					}
+
+					// Set value of arrow key to WASD key
+					switch (event.key.code)
+					{
+						case sf::Keyboard::Key::Up: event.key.code = sf::Keyboard::Key::W; break;
+						case sf::Keyboard::Key::Down: event.key.code = sf::Keyboard::Key::S; break;
+						case sf::Keyboard::Key::Left: event.key.code = sf::Keyboard::Key::A; break;
+						case sf::Keyboard::Key::Right: event.key.code = sf::Keyboard::Key::D; break;
+						default: break;
+					}
+				}
+
 				game.CheckInputs(event);
 			}
 		}
@@ -93,6 +116,8 @@ int main()
 			sf::Sprite gameView;
 			gameView.setPosition(sf::Vector2f(i * (WIDTH_PER_SCREEN.Value + OFFSET_BETWEEN_SCREEN.Value), 0));
 			gameView.setTexture(renderTexture.getTexture());
+			gameView.setOrigin(sf::Vector2f(0, HEIGHT.Value));
+			gameView.setScale(sf::Vector2f(1, -1));
 
 			window.draw(gameView);
 		}

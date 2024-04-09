@@ -29,10 +29,12 @@ class Game
 	void SetState(GameState state);
 	void Draw(sf::RenderTarget& target);
 
-	void SendPacket(Packet* packet);
+	void SendPacket(Packet* packet, Protocol protocol);
 	void Quit();
 
 	void OnQuit(std::function<void()> onQuit);
+
+	bool IsReadyToPlay() const { return _readyToPlay; }
 
  private:
 	std::function<void()> _onQuit;
@@ -46,6 +48,11 @@ class Game
 
 	ScreenSizeValue _width;
 	ScreenSizeValue _height;
+
+	//TODO: At start, send UDPAck to server to get the UDP port until he get a ConfirmationPacket
+	bool _readyToPlay = false;
+	sf::Time _elapsedTime = sf::Time::Zero;
+	static constexpr float _timeBeforeSendUdpAck = 1.0f;
 
 	void OnPacketReceived(Packet& packet);
 };

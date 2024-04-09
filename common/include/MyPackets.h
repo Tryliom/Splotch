@@ -13,6 +13,8 @@ namespace MyPackets
 		LeaveLobby,
 		LeaveGame,
 		StartGame,
+		PlayerInput,
+		ConfirmationInput,
 		COUNT
 	};
 }

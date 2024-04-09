@@ -5,6 +5,8 @@
 
 #include "MyPackets/StartGamePacket.h"
 #include "MyPackets/LeaveGamePacket.h"
+#include "MyPackets/PlayerInputPacket.h"
+#include "MyPackets/ConfirmationInputPacket.h"
 
 Server::Server(ServerNetworkInterface& serverNetworkInterface)
 	: _serverNetworkInterface(serverNetworkInterface) {}
@@ -29,6 +31,20 @@ void Server::Update()
 		if (clientId == EMPTY_CLIENT_ID) break;
 
 		OnDisconnect(clientId);
+	}
+
+	for (auto& game: _games)
+	{
+		while (game.IsNextFrameReady())
+		{
+			game.AddFrame();
+
+			auto frame = game.GetLastFrame();
+
+			// Send the frame to the players
+			_serverNetworkInterface.SendPacket(new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.HandRoleInputs), game.Players[0], Protocol::TCP);
+			_serverNetworkInterface.SendPacket(new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.HandRoleInputs), game.Players[1], Protocol::TCP);
+		}
 	}
 }
 
@@ -56,6 +72,18 @@ void Server::OnReceivePacket(PacketData packetData)
 	{
 		LOG("Player " << clientId.Index << " left the game");
 		RemoveFromGame(clientId);
+	}
+	else if (packet->Type == static_cast<char>(MyPackets::MyPacketType::PlayerInput))
+	{
+		// Forward the packet to the game
+		for (auto& game: _games)
+		{
+			if (game.IsPlayerInGame(clientId))
+			{
+				game.AddPlayerLastInputs(packet->As<MyPackets::PlayerInputPacket>()->LastInputs, clientId);
+				break;
+			}
+		}
 	}
 }
 
@@ -155,7 +183,7 @@ void Server::RemoveFromGame(ClientId clientId)
 
 		// Send a message to the other player that the opponent left the game
 		const auto& opponent = game.Players[FIRST_PLAYER_INDEX] == clientId ? game.Players[SECOND_PLAYER_INDEX] : game.Players[FIRST_PLAYER_INDEX];
-		_serverNetworkInterface.SendPacket(new MyPackets::LeaveGamePacket(), opponent);
+		_serverNetworkInterface.SendPacket(new MyPackets::LeaveGamePacket(), opponent, Protocol::TCP);
 
 		game.Reset();
 
@@ -196,8 +224,8 @@ void Server::StartNewGame(ServerData::Game& game, ServerData::Lobby& lobby)
 	game.FromLobby(lobby);
 
 	// Send a message to the players that the game is starting
-	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(game.PlayerRolePlayer == 0), lobby.Players[0]);
-	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(game.PlayerRolePlayer == 1), lobby.Players[1]);
+	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(game.PlayerRolePlayer == 0), lobby.Players[0], Protocol::TCP);
+	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(game.PlayerRolePlayer == 1), lobby.Players[1], Protocol::TCP);
 
 	// Remove the lobby
 	lobby.Reset();
