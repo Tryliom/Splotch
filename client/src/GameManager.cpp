@@ -36,6 +36,11 @@ Math::Vec2F GameManager::GetPlayerPosition() const
 	return _playerPosition;
 }
 
+void GameManager::SetPlayerPosition(Math::Vec2F playerPosition)
+{
+	_playerPosition = playerPosition;
+}
+
 void GameManager::AddPlayerInputs(PlayerInput playerInput)
 {
 	_myPlayerInputs.push(playerInput);

@@ -58,7 +58,8 @@ inline static constexpr Vec2SP BRICK_SIZE = {{ 0.15f }, { 0.05f } };
 inline static constexpr Vec2SP PLATFORM_SIZE = {{ 0.75f }, { 0.05f } };
 inline static constexpr Vec2SP PLATFORM_POSITION = {{ 0.5f }, { 0.9f } };
 
-inline static constexpr Math::Vec2I PLAYER_SIZE = {16, 16 };
+inline static constexpr Math::Vec2I PLAYER_SIZE = { 16, 16 };
+inline static constexpr float PLAYER_SIZE_SCALE = 4.f;
 inline static constexpr Vec2SP PLAYER_START_POSITION = {{ 0.5f }, { 0.9f } };
 
 inline static constexpr Vec2SP HAND_START_POSITION = {{ 0.25f }, { 0.9f } };

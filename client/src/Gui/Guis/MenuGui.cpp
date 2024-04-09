@@ -15,9 +15,6 @@ MenuGui::MenuGui(Game& game, ScreenSizeValue width, ScreenSizeValue height) : _g
 	playButton.SetText({
 		TextLine({CustomText{ .Text = "CONNECTING..", .Style = sf::Text::Style::Bold, .Size = 24}})
 	});
-	playButton.SetOnClick([&game]() {
-		game.SetState(GameState::LOBBY);
-	});
 
 	_buttons.emplace_back(playButton);
 
@@ -54,6 +51,9 @@ void MenuGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 	{
 		_buttons[0].SetText({
 			TextLine({CustomText{.Text = "PLAY", .Style = sf::Text::Style::Bold, .Size = 24}})
+		});
+		_buttons[0].SetOnClick([this]() {
+			_game.SetState(GameState::GAME);
 		});
 	}
 	else

@@ -9,7 +9,8 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	sf::Sprite sprite;
 	sprite.setTextureRect(sf::IntRect(0, 0, PLAYER_SIZE.X, PLAYER_SIZE.Y));
 	sprite.setOrigin(PLAYER_SIZE.X / 2.0f, PLAYER_SIZE.Y / 2.0f);
-	sprite.setPosition(0, 0);
+	sprite.setPosition(_position);
+	sprite.setColor(_color);
 
 	switch (_animation)
 	{
@@ -26,11 +27,11 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 	if (_direction == PlayerDirection::LEFT)
 	{
-		sprite.setScale(-1.f, 1.f);
+		sprite.setScale(-PLAYER_SIZE_SCALE, PLAYER_SIZE_SCALE);
 	}
 	else
 	{
-		sprite.setScale(1.f, 1.f);
+		sprite.setScale(PLAYER_SIZE_SCALE, PLAYER_SIZE_SCALE);
 	}
 
 	target.draw(sprite, states);
@@ -88,4 +89,9 @@ void Player::SetDirection(PlayerDirection direction)
 void Player::SetPosition(sf::Vector2f position)
 {
 	_position = position;
+}
+
+void Player::SetColor(sf::Color color)
+{
+	_color = color;
 }

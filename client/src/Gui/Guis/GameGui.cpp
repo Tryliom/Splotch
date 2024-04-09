@@ -23,12 +23,16 @@ GameGui::GameGui(Game& game, GameManager& gameManager, ScreenSizeValue width, Sc
 	);
 
 	_texts.emplace_back(title);
+
+	_gameManager.SetPlayerPosition({PLAYER_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height});
 }
 
 void GameGui::OnDraw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	//TODO: Draw hand and bricks
 	target.draw(_player, states);
+
+
 }
 
 void GameGui::OnCheckInputs(sf::Event event)
@@ -65,6 +69,10 @@ void GameGui::OnCheckInputs(sf::Event event)
 
 void GameGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 {
+	_gameManager.AddPlayerInputs(_currentPlayerInput);
+
+	//TODO: Add second player, draw in red the other and itself in cyan
+
 	const auto playerPosition = _gameManager.GetPlayerPosition();
 
 	_player.Update(elapsed);

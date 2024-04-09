@@ -38,6 +38,7 @@ class GameManager
 	[[nodiscard]] PlayerInput GetHandInputs() const;
 
 	[[nodiscard]] Math::Vec2F GetPlayerPosition() const;
+	void SetPlayerPosition(Math::Vec2F playerPosition);
 
 	void AddPlayerInputs(PlayerInput playerInput);
 	std::vector<PlayerInputPerFrame> GetLastPlayerInputs();

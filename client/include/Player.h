@@ -27,6 +27,7 @@ class Player : public sf::Drawable
 	PlayerAnimation _animation = PlayerAnimation::IDLE;
 	PlayerDirection _direction = PlayerDirection::RIGHT;
 	sf::Vector2f _position = sf::Vector2f(0, 0);
+	sf::Color _color = sf::Color::Cyan;
 	int _frame = 0;
 	sf::Time _elapsed = sf::Time::Zero;
 
@@ -38,4 +39,5 @@ class Player : public sf::Drawable
 	void SetAnimation(PlayerAnimation animation);
 	void SetDirection(PlayerDirection direction);
 	void SetPosition(sf::Vector2f position);
+	void SetColor(sf::Color color);
 };
