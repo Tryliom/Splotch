@@ -82,8 +82,7 @@ void GameGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 
 		const auto playerInput = playerInputs[i];
 
-		//TODO: If player doesn't touch anything physical, set jump animation
-		//TODO: Change player body according to the player input in fixed update
+		//TODO: With rollback, sync the player position and simulate again the inputs if dirty
 
 		// Change position harshly [Debug]
 
