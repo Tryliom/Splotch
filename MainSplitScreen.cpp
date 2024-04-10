@@ -12,6 +12,9 @@ inline static ScreenSizeValue WIDTH_PER_SCREEN = { 700.f };
 inline static ScreenSizeValue OFFSET_BETWEEN_SCREEN = { 10.f };
 inline static ScreenSizeValue WIDTH = WIDTH_PER_SCREEN * 2.f + OFFSET_BETWEEN_SCREEN;
 
+inline static int FRAME_RATE = 30;
+inline static float TIME_PER_FRAME = 1.f / FRAME_RATE;
+
 int main()
 {
 	MyPackets::RegisterMyPackets();
@@ -48,49 +51,64 @@ int main()
 	}
 
 	sf::Clock clock;
+	float time = TIME_PER_FRAME;
 
 	while (window.isOpen())
 	{
 		sf::Event event{};
 		sf::Time elapsed = clock.restart();
 
-		server.Update();
+		time += elapsed.asSeconds();
 
-		while (window.pollEvent(event))
+		while (time >= TIME_PER_FRAME)
 		{
-			if (event.type == sf::Event::Closed)
-			{
-				window.close();
-				break;
-			}
+			server.Update();
 
-			for (auto i = 0; i < 2; i++)
+			while (window.pollEvent(event))
 			{
-				auto& game = games[i];
-
-				// WASD for player 1, arrow keys for player 2
-				if (event.type == sf::Event::KeyPressed && i == 1)
+				if (event.type == sf::Event::Closed)
 				{
-					// If key is WASD, break
-					if (event.key.code == sf::Keyboard::Key::W || event.key.code == sf::Keyboard::Key::A
-						|| event.key.code == sf::Keyboard::Key::S || event.key.code == sf::Keyboard::Key::D)
-					{
-						break;
-					}
+					window.close();
+					break;
+				}
 
-					// Set value of arrow key to WASD key
-					switch (event.key.code)
+				for (auto i = 0; i < 2; i++)
+				{
+					auto& game = games[i];
+
+					// WASD for player 1, arrow keys for player 2
+					if (event.type == sf::Event::KeyPressed && i == 1)
 					{
+						// If key is WASD, break
+						if (event.key.code == sf::Keyboard::Key::W || event.key.code == sf::Keyboard::Key::A
+							|| event.key.code == sf::Keyboard::Key::S || event.key.code == sf::Keyboard::Key::D)
+						{
+							break;
+						}
+
+						// Set value of arrow key to WASD key
+						switch (event.key.code)
+						{
 						case sf::Keyboard::Key::Up: event.key.code = sf::Keyboard::Key::W; break;
 						case sf::Keyboard::Key::Down: event.key.code = sf::Keyboard::Key::S; break;
 						case sf::Keyboard::Key::Left: event.key.code = sf::Keyboard::Key::A; break;
 						case sf::Keyboard::Key::Right: event.key.code = sf::Keyboard::Key::D; break;
 						default: break;
+						}
 					}
-				}
 
-				game.CheckInputs(event);
+					game.CheckInputs(event);
+				}
 			}
+
+			for (int i = 0; i < 2; i++)
+			{
+				auto& game = games[i];
+
+				game.FixedUpdate(sf::seconds(TIME_PER_FRAME));
+			}
+
+			time -= TIME_PER_FRAME;
 		}
 
 		auto mousePosition = sf::Vector2f(sf::Mouse::getPosition(window));

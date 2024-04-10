@@ -7,6 +7,12 @@
 
 #include <queue>
 
+enum class PlayerRole
+{
+	PLAYER,
+	HAND
+};
+
 struct FinalInputs
 {
 	PlayerInput PlayerRoleInput {};
@@ -31,6 +37,8 @@ class GameManager
 	ScreenSizeValue _width;
 	ScreenSizeValue _height;
 
+	PlayerRole _playerRole = PlayerRole::PLAYER;
+
  public:
 	void OnPacketReceived(Packet& packet);
 
@@ -39,6 +47,11 @@ class GameManager
 
 	[[nodiscard]] Math::Vec2F GetPlayerPosition() const;
 	void SetPlayerPosition(Math::Vec2F playerPosition);
+
+	[[nodiscard]] Math::Vec2F GetHandPosition() const;
+	void SetHandSlot(HandSlot handSlot);
+
+	PlayerRole GetPlayerRole();
 
 	void AddPlayerInputs(PlayerInput playerInput);
 	std::vector<PlayerInputPerFrame> GetLastPlayerInputs();

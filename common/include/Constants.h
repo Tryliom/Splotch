@@ -49,6 +49,16 @@ struct ScreenPercentage
 	{
 		return Value * screenSizeValue.Value;
 	}
+
+	ScreenPercentage operator*(int multiplier) const
+	{
+		return { Value * multiplier };
+	}
+
+	ScreenPercentage operator+(ScreenPercentage screenPercentage) const
+	{
+		return { Value + screenPercentage.Value };
+	}
 };
 
 using Vec2SP = Math::Vec2<ScreenPercentage>;
@@ -62,6 +72,6 @@ inline static constexpr Math::Vec2I PLAYER_SIZE = { 16, 16 };
 inline static constexpr float PLAYER_SIZE_SCALE = 4.f;
 inline static constexpr Vec2SP PLAYER_START_POSITION = {{ 0.5f }, { 0.9f } };
 
-inline static constexpr Vec2SP HAND_START_POSITION = {{ 0.25f }, { 0.9f } };
+inline static constexpr Vec2SP HAND_START_POSITION = {{ 0.25f }, { 0.1f } };
 inline static constexpr ScreenPercentage HAND_SLOT_SIZE = { 0.15f };
 inline static constexpr ScreenPercentage MAX_HAND_BRICK_SPAWN_HEIGHT = { 1.f - 0.7f };

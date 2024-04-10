@@ -15,8 +15,8 @@ class GameGui final :
 	Game& _game;
 	GameManager& _gameManager;
 
-	Player _player;
-	PlayerInput _currentPlayerInput;
+	std::array<Player, 2> _players;
+	PlayerInput _currentPlayerInput{};
 
 	ScreenSizeValue _height;
 	ScreenSizeValue _width;
@@ -29,6 +29,7 @@ class GameGui final :
  public:
 	explicit GameGui(Game& game, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height);
 
+	void OnFixedUpdate(sf::Time elapsed) override;
 	void OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition) override;
 	void OnPacketReceived(Packet& packet) override;
 };

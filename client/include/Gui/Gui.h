@@ -17,6 +17,7 @@ protected:
 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
+	virtual void OnFixedUpdate(sf::Time elapsed) {}
 	virtual void OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition) {}
 	/**
 	 * @brief Draw additional elements after background and before buttons and texts
@@ -25,6 +26,7 @@ protected:
 	virtual void OnCheckInputs(sf::Event event) {}
 
 public:
+	void FixedUpdate(sf::Time elapsed);
 	void Update(sf::Time elapsed, sf::Vector2f mousePosition);
 	void CheckInputs(sf::Event event);
 

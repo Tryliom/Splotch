@@ -198,7 +198,6 @@ void Server::StartGame(ClientId clientId)
 	{
 		if (lobby.IsEmpty()) continue;
 		if (!lobby.IsInLobby(clientId)) continue;
-		if (lobby.Players[0] != clientId) return; // Only host can start the game
 
 		// Find or create a game
 		for (auto& game: _games)

@@ -16,7 +16,11 @@ void Gui::draw(sf::RenderTarget& target, const sf::RenderStates states) const
 	{
 		target.draw(text, states);
 	}
+}
 
+void Gui::FixedUpdate(const sf::Time elapsed)
+{
+	OnFixedUpdate(elapsed);
 }
 
 void Gui::Update(const sf::Time elapsed, sf::Vector2f mousePosition)

@@ -53,7 +53,7 @@ void MenuGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 			TextLine({CustomText{.Text = "PLAY", .Style = sf::Text::Style::Bold, .Size = 24}})
 		});
 		_buttons[0].SetOnClick([this]() {
-			_game.SetState(GameState::GAME);
+			_game.SetState(GameState::LOBBY);
 		});
 	}
 	else
