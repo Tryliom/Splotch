@@ -81,6 +81,8 @@ void Server::OnReceivePacket(PacketData packetData)
 			if (game.IsPlayerInGame(clientId))
 			{
 				game.AddPlayerLastInputs(packet->As<MyPackets::PlayerInputPacket>()->LastInputs, clientId);
+				// Send input to other player
+				_serverNetworkInterface.SendPacket(packet->Clone(), game.Players[0] == clientId ? game.Players[1] : game.Players[0], Protocol::UDP);
 				break;
 			}
 		}

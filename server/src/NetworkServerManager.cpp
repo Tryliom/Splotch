@@ -60,7 +60,7 @@ void NetworkServerManager::SendPacket(Packet* packet, const ClientId& clientId, 
 	}
 	else
 	{
-		_udpSocket.send(*sfPacket, _clients[clientId.Index].second->getRemoteAddress(), _clients[clientId.Index].second->getRemotePort());
+		_udpSocket.send(*sfPacket, _udpClients[clientId.Index].second.Address, _udpClients[clientId.Index].second.Port);
 	}
 
 	delete packet;

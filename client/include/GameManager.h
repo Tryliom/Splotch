@@ -30,6 +30,7 @@ class GameManager
 
 	// Player inputs from my player (hand or player role)
 	std::queue<PlayerInput> _myPlayerInputs;
+	PlayerInputPerFrame _lastOtherPlayerInput {-1, PlayerInput()};
 
 	// Confirmed player inputs from server (hand and player role)
 	std::queue<FinalInputs> _confirmedPlayerInputs;

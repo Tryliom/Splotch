@@ -111,7 +111,7 @@ void GameGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 		const auto playerInput = playerInputs[i];
 
 		//TODO: If player doesn't touch anything physical, set jump animation
-		//TODO: Change player body according to the player input
+		//TODO: Change player body according to the player input in fixed update
 		if (IsKeyPressed(playerInput, PlayerInputTypes::Up))
 		{
 			player.SetAnimation(PlayerAnimation::JUMP);
