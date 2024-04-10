@@ -85,53 +85,59 @@ int main()
 				}
 			}
 
+			std::array<sf::Keyboard::Key, 4> keys1 = {
+				sf::Keyboard::Key::W,
+				sf::Keyboard::Key::A,
+				sf::Keyboard::Key::S,
+				sf::Keyboard::Key::D
+			};
+			std::array<sf::Keyboard::Key, 4> keys2 = {
+				sf::Keyboard::Key::Up,
+				sf::Keyboard::Key::Left,
+				sf::Keyboard::Key::Down,
+				sf::Keyboard::Key::Right
+			};
+
 			for (int i = 0; i < MAX_PLAYERS; i++)
 			{
 				auto& game = games[i];
 				PlayerInput playerInput = {};
+				PlayerRole playerRole = gameManagers[i].GetPlayerRole();
+				PlayerInput lastPlayerInput = rollbackManagers[i].GetLastLocalPlayerInput(playerRole);
+				std::array<sf::Keyboard::Key, 4> keys = i == 0 ? keys1 : keys2;
 
-				if (i == 0)
+				if (playerRole == PlayerRole::PLAYER)
 				{
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
-					{
-						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
-					}
-
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+					if (sf::Keyboard::isKeyPressed(keys[1]))
 					{
 						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
 					}
 
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+					if (sf::Keyboard::isKeyPressed(keys[3]))
 					{
 						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
 					}
 
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+					if (sf::Keyboard::isKeyPressed(keys[0]) && !IsKeyPressed(lastPlayerInput, PlayerInputTypes::Up))
 					{
-						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
 					}
 				}
 				else
 				{
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
+					if (sf::Keyboard::isKeyPressed(keys[2]))
 					{
-						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
 					}
 
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+					if (sf::Keyboard::isKeyPressed(keys[1]) && !IsKeyPressed(lastPlayerInput, PlayerInputTypes::Left))
 					{
 						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
 					}
 
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+					if (sf::Keyboard::isKeyPressed(keys[3]) && !IsKeyPressed(lastPlayerInput, PlayerInputTypes::Right))
 					{
 						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
-					}
-
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
-					{
-						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
 					}
 				}
 

@@ -32,6 +32,7 @@ private:
 	// Launch from a thread
 	void ReceivePackets();
 	void SendPackets();
+	void ReceiveUDPPackets();
 
 	bool IsPacketReceivedEmpty() const
 	{

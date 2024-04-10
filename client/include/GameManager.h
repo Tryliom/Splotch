@@ -34,7 +34,8 @@ class GameManager
 	void SetPlayerPosition(Math::Vec2F playerPosition);
 
 	[[nodiscard]] Math::Vec2F GetHandPosition() const;
-	void SetHandSlot(HandSlot handSlot);
+	void DecreaseHandSlot();
+	void IncreaseHandSlot();
 
 	PlayerRole GetPlayerRole();
 

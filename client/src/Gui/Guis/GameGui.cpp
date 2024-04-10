@@ -61,7 +61,10 @@ void GameGui::OnFixedUpdate(sf::Time elapsed) {}
 
 void GameGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 {
-	const std::array<Math::Vec2F, MAX_PLAYERS> playerPositions = {
+	static constexpr float MOVE_SPEED = 150.f;
+	static constexpr float FALL_SPEED = 300.f;
+	static constexpr float JUMP_SPEED = 30.f;
+	std::array<Math::Vec2F, MAX_PLAYERS> playerPositions = {
 		_gameManager.GetPlayerPosition(),
 		_gameManager.GetHandPosition()
 	};
@@ -81,24 +84,67 @@ void GameGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 
 		//TODO: If player doesn't touch anything physical, set jump animation
 		//TODO: Change player body according to the player input in fixed update
+
+		// Change position harshly [Debug]
+
 		if (IsKeyPressed(playerInput, PlayerInputTypes::Up))
 		{
 			player.SetAnimation(PlayerAnimation::JUMP);
+
+			if (i == 0)
+			{
+				_gameManager.SetPlayerPosition({playerPositions[i].X, playerPositions[i].Y - JUMP_SPEED});
+			}
 		}
 		else if (IsKeyPressed(playerInput, PlayerInputTypes::Left))
 		{
 			player.SetAnimation(PlayerAnimation::WALK);
 			player.SetDirection(PlayerDirection::LEFT);
+
+			if (i == 0)
+			{
+				_gameManager.SetPlayerPosition({playerPositions[i].X - MOVE_SPEED * elapsed.asSeconds(), playerPositions[i].Y});
+			}
+			else
+			{
+				_gameManager.DecreaseHandSlot();
+			}
 		}
 		else if (IsKeyPressed(playerInput, PlayerInputTypes::Right))
 		{
 			player.SetAnimation(PlayerAnimation::WALK);
 			player.SetDirection(PlayerDirection::RIGHT);
+
+			if (i == 0)
+			{
+				_gameManager.SetPlayerPosition({playerPositions[i].X + MOVE_SPEED * elapsed.asSeconds(), playerPositions[i].Y});
+			}
+			else
+			{
+				_gameManager.IncreaseHandSlot();
+			}
 		}
 		else
 		{
 			player.SetAnimation(PlayerAnimation::IDLE);
+
+			if (i == 0 && playerPositions[i].Y < PLAYER_START_POSITION.Y * _height)
+			{
+				player.SetAnimation(PlayerAnimation::JUMP);
+				_gameManager.SetPlayerPosition({playerPositions[i].X, playerPositions[i].Y + FALL_SPEED * elapsed.asSeconds()});
+			}
 		}
+	}
+
+	playerPositions = {
+		_gameManager.GetPlayerPosition(),
+		_gameManager.GetHandPosition()
+	};
+
+	for (auto i = 0; i < MAX_PLAYERS; i++)
+	{
+		auto& player = _players[i];
+		player.SetPosition({playerPositions[i].X, playerPositions[i].Y});
 	}
 }
 

@@ -58,14 +58,18 @@ namespace ServerData
 		// Add the inputs to the last inputs according to the frame
 		for (const auto& input : inputs)
 		{
-			if (input.Frame < ConfirmFrames.size() + LastPlayer1Inputs.size()) continue;
+			if (input.Frame < ConfirmFrames.size()) continue;
 
 			if (clientId == Players[0])
 			{
+				if (input.Frame < ConfirmFrames.size() + LastPlayer1Inputs.size()) continue;
+
 				LastPlayer1Inputs.push_back(input.Input);
 			}
 			else if (clientId == Players[1])
 			{
+				if (input.Frame < ConfirmFrames.size() + LastPlayer2Inputs.size()) continue;
+
 				LastPlayer2Inputs.push_back(input.Input);
 			}
 		}

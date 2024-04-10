@@ -44,9 +44,18 @@ Math::Vec2F GameManager::GetHandPosition() const
 	return {x * _width, HAND_START_POSITION.Y * _height};
 }
 
-void GameManager::SetHandSlot(HandSlot handSlot)
+void GameManager::DecreaseHandSlot()
 {
-	_handSlot = handSlot;
+	if (_handSlot == HandSlot::SLOT_1) return;
+
+	_handSlot = static_cast<HandSlot>(static_cast<int>(_handSlot) - 1);
+}
+
+void GameManager::IncreaseHandSlot()
+{
+	if (_handSlot == HandSlot::SLOT_5) return;
+
+	_handSlot = static_cast<HandSlot>(static_cast<int>(_handSlot) + 1);
 }
 
 PlayerRole GameManager::GetPlayerRole()

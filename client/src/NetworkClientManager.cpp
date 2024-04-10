@@ -26,7 +26,8 @@ NetworkClientManager::NetworkClientManager(std::string_view host, unsigned short
 	std::thread sendThread(&NetworkClientManager::SendPackets, this);
 	sendThread.detach();
 
-	//TODO: Add udp receive thread from server
+	std::thread receiveUdpThread(&NetworkClientManager::ReceiveUDPPackets, this);
+	receiveUdpThread.detach();
 }
 
 void NetworkClientManager::ReceivePackets()
@@ -73,16 +74,19 @@ void NetworkClientManager::SendPackets()
 			delete packet;
 			delete sfPacket;
 		}
+	}
+}
 
-		sf::IpAddress sender;
-		unsigned short port;
-		sf::Packet sfPacket;
-		if (_udpSocket.receive(sfPacket, sender, port) == sf::Socket::Done)
-		{
-			auto* packet = PacketManager::FromPacket(&sfPacket);
-			std::scoped_lock lock(_receivedMutex);
-			_packetReceived.push(packet);
-		}
+void NetworkClientManager::ReceiveUDPPackets()
+{
+	sf::IpAddress sender;
+	unsigned short port;
+	sf::Packet sfPacket;
+	if (_udpSocket.receive(sfPacket, sender, port) == sf::Socket::Done)
+	{
+		auto* packet = PacketManager::FromPacket(&sfPacket);
+		std::scoped_lock lock(_receivedMutex);
+		_packetReceived.push(packet);
 	}
 }
 
