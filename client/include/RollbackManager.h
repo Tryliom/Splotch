@@ -14,7 +14,7 @@ class RollbackManager
  private:
 	// PlayerDrawable inputs from my player (hand or player role) from confirm frame
 	std::vector<PlayerInput> _localPlayerInputs;
-	PlayerInputPerFrame _lastRemotePlayerInput { -1, PlayerInput()}; //TODO: Use vector and register all inputs from confirm frame
+	std::vector<PlayerInputPerFrame> _lastRemotePlayerInputs;
 
 	// Confirmed player inputs from server (hand and player role)
 	std::vector<FinalInputs> _confirmedPlayerInputs;
