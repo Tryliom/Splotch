@@ -55,22 +55,22 @@ void Server::OnReceivePacket(PacketData packetData)
 
 	if (packet->Type == static_cast<char>(MyPackets::MyPacketType::JoinLobby))
 	{
-		LOG("Player " << clientId.Index << " joined the lobby");
+		LOG("PlayerDrawable " << clientId.Index << " joined the lobby");
 		JoinLobby(clientId);
 	}
 	else if (packet->Type == static_cast<char>(MyPackets::MyPacketType::LeaveLobby))
 	{
-		LOG("Player " << clientId.Index << " left the lobby");
+		LOG("PlayerDrawable " << clientId.Index << " left the lobby");
 		RemoveFromLobby(clientId);
 	}
 	else if (packet->Type == static_cast<char>(MyPackets::MyPacketType::StartGame))
 	{
-		LOG("Player " << clientId.Index << " started the game");
+		LOG("PlayerDrawable " << clientId.Index << " started the game");
 		StartGame(clientId);
 	}
 	else if (packet->Type == static_cast<char>(MyPackets::MyPacketType::LeaveGame))
 	{
-		LOG("Player " << clientId.Index << " left the game");
+		LOG("PlayerDrawable " << clientId.Index << " left the game");
 		RemoveFromGame(clientId);
 	}
 	else if (packet->Type == static_cast<char>(MyPackets::MyPacketType::PlayerInput))
@@ -91,7 +91,7 @@ void Server::OnReceivePacket(PacketData packetData)
 
 void Server::OnDisconnect(ClientId clientId)
 {
-	LOG("Player " << clientId.Index << " disconnected");
+	LOG("PlayerDrawable " << clientId.Index << " disconnected");
 	RemoveFromLobby(clientId);
 	RemoveFromGame(clientId);
 }

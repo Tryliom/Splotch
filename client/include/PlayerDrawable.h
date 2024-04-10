@@ -18,10 +18,10 @@ enum class PlayerDirection
 /**
  * Used to manage player animations and sprite
  */
-class Player : public sf::Drawable
+class PlayerDrawable : public sf::Drawable
 {
  public:
-	Player() = default;
+	PlayerDrawable() = default;
 
  private:
 	PlayerAnimation _animation = PlayerAnimation::IDLE;

@@ -5,14 +5,11 @@
 #include "AssetManager.h"
 #include "Constants.h"
 #include "MyPackets/LeaveGamePacket.h"
-#include "MyPackets/PlayerInputPacket.h"
 
 GameGui::GameGui(Game& game, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height) :
 	_game(game), _gameManager(gameManager), _height(height), _width(width)
 {
 	//TODO: Tell "You are the player" / "You need to stomp the player" with a timer going to 0 given by gameManager/decreasing from it
-	//TODO: Apply cyan color when you are the player and black when you are not
-	//TODO: Apply cyan color on the hand when it's your turn and black when it's not
 
 	// Create texts
 	auto title = Text(
@@ -57,51 +54,23 @@ void GameGui::OnCheckInputs(sf::Event event)
 			_game.SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
 			_game.SetState(GameState::MAIN_MENU);
 		}
-
-		if (event.key.code == sf::Keyboard::Key::W && !IsKeyPressed(_currentPlayerInput, PlayerInputTypes::Up))
-		{
-			_currentPlayerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
-		}
-
-		if (event.key.code == sf::Keyboard::Key::A && !IsKeyPressed(_currentPlayerInput, PlayerInputTypes::Left))
-		{
-			_currentPlayerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
-		}
-
-		if (event.key.code == sf::Keyboard::Key::D && !IsKeyPressed(_currentPlayerInput, PlayerInputTypes::Right))
-		{
-			_currentPlayerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
-		}
-
-		if (event.key.code == sf::Keyboard::Key::S && !IsKeyPressed(_currentPlayerInput, PlayerInputTypes::Down))
-		{
-			_currentPlayerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
-		}
 	}
 }
 
-void GameGui::OnFixedUpdate(sf::Time elapsed)
-{
-	_gameManager.AddPlayerInputs(_currentPlayerInput);
-
-	// Send player input
-	_game.SendPacket(new MyPackets::PlayerInputPacket(_gameManager.GetLastPlayerInputs()), Protocol::UDP);
-
-	_currentPlayerInput = {};
-}
+void GameGui::OnFixedUpdate(sf::Time elapsed) {}
 
 void GameGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 {
-	const std::array<Math::Vec2F, 2> playerPositions = {
+	const std::array<Math::Vec2F, MAX_PLAYERS> playerPositions = {
 		_gameManager.GetPlayerPosition(),
 		_gameManager.GetHandPosition()
 	};
-	const std::array<PlayerInput, 2> playerInputs = {
+	const std::array<PlayerInput, MAX_PLAYERS> playerInputs = {
 		_gameManager.GetPlayerInputs(),
 		_gameManager.GetHandInputs()
 	};
 
-	for (auto i = 0; i < 2; i++)
+	for (auto i = 0; i < MAX_PLAYERS; i++)
 	{
 		auto& player = _players[i];
 

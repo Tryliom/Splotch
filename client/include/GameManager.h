@@ -7,18 +7,6 @@
 
 #include <queue>
 
-enum class PlayerRole
-{
-	PLAYER,
-	HAND
-};
-
-struct FinalInputs
-{
-	PlayerInput PlayerRoleInput {};
-	PlayerInput HandRoleInput {};
-};
-
 class GameManager
 {
  public:
@@ -28,12 +16,8 @@ class GameManager
 	Math::Vec2F _playerPosition;
 	HandSlot _handSlot = HandSlot::SLOT_1;
 
-	// Player inputs from my player (hand or player role)
-	std::queue<PlayerInput> _myPlayerInputs;
-	PlayerInputPerFrame _lastOtherPlayerInput {-1, PlayerInput()};
-
-	// Confirmed player inputs from server (hand and player role)
-	std::queue<FinalInputs> _confirmedPlayerInputs;
+	PlayerInput _playerInputs;
+	PlayerInput _handInputs;
 
 	ScreenSizeValue _width;
 	ScreenSizeValue _height;
@@ -54,6 +38,6 @@ class GameManager
 
 	PlayerRole GetPlayerRole();
 
-	void AddPlayerInputs(PlayerInput playerInput);
-	std::vector<PlayerInputPerFrame> GetLastPlayerInputs();
+	void SetPlayerInputs(PlayerInput playerInput);
+	void SetHandInputs(PlayerInput playerInput);
 };

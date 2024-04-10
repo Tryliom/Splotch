@@ -6,6 +6,7 @@
 #include "NetworkClientManager.h"
 #include "Logger.h"
 #include "GameManager.h"
+#include "RollbackManager.h"
 
 inline static ScreenSizeValue HEIGHT = { 900.f };
 inline static ScreenSizeValue WIDTH_PER_SCREEN = { 700.f };
@@ -24,7 +25,7 @@ int main()
 	Server server(networkServerManager);
 
 	// Network
-	std::array<NetworkClientManager, 2> networkClientManagers = {
+	std::array<NetworkClientManager, MAX_PLAYERS> networkClientManagers = {
 		NetworkClientManager(HOST_NAME, PORT),
 		NetworkClientManager(HOST_NAME, PORT)
 	};
@@ -34,13 +35,17 @@ int main()
 
 	window.setVerticalSyncEnabled(true);
 
-	std::array<GameManager, 2> gameManagers = {
+	std::array<GameManager, MAX_PLAYERS> gameManagers = {
 		GameManager(WIDTH_PER_SCREEN, HEIGHT),
 		GameManager(WIDTH_PER_SCREEN, HEIGHT)
 	};
-	std::array<Game, 2> games = {
-		Game(gameManagers[0], networkClientManagers[0], WIDTH_PER_SCREEN, HEIGHT),
-		Game(gameManagers[1], networkClientManagers[1], WIDTH_PER_SCREEN, HEIGHT)
+	std::array<RollbackManager, MAX_PLAYERS> rollbackManagers = {
+		RollbackManager(),
+		RollbackManager()
+	};
+	std::array<Game, MAX_PLAYERS> games = {
+		Game(rollbackManagers[0], gameManagers[0], networkClientManagers[0], WIDTH_PER_SCREEN, HEIGHT),
+		Game(rollbackManagers[1], gameManagers[1], networkClientManagers[1], WIDTH_PER_SCREEN, HEIGHT)
 	};
 
 	for (auto& game : games)
@@ -72,39 +77,65 @@ int main()
 					break;
 				}
 
-				for (auto i = 0; i < 2; i++)
+				for (auto i = 0; i < MAX_PLAYERS; i++)
 				{
 					auto& game = games[i];
-
-					// WASD for player 1, arrow keys for player 2
-					if (event.type == sf::Event::KeyPressed && i == 1)
-					{
-						// If key is WASD, break
-						if (event.key.code == sf::Keyboard::Key::W || event.key.code == sf::Keyboard::Key::A
-							|| event.key.code == sf::Keyboard::Key::S || event.key.code == sf::Keyboard::Key::D)
-						{
-							break;
-						}
-
-						// Set value of arrow key to WASD key
-						switch (event.key.code)
-						{
-						case sf::Keyboard::Key::Up: event.key.code = sf::Keyboard::Key::W; break;
-						case sf::Keyboard::Key::Down: event.key.code = sf::Keyboard::Key::S; break;
-						case sf::Keyboard::Key::Left: event.key.code = sf::Keyboard::Key::A; break;
-						case sf::Keyboard::Key::Right: event.key.code = sf::Keyboard::Key::D; break;
-						default: break;
-						}
-					}
 
 					game.CheckInputs(event);
 				}
 			}
 
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < MAX_PLAYERS; i++)
 			{
 				auto& game = games[i];
+				PlayerInput playerInput = {};
 
+				if (i == 0)
+				{
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
+					}
+
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
+					}
+
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
+					}
+
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
+					}
+				}
+				else
+				{
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
+					}
+
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
+					}
+
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
+					}
+
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
+					}
+				}
+
+				game.OnPlayerInput(playerInput);
 				game.FixedUpdate(sf::seconds(TIME_PER_FRAME));
 			}
 
@@ -113,7 +144,7 @@ int main()
 
 		auto mousePosition = sf::Vector2f(sf::Mouse::getPosition(window));
 
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < MAX_PLAYERS; i++)
 		{
 			auto& game = games[i];
 
@@ -123,7 +154,7 @@ int main()
 		window.clear();
 
 		// Create 2 images for each screen
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < MAX_PLAYERS; i++)
 		{
 			sf::RenderTexture renderTexture;
 			renderTexture.create(WIDTH_PER_SCREEN.Value, HEIGHT.Value);

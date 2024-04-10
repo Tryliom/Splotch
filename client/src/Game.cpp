@@ -7,12 +7,14 @@
 #include "gui/guis/LobbyGui.h"
 #include "gui/guis/GameGui.h"
 #include "MyPackets/JoinLobbyPacket.h"
+#include "MyPackets/PlayerInputPacket.h"
+#include "Logger.h"
 
 #include <SFML/Graphics.hpp>
 #include <utility>
 
-Game::Game(GameManager& gameManager, ClientNetworkInterface& clientNetworkInterface, ScreenSizeValue width, ScreenSizeValue height) :
-	_gameManager(gameManager), _networkManager(clientNetworkInterface), _width(width), _height(height)
+Game::Game(RollbackManager& rollbackManager, GameManager& gameManager, ClientNetworkInterface& clientNetworkInterface, ScreenSizeValue width, ScreenSizeValue height) :
+	_rollbackManager(rollbackManager), _gameManager(gameManager), _networkManager(clientNetworkInterface), _width(width), _height(height)
 {
 	SetState(GameState::MAIN_MENU);
 }
@@ -25,13 +27,15 @@ void Game::CheckInputs(const sf::Event& event)
 	}
 }
 
+void Game::OnPlayerInput(PlayerInput playerInput)
+{
+	if (_state != GameState::GAME) return;
+
+	_rollbackManager.AddPlayerInputs(playerInput);
+}
+
 void Game::FixedUpdate(sf::Time elapsed)
 {
-	if (_gui != nullptr)
-	{
-		_gui->FixedUpdate(elapsed);
-	}
-
 	while (Packet* packet = _networkManager.PopPacket())
 	{
 		if (packet->Type == static_cast<char>(PacketType::ConfirmUDPConnection))
@@ -41,6 +45,7 @@ void Game::FixedUpdate(sf::Time elapsed)
 			continue;
 		}
 
+		_rollbackManager.OnPacketReceived(*packet);
 		_gameManager.OnPacketReceived(*packet);
 		OnPacketReceived(*packet);
 
@@ -50,6 +55,19 @@ void Game::FixedUpdate(sf::Time elapsed)
 		{
 			delete packet;
 		}
+	}
+
+	if (_state == GameState::GAME)
+	{
+		_gameManager.SetPlayerInputs(_rollbackManager.GetLastPlayerInput(_gameManager.GetPlayerRole()));
+		_gameManager.SetHandInputs(_rollbackManager.GetLastHandInput(_gameManager.GetPlayerRole()));
+
+		SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastPlayerInputs()), Protocol::UDP);
+	}
+
+	if (_gui != nullptr)
+	{
+		_gui->FixedUpdate(elapsed);
 	}
 }
 

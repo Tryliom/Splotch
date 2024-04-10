@@ -2,7 +2,7 @@
 
 #include "gui/Gui.h"
 #include "Constants.h"
-#include "Player.h"
+#include "PlayerDrawable.h"
 #include "PlayerInputs.h"
 
 class Game;
@@ -15,8 +15,7 @@ class GameGui final :
 	Game& _game;
 	GameManager& _gameManager;
 
-	std::array<Player, 2> _players;
-	PlayerInput _currentPlayerInput{};
+	std::array<PlayerDrawable, MAX_PLAYERS> _players;
 
 	ScreenSizeValue _height;
 	ScreenSizeValue _width;

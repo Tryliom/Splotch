@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 typedef std::uint8_t PlayerInput;
 
 enum class PlayerInputTypes : std::uint8_t {
@@ -18,4 +20,10 @@ struct PlayerInputPerFrame
 {
 	int Frame;
 	PlayerInput Input;
+};
+
+struct FinalInputs
+{
+	PlayerInput PlayerRoleInput {};
+	PlayerInput HandRoleInput {};
 };

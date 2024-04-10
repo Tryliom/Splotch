@@ -10,24 +10,7 @@ GameManager::GameManager(ScreenSizeValue width, ScreenSizeValue height) : _width
 
 void GameManager::OnPacketReceived(Packet& packet)
 {
-	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::ConfirmationInput))
-	{
-		auto& confirmationInputPacket = *packet.As<MyPackets::ConfirmInputPacket>();
-		_confirmedPlayerInputs.push({confirmationInputPacket.PlayerRoleInput, confirmationInputPacket.HandRoleInput});
-
-		_myPlayerInputs.pop();
-	}
-	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::PlayerInput))
-	{
-		auto& playerInputPacket = *packet.As<MyPackets::PlayerInputPacket>();
-
-		// Take last player input from the server, ignore if _lastOtherPlayerInput.Frame is greater than playerInputPacket.Frame
-		if (playerInputPacket.LastInputs.size() > 0 && _lastOtherPlayerInput.Frame < playerInputPacket.LastInputs.front().Frame)
-		{
-			_lastOtherPlayerInput = playerInputPacket.LastInputs.front();
-		}
-	}
-	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::StartGame))
+	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::StartGame))
 	{
 		auto& startGamePacket = *packet.As<MyPackets::StartGamePacket>();
 
@@ -35,47 +18,14 @@ void GameManager::OnPacketReceived(Packet& packet)
 	}
 }
 
-// Temporary function to test the game
 PlayerInput GameManager::GetPlayerInputs() const
 {
-	if (_playerRole == PlayerRole::PLAYER)
-	{
-		if (_myPlayerInputs.empty()) return {};
-
-		return _myPlayerInputs.front();
-	}
-	else
-	{
-		if (_lastOtherPlayerInput.Frame > -1 && _lastOtherPlayerInput.Frame >= _confirmedPlayerInputs.size() - 1)
-		{
-			return _lastOtherPlayerInput.Input;
-		}
-
-		if (_confirmedPlayerInputs.empty()) return {};
-
-		return _confirmedPlayerInputs.front().PlayerRoleInput;
-	}
+	return _playerInputs;
 }
 
 PlayerInput GameManager::GetHandInputs() const
 {
-	if (_playerRole == PlayerRole::PLAYER)
-	{
-		if (_lastOtherPlayerInput.Frame > -1 && _lastOtherPlayerInput.Frame > _confirmedPlayerInputs.size() - 1)
-		{
-			return _lastOtherPlayerInput.Input;
-		}
-
-		if (_confirmedPlayerInputs.empty()) return {};
-
-		return _confirmedPlayerInputs.front().HandRoleInput;
-	}
-	else
-	{
-		if (_myPlayerInputs.empty()) return {};
-
-		return _myPlayerInputs.front();
-	}
+	return _handInputs;
 }
 
 Math::Vec2F GameManager::GetPlayerPosition() const
@@ -104,25 +54,12 @@ PlayerRole GameManager::GetPlayerRole()
 	return _playerRole;
 }
 
-void GameManager::AddPlayerInputs(PlayerInput playerInput)
+void GameManager::SetPlayerInputs(PlayerInput playerInput)
 {
-	_myPlayerInputs.push(playerInput);
+	_playerInputs = playerInput;
 }
 
-std::vector<PlayerInputPerFrame> GameManager::GetLastPlayerInputs()
+void GameManager::SetHandInputs(PlayerInput playerInput)
 {
-	if (_myPlayerInputs.empty()) return {};
-
-	// Send all last player inputs to the server
-	std::vector<PlayerInputPerFrame> playerInputs = {};
-	int currentFrame = _confirmedPlayerInputs.size();
-	std::queue<PlayerInput> tempQueue = _myPlayerInputs;
-
-	while (!tempQueue.empty())
-	{
-		playerInputs.push_back({ static_cast<int>(currentFrame + tempQueue.size()), tempQueue.front() });
-		tempQueue.pop();
-	}
-
-	return playerInputs;
+	_handInputs = playerInput;
 }

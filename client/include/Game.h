@@ -4,6 +4,7 @@
 #include "Constants.h"
 #include "Gui/Gui.h"
 #include "GameManager.h"
+#include "RollbackManager.h"
 
 #include "ClientNetworkInterface.h"
 
@@ -22,9 +23,10 @@ enum class GameState
 class Game
 {
  public:
-	explicit Game(GameManager& gameManager, ClientNetworkInterface& networkManager, ScreenSizeValue width, ScreenSizeValue height);
+	explicit Game(RollbackManager& rollbackManager, GameManager& gameManager, ClientNetworkInterface& networkManager, ScreenSizeValue width, ScreenSizeValue height);
 
 	void CheckInputs(const sf::Event& event);
+	void OnPlayerInput(PlayerInput playerInput);
 	/**
 	 * @brief Used to update the game at a fixed rate, for physics calculations
 	 * @param elapsed
@@ -44,13 +46,14 @@ class Game
 
 	void OnQuit(std::function<void()> onQuit);
 
-	bool IsReadyToPlay() const { return _readyToPlay; }
+	[[nodiscard]] bool IsReadyToPlay() const { return _readyToPlay; }
 
  private:
 	std::function<void()> _onQuit;
 	// Gui
 	Gui* _gui { nullptr };
 	// Game
+	RollbackManager& _rollbackManager;
 	GameManager& _gameManager;
 	ClientNetworkInterface& _networkManager;
 
@@ -59,10 +62,9 @@ class Game
 	ScreenSizeValue _width;
 	ScreenSizeValue _height;
 
-	//TODO: At start, send UDPAck to server to get the UDP port until he get a ConfirmationPacket
 	bool _readyToPlay = false;
-	sf::Time _elapsedTime = sf::Time::Zero;
 	static constexpr float _timeBeforeSendUdpAck = 1.0f;
+	sf::Time _elapsedTime = sf::seconds(_timeBeforeSendUdpAck);
 
 	void OnPacketReceived(Packet& packet);
 };

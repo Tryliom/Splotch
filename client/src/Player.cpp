@@ -1,9 +1,9 @@
-#include "Player.h"
+#include "PlayerDrawable.h"
 
 #include "Constants.h"
 #include "AssetManager.h"
 
-void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void PlayerDrawable::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	// Draw the player sprite
 	sf::Sprite sprite;
@@ -37,7 +37,7 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	target.draw(sprite, states);
 }
 
-void Player::Update(sf::Time elapsed)
+void PlayerDrawable::Update(sf::Time elapsed)
 {
 	_elapsed += elapsed;
 
@@ -72,7 +72,7 @@ void Player::Update(sf::Time elapsed)
 	}
 }
 
-void Player::SetAnimation(PlayerAnimation animation)
+void PlayerDrawable::SetAnimation(PlayerAnimation animation)
 {
 	if (_animation == animation) return;
 
@@ -81,17 +81,17 @@ void Player::SetAnimation(PlayerAnimation animation)
 	_elapsed = sf::Time::Zero;
 }
 
-void Player::SetDirection(PlayerDirection direction)
+void PlayerDrawable::SetDirection(PlayerDirection direction)
 {
 	_direction = direction;
 }
 
-void Player::SetPosition(sf::Vector2f position)
+void PlayerDrawable::SetPosition(sf::Vector2f position)
 {
 	_position = position;
 }
 
-void Player::SetColor(sf::Color color)
+void PlayerDrawable::SetColor(sf::Color color)
 {
 	_color = color;
 }
