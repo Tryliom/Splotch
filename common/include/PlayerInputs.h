@@ -18,7 +18,7 @@ inline bool IsKeyPressed(PlayerInput input, PlayerInputTypes key)
 
 struct PlayerInputPerFrame
 {
-	int Frame;
+	short Frame;
 	PlayerInput Input;
 };
 
