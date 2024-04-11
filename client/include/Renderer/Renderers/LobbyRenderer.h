@@ -1,13 +1,13 @@
 #pragma once
 
-#include "gui/Gui.h"
+#include "Renderer/Renderer.h"
 #include "Constants.h"
 
 #include <array>
 
 class Game;
 
-class LobbyGui final : public Gui
+class LobbyRenderer final : public Renderer
 {
 private:
 	Game& _game;
@@ -16,7 +16,7 @@ private:
 	ScreenSizeValue _width;
 
 public:
-	explicit LobbyGui(Game& game, ScreenSizeValue width, ScreenSizeValue height);
+	explicit LobbyRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue height);
 
 	void OnPacketReceived(Packet& packet) override;
 };

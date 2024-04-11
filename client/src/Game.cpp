@@ -1,14 +1,13 @@
 #include "Game.h"
 
-#include "MyPackets.h"
 
-#include "AssetManager.h"
-#include "gui/guis/MenuGui.h"
-#include "gui/guis/LobbyGui.h"
-#include "gui/guis/GameGui.h"
+#include "Renderer/Renderers/MenuRenderer.h"
+#include "Renderer/Renderers/LobbyRenderer.h"
+#include "Renderer/Renderers/GameRenderer.h"
+
+#include "MyPackets.h"
 #include "MyPackets/JoinLobbyPacket.h"
 #include "MyPackets/PlayerInputPacket.h"
-#include "Logger.h"
 
 #include <SFML/Graphics.hpp>
 #include <utility>
@@ -21,9 +20,9 @@ Game::Game(RollbackManager& rollbackManager, GameManager& gameManager, ClientNet
 
 void Game::CheckInputs(const sf::Event& event)
 {
-	if (_gui != nullptr)
+	if (_renderer != nullptr)
 	{
-		_gui->CheckInputs(event);
+		_renderer->CheckInputs(event);
 	}
 }
 
@@ -65,17 +64,17 @@ void Game::FixedUpdate(sf::Time elapsed)
 		SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastPlayerInputs()), Protocol::UDP);
 	}
 
-	if (_gui != nullptr)
+	if (_renderer != nullptr)
 	{
-		_gui->FixedUpdate(elapsed);
+		_renderer->FixedUpdate(elapsed);
 	}
 }
 
 void Game::Update(sf::Time elapsed, sf::Vector2f mousePosition)
 {
-	if (_gui != nullptr)
+	if (_renderer != nullptr)
 	{
-		_gui->Update(elapsed, mousePosition);
+		_renderer->Update(elapsed, mousePosition);
 	}
 
 	if (!_readyToPlay)
@@ -94,22 +93,22 @@ void Game::SetState(GameState state)
 {
 	if (_state == state) return;
 
-	delete _gui;
+	delete _renderer;
 
 	if (state == GameState::MAIN_MENU)
 	{
-		_gui = new MenuGui(*this, _width, _height);
+		_renderer = new MenuRenderer(*this, _width, _height);
 	}
 
 	if (state == GameState::LOBBY)
 	{
-		_gui = new LobbyGui(*this, _width, _height);
+		_renderer = new LobbyRenderer(*this, _width, _height);
 		_networkManager.SendPacket(new MyPackets::JoinLobbyPacket(), Protocol::TCP);
 	}
 
 	if (state == GameState::GAME)
 	{
-		_gui = new GameGui(*this, _gameManager, _width, _height);
+		_renderer = new GameRenderer(*this, _gameManager, _width, _height);
 	}
 
 	_state = state;
@@ -122,9 +121,9 @@ void Game::Draw(sf::RenderTarget& target)
 	background.setFillColor(sf::Color::White);
 	target.draw(background);
 
-	if (_gui != nullptr)
+	if (_renderer != nullptr)
 	{
-		target.draw(*_gui);
+		target.draw(*_renderer);
 	}
 }
 
@@ -135,9 +134,9 @@ void Game::SendPacket(Packet* packet, Protocol protocol)
 
 void Game::OnPacketReceived(Packet& packet)
 {
-	if (_gui != nullptr)
+	if (_renderer != nullptr)
 	{
-		_gui->OnPacketReceived(packet);
+		_renderer->OnPacketReceived(packet);
 	}
 }
 

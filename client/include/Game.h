@@ -2,7 +2,7 @@
 
 #include "Packet.h"
 #include "Constants.h"
-#include "Gui/Gui.h"
+#include "Renderer/Renderer.h"
 #include "GameManager.h"
 #include "RollbackManager.h"
 
@@ -50,8 +50,8 @@ class Game
 
  private:
 	std::function<void()> _onQuit;
-	// Gui
-	Gui* _gui { nullptr };
+	// Renderer
+	Renderer* _renderer { nullptr };
 	// Game
 	RollbackManager& _rollbackManager;
 	GameManager& _gameManager;

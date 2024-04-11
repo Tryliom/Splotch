@@ -1,9 +1,9 @@
-#include "gui/guis/MenuGui.h"
+#include "Renderer/Renderers/MenuRenderer.h"
 
 #include "Game.h"
 #include "AssetManager.h"
 
-MenuGui::MenuGui(Game& game, ScreenSizeValue width, ScreenSizeValue height) : _game(game)
+MenuRenderer::MenuRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue height) : _game(game)
 {
 	// Create buttons
 	auto playButton = Button(
@@ -45,7 +45,7 @@ MenuGui::MenuGui(Game& game, ScreenSizeValue width, ScreenSizeValue height) : _g
 	_texts.emplace_back(title);
 }
 
-void MenuGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
+void MenuRenderer::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 {
 	if (_game.IsReadyToPlay())
 	{

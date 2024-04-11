@@ -1,11 +1,11 @@
-#include "gui/guis/LobbyGui.h"
+#include "Renderer/Renderers/LobbyRenderer.h"
 
 #include "Game.h"
 #include "Logger.h"
 #include "AssetManager.h"
 #include "MyPackets/LeaveLobbyPacket.h"
 
-LobbyGui::LobbyGui(Game& game, ScreenSizeValue width, ScreenSizeValue height) :
+LobbyRenderer::LobbyRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue height) :
 		_game(game),
 		_height(height),
 		_width(width)
@@ -41,7 +41,7 @@ LobbyGui::LobbyGui(Game& game, ScreenSizeValue width, ScreenSizeValue height) :
 	_texts.emplace_back(waiting);
 }
 
-void LobbyGui::OnPacketReceived(Packet& packet)
+void LobbyRenderer::OnPacketReceived(Packet& packet)
 {
 	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::StartGame))
 	{

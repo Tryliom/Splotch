@@ -59,7 +59,7 @@ std::vector<PlayerInputPerFrame> RollbackManager::GetLastPlayerInputs()
 
 	while (playerInputs.size() < _localPlayerInputs.size())
 	{
-		playerInputs.push_back({static_cast<int>(currentFrame + playerInputs.size()), _localPlayerInputs[playerInputs.size()]});
+		playerInputs.push_back({static_cast<short>(currentFrame + playerInputs.size()), _localPlayerInputs[playerInputs.size()]});
 	}
 
 	return playerInputs;

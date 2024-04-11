@@ -1,4 +1,4 @@
-#include "gui/guis/GameGui.h"
+#include "Renderer/Renderers/GameRenderer.h"
 
 #include "Game.h"
 #include "GameManager.h"
@@ -6,7 +6,7 @@
 #include "Constants.h"
 #include "MyPackets/LeaveGamePacket.h"
 
-GameGui::GameGui(Game& game, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height) :
+GameRenderer::GameRenderer(Game& game, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height) :
 	_game(game), _gameManager(gameManager), _height(height), _width(width)
 {
 	//TODO: Tell "You are the player" / "You need to stomp the player" with a timer going to 0 given by gameManager/decreasing from it
@@ -35,7 +35,7 @@ GameGui::GameGui(Game& game, GameManager& gameManager, ScreenSizeValue width, Sc
 	}
 }
 
-void GameGui::OnDraw(sf::RenderTarget& target, sf::RenderStates states) const
+void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	//TODO: Draw hand and bricks
 
@@ -45,7 +45,7 @@ void GameGui::OnDraw(sf::RenderTarget& target, sf::RenderStates states) const
 	}
 }
 
-void GameGui::OnCheckInputs(sf::Event event)
+void GameRenderer::OnCheckInputs(sf::Event event)
 {
 	if (event.type == sf::Event::KeyPressed)
 	{
@@ -57,9 +57,9 @@ void GameGui::OnCheckInputs(sf::Event event)
 	}
 }
 
-void GameGui::OnFixedUpdate(sf::Time elapsed) {}
+void GameRenderer::OnFixedUpdate(sf::Time elapsed) {}
 
-void GameGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
+void GameRenderer::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 {
 	static constexpr float MOVE_SPEED = 150.f;
 	static constexpr float FALL_SPEED = 300.f;
@@ -147,7 +147,7 @@ void GameGui::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 	}
 }
 
-void GameGui::OnPacketReceived(Packet& packet)
+void GameRenderer::OnPacketReceived(Packet& packet)
 {
 	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::LeaveGame))
 	{

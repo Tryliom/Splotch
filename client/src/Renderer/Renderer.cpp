@@ -1,6 +1,6 @@
-#include "gui/Gui.h"
+#include "Renderer/Renderer.h"
 
-void Gui::draw(sf::RenderTarget& target, const sf::RenderStates states) const
+void Renderer::draw(sf::RenderTarget& target, const sf::RenderStates states) const
 {
 	OnDraw(target, states);
 
@@ -18,12 +18,12 @@ void Gui::draw(sf::RenderTarget& target, const sf::RenderStates states) const
 	}
 }
 
-void Gui::FixedUpdate(const sf::Time elapsed)
+void Renderer::FixedUpdate(const sf::Time elapsed)
 {
 	OnFixedUpdate(elapsed);
 }
 
-void Gui::Update(const sf::Time elapsed, sf::Vector2f mousePosition)
+void Renderer::Update(const sf::Time elapsed, sf::Vector2f mousePosition)
 {
 	for (auto& button : _buttons)
 	{
@@ -53,7 +53,7 @@ void Gui::Update(const sf::Time elapsed, sf::Vector2f mousePosition)
 	OnUpdate(elapsed, mousePosition);
 }
 
-void Gui::CheckInputs(const sf::Event event)
+void Renderer::CheckInputs(const sf::Event event)
 {
 	OnCheckInputs(event);
 

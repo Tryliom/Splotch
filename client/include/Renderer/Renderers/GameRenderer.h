@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gui/Gui.h"
+#include "Renderer/Renderer.h"
 #include "Constants.h"
 #include "PlayerDrawable.h"
 #include "PlayerInputs.h"
@@ -8,8 +8,8 @@
 class Game;
 class GameManager;
 
-class GameGui final :
-	public Gui
+class GameRenderer final :
+	public Renderer
 {
  private:
 	Game& _game;
@@ -26,7 +26,7 @@ class GameGui final :
 	void OnCheckInputs(sf::Event event) override;
 
  public:
-	explicit GameGui(Game& game, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height);
+	explicit GameRenderer(Game& game, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height);
 
 	void OnFixedUpdate(sf::Time elapsed) override;
 	void OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition) override;

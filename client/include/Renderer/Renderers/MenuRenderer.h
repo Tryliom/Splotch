@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gui/Gui.h"
+#include "Renderer/Renderer.h"
 #include "Constants.h"
 
 #include <array>
@@ -8,12 +8,12 @@
 class Game;
 class GameManager;
 
-class MenuGui final : public Gui
+class MenuRenderer final : public Renderer
 {
 private:
 	Game& _game;
 
 public:
-	explicit MenuGui(Game& game, ScreenSizeValue width, ScreenSizeValue height);
+	explicit MenuRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue height);
 	void OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition) override;
 };

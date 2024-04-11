@@ -6,10 +6,10 @@
 
 #include <SFML/Graphics.hpp>
 
-class Gui : public sf::Drawable
+class Renderer : public sf::Drawable
 {
 public:
-	Gui() = default;
+	Renderer() = default;
 
 protected:
 	std::vector<Button> _buttons;
