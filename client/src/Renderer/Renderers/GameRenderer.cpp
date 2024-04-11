@@ -61,9 +61,9 @@ void GameRenderer::OnFixedUpdate(sf::Time elapsed) {}
 
 void GameRenderer::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 {
-	static constexpr float MOVE_SPEED = 150.f;
-	static constexpr float FALL_SPEED = 300.f;
-	static constexpr float JUMP_SPEED = 30.f;
+	static constexpr float MOVE_SPEED = 200.f;
+	static constexpr float FALL_SPEED = 250.f;
+	static constexpr float JUMP_HEIGHT = 200.f;
 	std::array<Math::Vec2F, MAX_PLAYERS> playerPositions = {
 		_gameManager.GetPlayerPosition(),
 		_gameManager.GetHandPosition()
@@ -82,56 +82,68 @@ void GameRenderer::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 
 		const auto playerInput = playerInputs[i];
 
-		//TODO: With rollback, sync the player position and simulate again the inputs if dirty
-
 		// Change position harshly [Debug]
+		const bool isPlayerInAir = playerPositions[i].Y < PLAYER_START_POSITION.Y * _height;
+		const bool isUpPressed = IsKeyPressed(playerInput, PlayerInputTypes::Up);
+		const bool isLeftPressed = IsKeyPressed(playerInput, PlayerInputTypes::Left);
+		const bool isRightPressed = IsKeyPressed(playerInput, PlayerInputTypes::Right);
+		const bool isIdle = !isUpPressed && !isLeftPressed && !isRightPressed;
 
-		if (IsKeyPressed(playerInput, PlayerInputTypes::Up))
+		if (isPlayerInAir) player.SetAnimation(PlayerAnimation::JUMP);
+
+		if (isUpPressed && !isPlayerInAir)
 		{
 			player.SetAnimation(PlayerAnimation::JUMP);
 
 			if (i == 0)
 			{
-				_gameManager.SetPlayerPosition({playerPositions[i].X, playerPositions[i].Y - JUMP_SPEED});
+				playerPositions[i].Y -= JUMP_HEIGHT;
 			}
 		}
-		else if (IsKeyPressed(playerInput, PlayerInputTypes::Left))
+
+		if (isLeftPressed)
 		{
-			player.SetAnimation(PlayerAnimation::WALK);
+			if (!isPlayerInAir) player.SetAnimation(PlayerAnimation::WALK);
 			player.SetDirection(PlayerDirection::LEFT);
 
 			if (i == 0)
 			{
-				_gameManager.SetPlayerPosition({playerPositions[i].X - MOVE_SPEED * elapsed.asSeconds(), playerPositions[i].Y});
+				playerPositions[i].X -= MOVE_SPEED * elapsed.asSeconds();
 			}
 			else
 			{
 				_gameManager.DecreaseHandSlot();
 			}
 		}
-		else if (IsKeyPressed(playerInput, PlayerInputTypes::Right))
+
+		if (isRightPressed)
 		{
-			player.SetAnimation(PlayerAnimation::WALK);
+			if (!isPlayerInAir) player.SetAnimation(PlayerAnimation::WALK);
 			player.SetDirection(PlayerDirection::RIGHT);
 
 			if (i == 0)
 			{
-				_gameManager.SetPlayerPosition({playerPositions[i].X + MOVE_SPEED * elapsed.asSeconds(), playerPositions[i].Y});
+				playerPositions[i].X += MOVE_SPEED * elapsed.asSeconds();
 			}
 			else
 			{
 				_gameManager.IncreaseHandSlot();
 			}
 		}
-		else
+
+		if (isIdle && !isPlayerInAir)
 		{
 			player.SetAnimation(PlayerAnimation::IDLE);
+		}
 
-			if (i == 0 && playerPositions[i].Y < PLAYER_START_POSITION.Y * _height)
-			{
-				player.SetAnimation(PlayerAnimation::JUMP);
-				_gameManager.SetPlayerPosition({playerPositions[i].X, playerPositions[i].Y + FALL_SPEED * elapsed.asSeconds()});
-			}
+		if (i == 0 && isPlayerInAir)
+		{
+			playerPositions[i].Y += FALL_SPEED * elapsed.asSeconds();
+		}
+
+		if (i == 0)
+		{
+			_gameManager.SetPlayerPosition(playerPositions[i]);
 		}
 	}
 
