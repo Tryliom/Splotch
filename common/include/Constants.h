@@ -22,17 +22,17 @@ struct ScreenSizeValue
 {
 	float Value;
 
-	ScreenSizeValue operator*(ScreenSizeValue screenSizeValue) const
+	constexpr ScreenSizeValue operator*(ScreenSizeValue screenSizeValue) const
 	{
 		return { Value * screenSizeValue.Value };
 	}
 
-	ScreenSizeValue operator*(float value) const
+	constexpr ScreenSizeValue operator*(float value) const
 	{
 		return { Value * value };
 	}
 
-	ScreenSizeValue operator+(ScreenSizeValue screenSizeValue) const
+	constexpr ScreenSizeValue operator+(ScreenSizeValue screenSizeValue) const
 	{
 		return { Value + screenSizeValue.Value };
 	}

@@ -8,13 +8,15 @@
 #include "GameManager.h"
 #include "RollbackManager.h"
 
-inline static ScreenSizeValue HEIGHT = { 900.f };
-inline static ScreenSizeValue WIDTH_PER_SCREEN = { 700.f };
-inline static ScreenSizeValue OFFSET_BETWEEN_SCREEN = { 10.f };
-inline static ScreenSizeValue WIDTH = WIDTH_PER_SCREEN * 2.f + OFFSET_BETWEEN_SCREEN;
+constexpr ScreenSizeValue HEIGHT = { 900.f };
+constexpr ScreenSizeValue WIDTH_PER_SCREEN = { 700.f };
+constexpr ScreenSizeValue OFFSET_BETWEEN_SCREEN = { 10.f };
+constexpr ScreenSizeValue WIDTH = WIDTH_PER_SCREEN * 2.f + OFFSET_BETWEEN_SCREEN;
+constexpr float GAME_WIDTH = WIDTH_PER_SCREEN.Value;
+constexpr float GAME_HEIGHT = HEIGHT.Value;
 
-inline static int FRAME_RATE = 30;
-inline static float TIME_PER_FRAME = 1.f / FRAME_RATE;
+constexpr int FRAME_RATE = 30;
+constexpr float TIME_PER_FRAME = 1.f / FRAME_RATE;
 
 int main()
 {
@@ -154,7 +156,12 @@ int main()
 		{
 			auto& game = games[i];
 
-			game.Update(elapsed, mousePosition - sf::Vector2f(i * (WIDTH_PER_SCREEN.Value + OFFSET_BETWEEN_SCREEN.Value), 0));
+			if (i == 1)
+			{
+				mousePosition.x -= WIDTH_PER_SCREEN.Value + OFFSET_BETWEEN_SCREEN.Value;
+			}
+
+			game.Update(elapsed, mousePosition);
 		}
 
 		window.clear();
@@ -163,13 +170,17 @@ int main()
 		for (int i = 0; i < MAX_PLAYERS; i++)
 		{
 			sf::RenderTexture renderTexture;
-			renderTexture.create(WIDTH_PER_SCREEN.Value, HEIGHT.Value);
+			renderTexture.create(GAME_WIDTH, GAME_HEIGHT);
 			renderTexture.clear(sf::Color::Black);
 
 			games[i].Draw(renderTexture);
 
 			sf::Sprite gameView;
-			gameView.setPosition(sf::Vector2f(i * (WIDTH_PER_SCREEN.Value + OFFSET_BETWEEN_SCREEN.Value), 0));
+			sf::Vector2f position = { 0, 0 };
+
+			if (i == 1) position.x = WIDTH_PER_SCREEN.Value + OFFSET_BETWEEN_SCREEN.Value;
+
+			gameView.setPosition(position);
 			gameView.setTexture(renderTexture.getTexture());
 			gameView.setOrigin(sf::Vector2f(0, HEIGHT.Value));
 			gameView.setScale(sf::Vector2f(1, -1));
