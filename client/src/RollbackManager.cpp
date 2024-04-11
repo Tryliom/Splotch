@@ -30,10 +30,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 	{
 		auto& playerInputPacket = *packet.As<MyPackets::PlayerInputPacket>();
 
-		if (playerInputPacket.LastInputs.empty())
-		{
-			return;
-		}
+		if (playerInputPacket.LastInputs.empty()) return;
 
 		const auto& lastInputs = playerInputPacket.LastInputs;
 
@@ -74,7 +71,7 @@ PlayerInput RollbackManager::GetLastPlayerInput(PlayerRole playerRole) const
 			return _localPlayerInputs[_localPlayerInputs.size() - 1];
 		}
 	}
-	else if (_lastRemotePlayerInputs.size() > _confirmedPlayerInputs.size())
+	else if (!_lastRemotePlayerInputs.empty())
 	{
 		return _lastRemotePlayerInputs[_lastRemotePlayerInputs.size() - 1].Input;
 	}
@@ -96,7 +93,7 @@ PlayerInput RollbackManager::GetLastHandInput(PlayerRole playerRole) const
 			return _localPlayerInputs[_localPlayerInputs.size() - 1];
 		}
 	}
-	else if (_lastRemotePlayerInputs.size() > _confirmedPlayerInputs.size())
+	else if (!_lastRemotePlayerInputs.empty())
 	{
 		return _lastRemotePlayerInputs[_lastRemotePlayerInputs.size() - 1].Input;
 	}
@@ -104,21 +101,6 @@ PlayerInput RollbackManager::GetLastHandInput(PlayerRole playerRole) const
 	if (!_confirmedPlayerInputs.empty())
 	{
 		return _confirmedPlayerInputs[_confirmedPlayerInputs.size() - 1].HandRoleInput;
-	}
-
-	return {};
-}
-
-PlayerInput RollbackManager::GetLastLocalPlayerInput(PlayerRole playerRole) const
-{
-	if (!_localPlayerInputs.empty())
-	{
-		return _localPlayerInputs[_localPlayerInputs.size() - 1];
-	}
-	else if (!_confirmedPlayerInputs.empty())
-	{
-		return playerRole == PlayerRole::PLAYER ? _confirmedPlayerInputs[_confirmedPlayerInputs.size() - 1].PlayerRoleInput :
-			_confirmedPlayerInputs[_confirmedPlayerInputs.size() - 1].HandRoleInput;
 	}
 
 	return {};

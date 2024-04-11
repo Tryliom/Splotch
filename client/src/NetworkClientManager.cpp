@@ -2,6 +2,7 @@
 
 #include "PacketManager.h"
 #include "Logger.h"
+#include "MyPackets.h"
 
 #include <thread>
 
@@ -79,14 +80,18 @@ void NetworkClientManager::SendPackets()
 
 void NetworkClientManager::ReceiveUDPPackets()
 {
-	sf::IpAddress sender;
-	unsigned short port;
-	sf::Packet sfPacket;
-	if (_udpSocket.receive(sfPacket, sender, port) == sf::Socket::Done)
+	while(_running)
 	{
-		auto* packet = PacketManager::FromPacket(&sfPacket);
-		std::scoped_lock lock(_receivedMutex);
-		_packetReceived.push(packet);
+		sf::IpAddress sender;
+		unsigned short port;
+		sf::Packet sfPacket;
+		if (_udpSocket.receive(sfPacket, sender, port) == sf::Socket::Done)
+		{
+			auto* packet = PacketManager::FromPacket(&sfPacket);
+
+			std::scoped_lock lock(_receivedMutex);
+			_packetReceived.push(packet);
+		}
 	}
 }
 

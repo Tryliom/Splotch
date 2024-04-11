@@ -50,8 +50,9 @@ int main()
 
 	for (auto& game : games)
 	{
-		game.OnQuit([&]() {
-			window.close();
+		game.OnQuit([&]()
+		{
+		  window.close();
 		});
 	}
 
@@ -103,7 +104,6 @@ int main()
 				auto& game = games[i];
 				PlayerInput playerInput = {};
 				PlayerRole playerRole = gameManagers[i].GetPlayerRole();
-				PlayerInput lastPlayerInput = rollbackManagers[i].GetLastLocalPlayerInput(playerRole);
 				std::array<sf::Keyboard::Key, 4> keys = i == 0 ? keys1 : keys2;
 
 				if (playerRole == PlayerRole::PLAYER)
@@ -118,7 +118,7 @@ int main()
 						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
 					}
 
-					if (sf::Keyboard::isKeyPressed(keys[0]) && !IsKeyPressed(lastPlayerInput, PlayerInputTypes::Up))
+					if (sf::Keyboard::isKeyPressed(keys[0]))
 					{
 						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
 					}
@@ -130,12 +130,12 @@ int main()
 						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
 					}
 
-					if (sf::Keyboard::isKeyPressed(keys[1]) && !IsKeyPressed(lastPlayerInput, PlayerInputTypes::Left))
+					if (sf::Keyboard::isKeyPressed(keys[1]))
 					{
 						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
 					}
 
-					if (sf::Keyboard::isKeyPressed(keys[3]) && !IsKeyPressed(lastPlayerInput, PlayerInputTypes::Right))
+					if (sf::Keyboard::isKeyPressed(keys[3]))
 					{
 						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
 					}

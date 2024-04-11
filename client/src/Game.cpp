@@ -58,8 +58,16 @@ void Game::FixedUpdate(sf::Time elapsed)
 
 	if (_state == GameState::GAME)
 	{
-		_gameManager.SetPlayerInputs(_rollbackManager.GetLastPlayerInput(_gameManager.GetPlayerRole()));
-		_gameManager.SetHandInputs(_rollbackManager.GetLastHandInput(_gameManager.GetPlayerRole()));
+		const auto playerRole = _gameManager.GetPlayerRole();
+
+		_gameManager.SetPlayerInputs(_rollbackManager.GetLastPlayerInput(playerRole));
+		_gameManager.SetHandInputs(_rollbackManager.GetLastHandInput(playerRole));
+
+		if (_gameManager.GetPlayerInputs() == _gameManager.GetHandInputs() && _gameManager.GetPlayerInputs() != 0)
+		{
+			_gameManager.SetPlayerInputs(_rollbackManager.GetLastPlayerInput(playerRole));
+			_gameManager.SetHandInputs(_rollbackManager.GetLastHandInput(playerRole));
+		}
 
 		SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastPlayerInputs()), Protocol::UDP);
 	}

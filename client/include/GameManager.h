@@ -16,8 +16,8 @@ class GameManager
 	Math::Vec2F _playerPosition;
 	HandSlot _handSlot = HandSlot::SLOT_1;
 
-	PlayerInput _playerInputs;
-	PlayerInput _handInputs;
+	PlayerInput _playerInputs{};
+	PlayerInput _handInputs{};
 
 	ScreenSizeValue _width;
 	ScreenSizeValue _height;

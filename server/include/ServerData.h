@@ -50,7 +50,7 @@ namespace ServerData
 
 		void AddPlayerLastInputs(const std::vector<PlayerInputPerFrame>& inputs, ClientId clientId);
 
-		bool IsNextFrameReady() const;
+		[[nodiscard]] bool IsNextFrameReady() const;
 		void AddFrame();
 		FinalInputs GetLastFrame();
 

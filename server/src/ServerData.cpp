@@ -77,13 +77,20 @@ namespace ServerData
 
 	bool Game::IsNextFrameReady() const
 	{
-		return LastPlayer1Inputs.size() >= 1 && LastPlayer2Inputs.size() >= 1;
+		return !LastPlayer1Inputs.empty() && !LastPlayer2Inputs.empty();
 	}
 
 	void Game::AddFrame()
 	{
 		// Add the frame to the confirmed frames
-		ConfirmFrames.push_back({ LastPlayer1Inputs[0], LastPlayer2Inputs[0] });
+		if (PlayerRolePlayer == 0)
+		{
+			ConfirmFrames.push_back({ LastPlayer1Inputs[0], LastPlayer2Inputs[0] });
+		}
+		else
+		{
+			ConfirmFrames.push_back({ LastPlayer2Inputs[0], LastPlayer1Inputs[0] });
+		}
 
 		// Remove the frame from the last inputs
 		LastPlayer1Inputs.erase(LastPlayer1Inputs.begin());

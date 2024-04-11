@@ -27,6 +27,4 @@ public:
 
 	[[nodiscard]] PlayerInput GetLastPlayerInput(PlayerRole playerRole) const;
 	[[nodiscard]] PlayerInput GetLastHandInput(PlayerRole playerRole) const;
-
-	[[nodiscard]] PlayerInput GetLastLocalPlayerInput(PlayerRole playerRole) const;
 };
