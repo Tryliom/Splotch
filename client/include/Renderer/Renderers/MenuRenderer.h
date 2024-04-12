@@ -15,5 +15,5 @@ private:
 
 public:
 	explicit MenuRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue height);
-	void OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition) override;
+	void OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition) override;
 };

@@ -29,6 +29,6 @@ class GameRenderer final :
 	explicit GameRenderer(Game& game, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height);
 
 	void OnFixedUpdate(sf::Time elapsed) override;
-	void OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition) override;
+	void OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition) override;
 	void OnPacketReceived(Packet& packet) override;
 };

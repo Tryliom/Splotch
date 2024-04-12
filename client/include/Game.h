@@ -35,9 +35,10 @@ class Game
 	/**
 	 * @brief Used to update the game at a variable rate, for rendering
 	 * @param elapsed
+	 * @param elapsedSinceLastFixed Time since the last fixed update
 	 * @param mousePosition
 	 */
-	void Update(sf::Time elapsed, sf::Vector2f mousePosition);
+	void Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition);
 	void SetState(GameState state);
 	void Draw(sf::RenderTarget& target);
 
@@ -67,6 +68,4 @@ class Game
 	sf::Time _elapsedTime = sf::seconds(_timeBeforeSendUdpAck);
 
 	void OnPacketReceived(Packet& packet);
-
-	void UpdatePlayersPositions(sf::Time elapsed);
 };

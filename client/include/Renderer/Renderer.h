@@ -18,7 +18,7 @@ protected:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 	virtual void OnFixedUpdate(sf::Time elapsed) {}
-	virtual void OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition) {}
+	virtual void OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition) {}
 	/**
 	 * @brief Draw additional elements after background and before buttons and texts
 	 */
@@ -27,7 +27,7 @@ protected:
 
 public:
 	void FixedUpdate(sf::Time elapsed);
-	void Update(sf::Time elapsed, sf::Vector2f mousePosition);
+	void Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition);
 	void CheckInputs(sf::Event event);
 
 	virtual void OnPacketReceived(Packet& packet) {}

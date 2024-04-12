@@ -23,7 +23,7 @@ void Renderer::FixedUpdate(const sf::Time elapsed)
 	OnFixedUpdate(elapsed);
 }
 
-void Renderer::Update(const sf::Time elapsed, sf::Vector2f mousePosition)
+void Renderer::Update(const sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)
 {
 	for (auto& button : _buttons)
 	{
@@ -50,7 +50,7 @@ void Renderer::Update(const sf::Time elapsed, sf::Vector2f mousePosition)
 		}
 	}
 
-	OnUpdate(elapsed, mousePosition);
+	OnUpdate(elapsed, elapsedSinceLastFixed, mousePosition);
 }
 
 void Renderer::CheckInputs(const sf::Event event)

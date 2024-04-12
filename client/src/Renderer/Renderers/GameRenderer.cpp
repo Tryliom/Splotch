@@ -21,8 +21,6 @@ GameRenderer::GameRenderer(Game& game, GameManager& gameManager, ScreenSizeValue
 
 	_texts.emplace_back(title);
 
-	_gameManager.SetPlayerPosition({PLAYER_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height});
-
 	if (_gameManager.GetPlayerRole() == PlayerRole::PLAYER)
 	{
 		_players[0].SetColor(sf::Color::Cyan);
@@ -59,10 +57,10 @@ void GameRenderer::OnCheckInputs(sf::Event event)
 
 void GameRenderer::OnFixedUpdate(sf::Time elapsed) {}
 
-void GameRenderer::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
+void GameRenderer::OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)
 {
 	std::array<Math::Vec2F, MAX_PLAYERS> playerPositions = {
-		_gameManager.GetPlayerPosition(),
+		_gameManager.GetFuturePlayerPosition(elapsedSinceLastFixed),
 		_gameManager.GetHandPosition()
 	};
 	const std::array<PlayerInput, MAX_PLAYERS> playerInputs = {

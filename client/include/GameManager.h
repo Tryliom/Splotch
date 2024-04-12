@@ -31,7 +31,6 @@ class GameManager
 	[[nodiscard]] PlayerInput GetHandInputs() const;
 
 	[[nodiscard]] Math::Vec2F GetPlayerPosition() const;
-	void SetPlayerPosition(Math::Vec2F playerPosition);
 
 	[[nodiscard]] Math::Vec2F GetHandPosition() const;
 	void DecreaseHandSlot();
@@ -41,4 +40,17 @@ class GameManager
 
 	void SetPlayerInputs(PlayerInput playerInput);
 	void SetHandInputs(PlayerInput playerInput);
+
+	/**
+	 * @brief Calculate the new position of the players using the inputs
+	 * @param elapsed Time for a fixed update
+	 */
+	void UpdatePlayersPositions(sf::Time elapsed);
+
+	/**
+	 * @brief Get the future position of the player without updating the current position
+	 * @param elapsed Time from last fixed update
+	 * @return Future position of the player
+	 */
+	Math::Vec2F GetFuturePlayerPosition(sf::Time elapsed);
 };

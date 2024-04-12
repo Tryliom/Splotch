@@ -1,10 +1,7 @@
 #include "GameManager.h"
 
 #include "MyPackets.h"
-#include "MyPackets/ConfirmationInputPacket.h"
 #include "MyPackets/StartGamePacket.h"
-#include "MyPackets/PlayerInputPacket.h"
-#include "Logger.h"
 
 GameManager::GameManager(ScreenSizeValue width, ScreenSizeValue height) : _width(width), _height(height) {}
 
@@ -15,6 +12,7 @@ void GameManager::OnPacketReceived(Packet& packet)
 		auto& startGamePacket = *packet.As<MyPackets::StartGamePacket>();
 
 		_playerRole = startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::HAND;
+		_playerPosition = {PLAYER_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height};
 	}
 }
 
@@ -31,11 +29,6 @@ PlayerInput GameManager::GetHandInputs() const
 Math::Vec2F GameManager::GetPlayerPosition() const
 {
 	return _playerPosition;
-}
-
-void GameManager::SetPlayerPosition(Math::Vec2F playerPosition)
-{
-	_playerPosition = playerPosition;
 }
 
 Math::Vec2F GameManager::GetHandPosition() const
@@ -72,3 +65,58 @@ void GameManager::SetHandInputs(PlayerInput playerInput)
 {
 	_handInputs = playerInput;
 }
+
+void GameManager::UpdatePlayersPositions(sf::Time elapsed)
+{
+	_playerPosition = GetFuturePlayerPosition(elapsed);
+
+	const bool isLeftPressed = IsKeyPressed(_handInputs, PlayerInputTypes::Left);
+	const bool isRightPressed = IsKeyPressed(_handInputs, PlayerInputTypes::Right);
+
+	if (isLeftPressed)
+	{
+		DecreaseHandSlot();
+	}
+
+	if (isRightPressed)
+	{
+		IncreaseHandSlot();
+	}
+}
+
+Math::Vec2F GameManager::GetFuturePlayerPosition(sf::Time elapsed)
+{
+	static constexpr float MOVE_SPEED = 200.f;
+	static constexpr float FALL_SPEED = 250.f;
+	static constexpr float JUMP_HEIGHT = 200.f;
+	auto playerPosition = _playerPosition;
+
+	// Change position harshly [Debug]
+	const bool isPlayerInAir = playerPosition.Y < PLAYER_START_POSITION.Y * _height;
+	const bool isUpPressed = IsKeyPressed(_playerInputs, PlayerInputTypes::Up);
+	const bool isLeftPressed = IsKeyPressed(_playerInputs, PlayerInputTypes::Left);
+	const bool isRightPressed = IsKeyPressed(_playerInputs, PlayerInputTypes::Right);
+
+	if (isUpPressed && !isPlayerInAir)
+	{
+		playerPosition.Y -= JUMP_HEIGHT;
+	}
+
+	if (isLeftPressed)
+	{
+		playerPosition.X -= MOVE_SPEED * elapsed.asSeconds();
+	}
+
+	if (isRightPressed)
+	{
+		playerPosition.X += MOVE_SPEED * elapsed.asSeconds();
+	}
+
+	if (isPlayerInAir)
+	{
+		playerPosition.Y += FALL_SPEED * elapsed.asSeconds();
+	}
+
+	return playerPosition;
+}
+

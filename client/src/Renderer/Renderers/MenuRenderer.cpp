@@ -45,7 +45,7 @@ MenuRenderer::MenuRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue he
 	_texts.emplace_back(title);
 }
 
-void MenuRenderer::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
+void MenuRenderer::OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)
 {
 	if (_game.IsReadyToPlay())
 	{

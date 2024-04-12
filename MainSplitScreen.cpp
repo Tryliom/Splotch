@@ -151,6 +151,7 @@ int main()
 		}
 
 		auto mousePosition = sf::Vector2f(sf::Mouse::getPosition(window));
+		auto timeSinceLastFixed = sf::seconds(time);
 
 		for (int i = 0; i < MAX_PLAYERS; i++)
 		{
@@ -161,7 +162,7 @@ int main()
 				mousePosition.x -= WIDTH_PER_SCREEN.Value + OFFSET_BETWEEN_SCREEN.Value;
 			}
 
-			game.Update(elapsed, mousePosition);
+			game.Update(elapsed, timeSinceLastFixed, mousePosition);
 		}
 
 		window.clear();
