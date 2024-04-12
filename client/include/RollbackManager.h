@@ -19,12 +19,17 @@ class RollbackManager
 	// Confirmed player inputs from server (hand and player role)
 	std::vector<FinalInputs> _confirmedPlayerInputs;
 
+	short _frameFromLastConfirmedInput = 0;
+
 public:
 	void OnPacketReceived(Packet& packet);
 
 	void AddPlayerInputs(PlayerInput playerInput);
 	std::vector<PlayerInputPerFrame> GetLastPlayerInputs();
 
-	[[nodiscard]] PlayerInput GetLastPlayerInput(PlayerRole playerRole) const;
-	[[nodiscard]] PlayerInput GetLastHandInput(PlayerRole playerRole) const;
+	[[nodiscard]] PlayerInput GetPlayerInput(PlayerRole playerRole, int frame) const;
+	[[nodiscard]] PlayerInput GetHandInput(PlayerRole playerRole, int frame) const;
+
+	[[nodiscard]] short GetCurrentFrame() const;
+
 };

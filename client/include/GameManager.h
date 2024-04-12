@@ -17,7 +17,9 @@ class GameManager
 	HandSlot _handSlot = HandSlot::SLOT_1;
 
 	PlayerInput _playerInputs{};
+	PlayerInput _previousPlayerInputs{};
 	PlayerInput _handInputs{};
+	PlayerInput _previousHandInputs{};
 
 	ScreenSizeValue _width;
 	ScreenSizeValue _height;
@@ -30,16 +32,14 @@ class GameManager
 	[[nodiscard]] PlayerInput GetPlayerInputs() const;
 	[[nodiscard]] PlayerInput GetHandInputs() const;
 
-	[[nodiscard]] Math::Vec2F GetPlayerPosition() const;
-
 	[[nodiscard]] Math::Vec2F GetHandPosition() const;
 	void DecreaseHandSlot();
 	void IncreaseHandSlot();
 
 	PlayerRole GetPlayerRole();
 
-	void SetPlayerInputs(PlayerInput playerInput);
-	void SetHandInputs(PlayerInput playerInput);
+	void SetPlayerInputs(PlayerInput playerInput, PlayerInput previousPlayerInput);
+	void SetHandInputs(PlayerInput playerInput, PlayerInput previousHandInput);
 
 	/**
 	 * @brief Calculate the new position of the players using the inputs

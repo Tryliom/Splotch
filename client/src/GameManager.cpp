@@ -26,11 +26,6 @@ PlayerInput GameManager::GetHandInputs() const
 	return _handInputs;
 }
 
-Math::Vec2F GameManager::GetPlayerPosition() const
-{
-	return _playerPosition;
-}
-
 Math::Vec2F GameManager::GetHandPosition() const
 {
 	auto x = HAND_START_POSITION.X + HAND_SLOT_SIZE * static_cast<int>(_handSlot);
@@ -56,14 +51,16 @@ PlayerRole GameManager::GetPlayerRole()
 	return _playerRole;
 }
 
-void GameManager::SetPlayerInputs(PlayerInput playerInput)
+void GameManager::SetPlayerInputs(PlayerInput playerInput, PlayerInput previousPlayerInput)
 {
 	_playerInputs = playerInput;
+	_previousPlayerInputs = previousPlayerInput;
 }
 
-void GameManager::SetHandInputs(PlayerInput playerInput)
+void GameManager::SetHandInputs(PlayerInput playerInput, PlayerInput previousHandInput)
 {
 	_handInputs = playerInput;
+	_previousHandInputs = previousHandInput;
 }
 
 void GameManager::UpdatePlayersPositions(sf::Time elapsed)
@@ -72,13 +69,15 @@ void GameManager::UpdatePlayersPositions(sf::Time elapsed)
 
 	const bool isLeftPressed = IsKeyPressed(_handInputs, PlayerInputTypes::Left);
 	const bool isRightPressed = IsKeyPressed(_handInputs, PlayerInputTypes::Right);
+	const bool wasLeftPressed = IsKeyPressed(_previousHandInputs, PlayerInputTypes::Left);
+	const bool wasRightPressed = IsKeyPressed(_previousHandInputs, PlayerInputTypes::Right);
 
-	if (isLeftPressed)
+	if (isLeftPressed && !wasLeftPressed)
 	{
 		DecreaseHandSlot();
 	}
 
-	if (isRightPressed)
+	if (isRightPressed && !wasRightPressed)
 	{
 		IncreaseHandSlot();
 	}
@@ -96,8 +95,9 @@ Math::Vec2F GameManager::GetFuturePlayerPosition(sf::Time elapsed)
 	const bool isUpPressed = IsKeyPressed(_playerInputs, PlayerInputTypes::Up);
 	const bool isLeftPressed = IsKeyPressed(_playerInputs, PlayerInputTypes::Left);
 	const bool isRightPressed = IsKeyPressed(_playerInputs, PlayerInputTypes::Right);
+	const bool wasUpPressed = IsKeyPressed(_previousPlayerInputs, PlayerInputTypes::Up);
 
-	if (isUpPressed && !isPlayerInAir)
+	if (isUpPressed && !wasUpPressed && !isPlayerInAir)
 	{
 		playerPosition.Y -= JUMP_HEIGHT;
 	}

@@ -8,6 +8,7 @@
 #include "MyPackets.h"
 #include "MyPackets/JoinLobbyPacket.h"
 #include "MyPackets/PlayerInputPacket.h"
+#include "Logger.h"
 
 #include <SFML/Graphics.hpp>
 #include <utility>
@@ -59,15 +60,16 @@ void Game::FixedUpdate(sf::Time elapsed)
 	if (_state == GameState::GAME)
 	{
 		const auto playerRole = _gameManager.GetPlayerRole();
+		const auto currentFrame = _rollbackManager.GetCurrentFrame();
+		const auto previousFrame = currentFrame - 1;
 
-		_gameManager.SetPlayerInputs(_rollbackManager.GetLastPlayerInput(playerRole));
-		_gameManager.SetHandInputs(_rollbackManager.GetLastHandInput(playerRole));
+		const auto currentPlayerInputs = _rollbackManager.GetPlayerInput(playerRole, currentFrame);
+		const auto previousPlayerInputs = _rollbackManager.GetPlayerInput(playerRole, previousFrame);
+		const auto currentHandInputs = _rollbackManager.GetHandInput(playerRole, currentFrame);
+		const auto previousHandInputs = _rollbackManager.GetHandInput(playerRole, previousFrame);
 
-		if (_gameManager.GetPlayerInputs() == _gameManager.GetHandInputs() && _gameManager.GetPlayerInputs() != 0)
-		{
-			_gameManager.SetPlayerInputs(_rollbackManager.GetLastPlayerInput(playerRole));
-			_gameManager.SetHandInputs(_rollbackManager.GetLastHandInput(playerRole));
-		}
+		_gameManager.SetPlayerInputs(currentPlayerInputs, previousPlayerInputs);
+		_gameManager.SetHandInputs(currentHandInputs, previousHandInputs);
 
 		SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastPlayerInputs()), Protocol::UDP);
 

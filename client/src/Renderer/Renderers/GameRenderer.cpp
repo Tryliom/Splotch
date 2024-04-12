@@ -86,11 +86,6 @@ void GameRenderer::OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf
 
 		if (isPlayerInAir) player.SetAnimation(PlayerAnimation::JUMP);
 
-		if (isUpPressed && !isPlayerInAir)
-		{
-			player.SetAnimation(PlayerAnimation::JUMP);
-		}
-
 		if (isLeftPressed)
 		{
 			if (!isPlayerInAir) player.SetAnimation(PlayerAnimation::WALK);

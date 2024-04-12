@@ -47,7 +47,7 @@ void PlayerDrawable::Update(sf::Time elapsed)
 		if (_elapsed.asSeconds() >= PLAYER_IDLE_FRAME_DURATION)
 		{
 			_frame++;
-			_elapsed = sf::Time::Zero;
+			_elapsed -= sf::seconds(PLAYER_IDLE_FRAME_DURATION);
 		}
 
 		if (_frame >= PLAYER_IDLE_FRAMES) _frame = 0;
@@ -56,7 +56,7 @@ void PlayerDrawable::Update(sf::Time elapsed)
 		if (_elapsed.asSeconds() >= PLAYER_WALK_FRAME_DURATION)
 		{
 			_frame++;
-			_elapsed = sf::Time::Zero;
+			_elapsed -= sf::seconds(PLAYER_WALK_FRAME_DURATION);
 		}
 
 		if (_frame >= PLAYER_WALK_FRAMES) _frame = 0;
@@ -65,7 +65,7 @@ void PlayerDrawable::Update(sf::Time elapsed)
 		if (_elapsed.asSeconds() >= PLAYER_JUMP_FRAME_DURATION)
 		{
 			_frame++;
-			_elapsed = sf::Time::Zero;
+			_elapsed -= sf::seconds(PLAYER_JUMP_FRAME_DURATION);
 		}
 
 		if (_frame >= PLAYER_JUMP_FRAMES) _frame = 0;
