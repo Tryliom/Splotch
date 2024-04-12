@@ -61,9 +61,6 @@ void GameRenderer::OnFixedUpdate(sf::Time elapsed) {}
 
 void GameRenderer::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 {
-	static constexpr float MOVE_SPEED = 200.f;
-	static constexpr float FALL_SPEED = 250.f;
-	static constexpr float JUMP_HEIGHT = 200.f;
 	std::array<Math::Vec2F, MAX_PLAYERS> playerPositions = {
 		_gameManager.GetPlayerPosition(),
 		_gameManager.GetHandPosition()
@@ -94,68 +91,24 @@ void GameRenderer::OnUpdate(sf::Time elapsed, sf::Vector2f mousePosition)
 		if (isUpPressed && !isPlayerInAir)
 		{
 			player.SetAnimation(PlayerAnimation::JUMP);
-
-			if (i == 0)
-			{
-				playerPositions[i].Y -= JUMP_HEIGHT;
-			}
 		}
 
 		if (isLeftPressed)
 		{
 			if (!isPlayerInAir) player.SetAnimation(PlayerAnimation::WALK);
 			player.SetDirection(PlayerDirection::LEFT);
-
-			if (i == 0)
-			{
-				playerPositions[i].X -= MOVE_SPEED * elapsed.asSeconds();
-			}
-			else
-			{
-				_gameManager.DecreaseHandSlot();
-			}
 		}
 
 		if (isRightPressed)
 		{
 			if (!isPlayerInAir) player.SetAnimation(PlayerAnimation::WALK);
 			player.SetDirection(PlayerDirection::RIGHT);
-
-			if (i == 0)
-			{
-				playerPositions[i].X += MOVE_SPEED * elapsed.asSeconds();
-			}
-			else
-			{
-				_gameManager.IncreaseHandSlot();
-			}
 		}
 
 		if (isIdle && !isPlayerInAir)
 		{
 			player.SetAnimation(PlayerAnimation::IDLE);
 		}
-
-		if (i == 0 && isPlayerInAir)
-		{
-			playerPositions[i].Y += FALL_SPEED * elapsed.asSeconds();
-		}
-
-		if (i == 0)
-		{
-			_gameManager.SetPlayerPosition(playerPositions[i]);
-		}
-	}
-
-	playerPositions = {
-		_gameManager.GetPlayerPosition(),
-		_gameManager.GetHandPosition()
-	};
-
-	for (auto i = 0; i < MAX_PLAYERS; i++)
-	{
-		auto& player = _players[i];
-		player.SetPosition({playerPositions[i].X, playerPositions[i].Y});
 	}
 }
 

@@ -70,6 +70,8 @@ void Game::FixedUpdate(sf::Time elapsed)
 		}
 
 		SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastPlayerInputs()), Protocol::UDP);
+
+		UpdatePlayersPositions(elapsed);
 	}
 
 	if (_renderer != nullptr)
@@ -159,4 +161,72 @@ void Game::Quit()
 void Game::OnQuit(std::function<void()> onQuit)
 {
 	_onQuit = std::move(onQuit);
+}
+
+void Game::UpdatePlayersPositions(sf::Time elapsed)
+{
+	static constexpr float MOVE_SPEED = 200.f;
+	static constexpr float FALL_SPEED = 250.f;
+	static constexpr float JUMP_HEIGHT = 200.f;
+	std::array<Math::Vec2F, MAX_PLAYERS> playerPositions = {
+		_gameManager.GetPlayerPosition(),
+		_gameManager.GetHandPosition()
+	};
+	const std::array<PlayerInput, MAX_PLAYERS> playerInputs = {
+		_gameManager.GetPlayerInputs(),
+		_gameManager.GetHandInputs()
+	};
+
+	for (auto i = 0; i < MAX_PLAYERS; i++)
+	{
+		const auto playerInput = playerInputs[i];
+
+		// Change position harshly [Debug]
+		const bool isPlayerInAir = playerPositions[i].Y < PLAYER_START_POSITION.Y * _height;
+		const bool isUpPressed = IsKeyPressed(playerInput, PlayerInputTypes::Up);
+		const bool isLeftPressed = IsKeyPressed(playerInput, PlayerInputTypes::Left);
+		const bool isRightPressed = IsKeyPressed(playerInput, PlayerInputTypes::Right);
+
+		if (isUpPressed && !isPlayerInAir)
+		{
+			if (i == 0)
+			{
+				playerPositions[i].Y -= JUMP_HEIGHT;
+			}
+		}
+
+		if (isLeftPressed)
+		{
+			if (i == 0)
+			{
+				playerPositions[i].X -= MOVE_SPEED * elapsed.asSeconds();
+			}
+			else
+			{
+				_gameManager.DecreaseHandSlot();
+			}
+		}
+
+		if (isRightPressed)
+		{
+			if (i == 0)
+			{
+				playerPositions[i].X += MOVE_SPEED * elapsed.asSeconds();
+			}
+			else
+			{
+				_gameManager.IncreaseHandSlot();
+			}
+		}
+
+		if (i == 0 && isPlayerInAir)
+		{
+			playerPositions[i].Y += FALL_SPEED * elapsed.asSeconds();
+		}
+
+		if (i == 0)
+		{
+			_gameManager.SetPlayerPosition(playerPositions[i]);
+		}
+	}
 }

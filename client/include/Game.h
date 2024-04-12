@@ -67,4 +67,6 @@ class Game
 	sf::Time _elapsedTime = sf::seconds(_timeBeforeSendUdpAck);
 
 	void OnPacketReceived(Packet& packet);
+
+	void UpdatePlayersPositions(sf::Time elapsed);
 };
