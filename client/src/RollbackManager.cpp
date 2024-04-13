@@ -70,8 +70,6 @@ PlayerInput RollbackManager::GetPlayerInput(PlayerRole playerRole, int frame) co
 {
 	if (frame < 0) return {};
 
-	frame += _frameFromLastConfirmedInput;
-
 	std::vector<PlayerInput> playerInputs = {};
 
 	for (auto confirmedPlayerInput : _confirmedPlayerInputs)
@@ -88,6 +86,7 @@ PlayerInput RollbackManager::GetPlayerInput(PlayerRole playerRole, int frame) co
 	}
 	else
 	{
+		frame += _frameFromLastConfirmedInput;
 		frame -= static_cast<int>(_localPlayerInputs.size()) - static_cast<int>(_lastRemotePlayerInputs.size());
 
 		for (auto lastRemotePlayerInput : _lastRemotePlayerInputs)
@@ -110,8 +109,6 @@ PlayerInput RollbackManager::GetHandInput(PlayerRole playerRole, int frame) cons
 {
 	if (frame < 0) return {};
 
-	frame += _frameFromLastConfirmedInput;
-
 	std::vector<PlayerInput> handInputs = {};
 
 	for (auto confirmedPlayerInput : _confirmedPlayerInputs)
@@ -128,6 +125,7 @@ PlayerInput RollbackManager::GetHandInput(PlayerRole playerRole, int frame) cons
 	}
 	else
 	{
+		frame += _frameFromLastConfirmedInput;
 		frame -= static_cast<int>(_localPlayerInputs.size()) - static_cast<int>(_lastRemotePlayerInputs.size());
 
 		for (auto lastRemotePlayerInput : _lastRemotePlayerInputs)
