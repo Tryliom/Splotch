@@ -27,6 +27,15 @@ private:
 	mutable std::shared_mutex _sendMutex;
 	bool _running = true;
 
+	float _chanceToDropPacket = 0.0f;
+	float _minLatency = 0.0f;
+	float _maxLatency = 0.0f;
+
+	sf::Clock _sendClock;
+	float _sendDelay = 0.0f;
+	sf::Clock _receiveClock;
+	float _receiveDelay = 0.0f;
+
 	inline static unsigned int UdpPort;
 
 	// Launch from a thread
@@ -54,4 +63,7 @@ public:
 	void SendUDPAcknowledgmentPacket() override;
 
 	void Stop();
+
+	void SetChanceToDropPacket(float chanceToDropPacket) { _chanceToDropPacket = chanceToDropPacket; }
+	void SetLatency(float minLatency, float maxLatency) { _minLatency = minLatency; _maxLatency = maxLatency; }
 };

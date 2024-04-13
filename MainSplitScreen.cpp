@@ -50,6 +50,11 @@ int main()
 		Game(rollbackManagers[1], gameManagers[1], networkClientManagers[1], WIDTH_PER_SCREEN, HEIGHT)
 	};
 
+	networkClientManagers[0].SetChanceToDropPacket(0.05f);
+	networkClientManagers[1].SetChanceToDropPacket(0.05f);
+	networkClientManagers[0].SetLatency(0.05f, 0.1f);
+	networkClientManagers[1].SetLatency(0.1f, 0.3f);
+
 	for (auto& game : games)
 	{
 		game.OnQuit([&]()

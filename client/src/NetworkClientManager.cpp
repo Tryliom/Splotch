@@ -3,6 +3,7 @@
 #include "PacketManager.h"
 #include "Logger.h"
 #include "MyPackets.h"
+#include "Random.h"
 
 #include <thread>
 
@@ -54,6 +55,12 @@ void NetworkClientManager::SendPackets()
 	{
 		while (!IsPacketToSendEmpty())
 		{
+			if (_sendDelay > 0.0f)
+			{
+				_sendDelay -= _sendClock.restart().asSeconds();
+				continue;
+			}
+
 			std::scoped_lock lock(_sendMutex);
 
 			auto packetProtocol = _packetToSend.front();
@@ -74,6 +81,8 @@ void NetworkClientManager::SendPackets()
 
 			delete packet;
 			delete sfPacket;
+
+			_sendDelay += Math::Random::Range(_minLatency, _maxLatency) / static_cast<float>(_packetToSend.size() + 1);
 		}
 	}
 }
@@ -89,6 +98,12 @@ void NetworkClientManager::ReceiveUDPPackets()
 		{
 			auto* packet = PacketManager::FromPacket(&sfPacket);
 
+			if (_chanceToDropPacket > 0.0f && Math::Random::Range(0.0f, 1.0f) < _chanceToDropPacket)
+			{
+				delete packet;
+				continue;
+			}
+
 			std::scoped_lock lock(_receivedMutex);
 			_packetReceived.push(packet);
 		}
@@ -102,8 +117,16 @@ Packet* NetworkClientManager::PopPacket()
 	std::scoped_lock lock(_receivedMutex);
 	if (_packetReceived.empty()) return nullptr;
 
+	if (_receiveDelay > 0.0f)
+	{
+		_receiveDelay -= _receiveClock.restart().asSeconds();
+		return nullptr;
+	}
+
 	auto* packet = _packetReceived.front();
 	_packetReceived.pop();
+
+	_receiveDelay += Math::Random::Range(_minLatency, _maxLatency) / static_cast<float>(_packetReceived.size() + 1);
 
 	return packet;
 }
@@ -116,10 +139,7 @@ void NetworkClientManager::SendPacket(Packet* packet, Protocol protocol)
 
 void NetworkClientManager::SendUDPAcknowledgmentPacket()
 {
-	std::scoped_lock lock(_sendMutex);
-	auto* packet = new UDPAcknowledgePacket(_socket->getLocalPort());
-
-	_packetToSend.push({packet, Protocol::UDP});
+	SendPacket(new UDPAcknowledgePacket(_socket->getLocalPort()), Protocol::UDP);
 }
 
 void NetworkClientManager::Stop()
