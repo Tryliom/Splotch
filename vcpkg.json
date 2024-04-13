@@ -9,7 +9,9 @@
     "openal-soft",
     "sfml",
     "gtest",
-    "fmt"
+    "fmt",
+    "imgui",
+    "imgui-sfml"
   ],
   "overrides": [
     {"name": "freetype", "version": "2.10.0"}

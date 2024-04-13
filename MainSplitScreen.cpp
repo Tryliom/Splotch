@@ -8,6 +8,52 @@
 #include "GameManager.h"
 #include "RollbackManager.h"
 
+#include <imgui.h>
+#include <imgui-SFML.h>
+
+struct ClientNetworkSettings
+{
+	float ChanceToDropPacket = 0.f;
+	float MinLatency = 0.f;
+	float MaxLatency = 0.f;
+};
+
+enum class NetworkSettings
+{
+	LOCAL,
+	NORMAL,
+	BAD,
+	WORST
+};
+
+constexpr std::string ToString(NetworkSettings networkSettings)
+{
+	switch (networkSettings)
+	{
+	case NetworkSettings::LOCAL:
+		return "Local";
+	case NetworkSettings::NORMAL:
+		return "Normal";
+	case NetworkSettings::BAD:
+		return "Bad";
+	case NetworkSettings::WORST:
+		return "Worst";
+	default:
+		return "Unknown";
+	}
+}
+
+constexpr ClientNetworkSettings LOCAL_SETTINGS = { 0.f, 0.f, 0.f };
+constexpr ClientNetworkSettings NORMAL_SETTINGS = { 0.05f, 0.05f, 0.1f };
+constexpr ClientNetworkSettings BAD_SETTINGS = { 0.1f, 0.1f, 0.3f };
+constexpr ClientNetworkSettings WORST_SETTINGS = { 0.2f, 0.2f, 0.5f };
+constexpr std::array<ClientNetworkSettings, 4> NETWORK_SETTINGS = {
+	LOCAL_SETTINGS,
+	NORMAL_SETTINGS,
+	BAD_SETTINGS,
+	WORST_SETTINGS
+};
+
 constexpr ScreenSizeValue HEIGHT = { 900.f };
 constexpr ScreenSizeValue WIDTH_PER_SCREEN = { 700.f };
 constexpr ScreenSizeValue OFFSET_BETWEEN_SCREEN = { 10.f };
@@ -17,6 +63,19 @@ constexpr float GAME_HEIGHT = HEIGHT.Value;
 
 constexpr int FRAME_RATE = 30;
 constexpr float TIME_PER_FRAME = 1.f / FRAME_RATE;
+
+constexpr std::array<sf::Keyboard::Key, 4> Player1Commands = {
+	sf::Keyboard::Key::W,
+	sf::Keyboard::Key::A,
+	sf::Keyboard::Key::S,
+	sf::Keyboard::Key::D
+};
+constexpr std::array<sf::Keyboard::Key, 4> Player2Commands = {
+	sf::Keyboard::Key::Up,
+	sf::Keyboard::Key::Left,
+	sf::Keyboard::Key::Down,
+	sf::Keyboard::Key::Right
+};
 
 int main()
 {
@@ -31,11 +90,22 @@ int main()
 		NetworkClientManager(HOST_NAME, PORT),
 		NetworkClientManager(HOST_NAME, PORT)
 	};
+	std::array<std::size_t, MAX_PLAYERS> clientNetworkSettingsSelected = {
+		1, 1
+	};
+
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
+		const auto& clientNetworkSettings = NETWORK_SETTINGS[clientNetworkSettingsSelected[i]];
+		networkClientManagers[i].SetDelaySettings(clientNetworkSettings.ChanceToDropPacket, clientNetworkSettings.MinLatency, clientNetworkSettings.MaxLatency);
+	}
 
 	// Set the size of the game
 	sf::RenderWindow window(sf::RenderWindow(sf::VideoMode(WIDTH.Value, HEIGHT.Value), "Splotch", sf::Style::Default));
 
 	window.setVerticalSyncEnabled(true);
+
+	ImGui::SFML::Init(window);
 
 	std::array<GameManager, MAX_PLAYERS> gameManagers = {
 		GameManager(WIDTH_PER_SCREEN, HEIGHT),
@@ -49,11 +119,6 @@ int main()
 		Game(rollbackManagers[0], gameManagers[0], networkClientManagers[0], WIDTH_PER_SCREEN, HEIGHT),
 		Game(rollbackManagers[1], gameManagers[1], networkClientManagers[1], WIDTH_PER_SCREEN, HEIGHT)
 	};
-
-	networkClientManagers[0].SetChanceToDropPacket(0.05f);
-	networkClientManagers[1].SetChanceToDropPacket(0.05f);
-	networkClientManagers[0].SetLatency(0.05f, 0.1f);
-	networkClientManagers[1].SetLatency(0.1f, 0.3f);
 
 	for (auto& game : games)
 	{
@@ -79,6 +144,8 @@ int main()
 
 			while (window.pollEvent(event))
 			{
+				ImGui::SFML::ProcessEvent(event);
+
 				if (event.type == sf::Event::Closed)
 				{
 					window.close();
@@ -93,25 +160,12 @@ int main()
 				}
 			}
 
-			std::array<sf::Keyboard::Key, 4> keys1 = {
-				sf::Keyboard::Key::W,
-				sf::Keyboard::Key::A,
-				sf::Keyboard::Key::S,
-				sf::Keyboard::Key::D
-			};
-			std::array<sf::Keyboard::Key, 4> keys2 = {
-				sf::Keyboard::Key::Up,
-				sf::Keyboard::Key::Left,
-				sf::Keyboard::Key::Down,
-				sf::Keyboard::Key::Right
-			};
-
 			for (int i = 0; i < MAX_PLAYERS; i++)
 			{
 				auto& game = games[i];
 				PlayerInput playerInput = {};
 				PlayerRole playerRole = gameManagers[i].GetPlayerRole();
-				std::array<sf::Keyboard::Key, 4> keys = i == 0 ? keys1 : keys2;
+				std::array<sf::Keyboard::Key, 4> keys = i == 0 ? Player1Commands : Player2Commands;
 
 				if (playerRole == PlayerRole::PLAYER)
 				{
@@ -170,6 +224,37 @@ int main()
 			game.Update(elapsed, timeSinceLastFixed, mousePosition);
 		}
 
+		ImGui::SFML::Update(window, elapsed);
+
+		// Draw imgui with button to change network settings for each player
+		ImGui::Begin("Network Settings");
+
+		for (int i = 0; i < MAX_PLAYERS; i++)
+		{
+			const auto settings = clientNetworkSettingsSelected[i];
+
+			ImGui::Text("Player %d: %s", i + 1, ToString(static_cast<NetworkSettings>(settings)).c_str());
+
+			for (int setting = 0; setting < NETWORK_SETTINGS.size(); setting++)
+			{
+				const auto str = "P" + std::to_string(i + 1) + " " + ToString(static_cast<NetworkSettings>(setting));
+
+				if (ImGui::Button(str.c_str()))
+				{
+					clientNetworkSettingsSelected[i] = setting;
+					auto clientNetworkSettings = NETWORK_SETTINGS[setting];
+					networkClientManagers[i].SetDelaySettings(clientNetworkSettings.ChanceToDropPacket, clientNetworkSettings.MinLatency, clientNetworkSettings.MaxLatency);
+				}
+
+				if (setting < NETWORK_SETTINGS.size() - 1)
+				{
+					ImGui::SameLine();
+				}
+			}
+		}
+
+		ImGui::End();
+
 		window.clear();
 
 		// Create 2 images for each screen
@@ -193,6 +278,8 @@ int main()
 
 			window.draw(gameView);
 		}
+
+		ImGui::SFML::Render(window);
 
 		window.display();
 	}

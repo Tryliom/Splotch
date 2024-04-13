@@ -64,6 +64,5 @@ public:
 
 	void Stop();
 
-	void SetChanceToDropPacket(float chanceToDropPacket) { _chanceToDropPacket = chanceToDropPacket; }
-	void SetLatency(float minLatency, float maxLatency) { _minLatency = minLatency; _maxLatency = maxLatency; }
+	void SetDelaySettings(float chanceToDropPacket, float minLatency, float maxLatency);
 };

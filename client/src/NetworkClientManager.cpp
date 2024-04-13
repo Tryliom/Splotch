@@ -148,3 +148,10 @@ void NetworkClientManager::Stop()
 	_socket->disconnect();
 	delete _socket;
 }
+
+void NetworkClientManager::SetDelaySettings(float chanceToDropPacket, float minLatency, float maxLatency)
+{
+	_chanceToDropPacket = chanceToDropPacket;
+	_minLatency = minLatency;
+	_maxLatency = maxLatency;
+}
