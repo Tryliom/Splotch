@@ -4,6 +4,7 @@
 #include "Packet.h"
 #include "Vec2.h"
 #include "PlayerInputs.h"
+#include "GameData.h"
 
 #include <queue>
 
@@ -13,8 +14,7 @@ class GameManager
 	GameManager(ScreenSizeValue width, ScreenSizeValue height);
 
  private:
-	Math::Vec2F _playerPosition;
-	HandSlot _handSlot = HandSlot::SLOT_1;
+	GameData _gameData;
 
 	PlayerInput _playerInputs{};
 	PlayerInput _previousPlayerInputs{};
@@ -23,8 +23,6 @@ class GameManager
 
 	ScreenSizeValue _width;
 	ScreenSizeValue _height;
-
-	PlayerRole _playerRole = PlayerRole::PLAYER;
 
  public:
 	void OnPacketReceived(Packet& packet);
@@ -53,4 +51,7 @@ class GameManager
 	 * @return Future position of the player
 	 */
 	Math::Vec2F GetFuturePlayerPosition(sf::Time elapsed);
+
+	[[nodiscard]] GameData GetGameData() const;
+	void SetGameData(GameData gameData);
 };

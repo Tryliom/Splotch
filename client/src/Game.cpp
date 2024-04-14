@@ -27,14 +27,15 @@ void Game::CheckInputs(const sf::Event& event)
 	}
 }
 
-void Game::OnPlayerInput(PlayerInput playerInput)
+void Game::RegisterPlayerInput(PlayerInput playerInput)
 {
 	if (_state != GameState::GAME) return;
 
 	_rollbackManager.AddPlayerInputs(playerInput);
+	SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastPlayerInputs()), Protocol::UDP);
 }
 
-void Game::FixedUpdate(sf::Time elapsed)
+void Game::FixedUpdate(sf::Time elapsed, short frame)
 {
 	while (Packet* packet = _networkManager.PopPacket())
 	{
@@ -59,20 +60,15 @@ void Game::FixedUpdate(sf::Time elapsed)
 
 	if (_state == GameState::GAME)
 	{
-		const auto playerRole = _gameManager.GetPlayerRole();
-		const auto currentFrame = _rollbackManager.GetCurrentFrame();
-		const auto previousFrame = currentFrame - 1;
+		const auto previousFrame = frame - 1;
 
-		const auto currentPlayerInputs = _rollbackManager.GetPlayerInput(playerRole, currentFrame);
-		const auto previousPlayerInputs = _rollbackManager.GetPlayerInput(playerRole, previousFrame);
-		const auto currentHandInputs = _rollbackManager.GetHandInput(playerRole, currentFrame);
-		const auto previousHandInputs = _rollbackManager.GetHandInput(playerRole, previousFrame);
+		const auto currentPlayerInputs = _rollbackManager.GetPlayerInput(frame);
+		const auto previousPlayerInputs = _rollbackManager.GetPlayerInput(previousFrame);
+		const auto currentHandInputs = _rollbackManager.GetHandInput(frame);
+		const auto previousHandInputs = _rollbackManager.GetHandInput(previousFrame);
 
 		_gameManager.SetPlayerInputs(currentPlayerInputs, previousPlayerInputs);
 		_gameManager.SetHandInputs(currentHandInputs, previousHandInputs);
-
-		SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastPlayerInputs()), Protocol::UDP);
-
 		_gameManager.UpdatePlayersPositions(elapsed);
 	}
 
@@ -146,6 +142,11 @@ void Game::SendPacket(Packet* packet, Protocol protocol)
 
 void Game::OnPacketReceived(Packet& packet)
 {
+	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::StartGame))
+	{
+		_rollbackManager.SetConfirmedGameData(_gameManager.GetGameData());
+	}
+
 	if (_renderer != nullptr)
 	{
 		_renderer->OnPacketReceived(packet);

@@ -26,12 +26,16 @@ class Game
 	explicit Game(RollbackManager& rollbackManager, GameManager& gameManager, ClientNetworkInterface& networkManager, ScreenSizeValue width, ScreenSizeValue height);
 
 	void CheckInputs(const sf::Event& event);
-	void OnPlayerInput(PlayerInput playerInput);
+	/**
+	 * @brief Register the player input into rollback manager and send it to the server
+	 * @param playerInput
+	 */
+	void RegisterPlayerInput(PlayerInput playerInput);
 	/**
 	 * @brief Used to update the game at a fixed rate, for physics calculations
 	 * @param elapsed
 	 */
-	void FixedUpdate(sf::Time elapsed);
+	void FixedUpdate(sf::Time elapsed, short frame);
 	/**
 	 * @brief Used to update the game at a variable rate, for rendering
 	 * @param elapsed
@@ -39,6 +43,7 @@ class Game
 	 * @param mousePosition
 	 */
 	void Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition);
+
 	void SetState(GameState state);
 	void Draw(sf::RenderTarget& target);
 

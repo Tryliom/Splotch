@@ -11,8 +11,8 @@ void GameManager::OnPacketReceived(Packet& packet)
 	{
 		auto& startGamePacket = *packet.As<MyPackets::StartGamePacket>();
 
-		_playerRole = startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::HAND;
-		_playerPosition = {PLAYER_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height};
+		_gameData.PlayerRole = startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::HAND;
+		_gameData.PlayerPosition = {PLAYER_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height};
 	}
 }
 
@@ -28,27 +28,27 @@ PlayerInput GameManager::GetHandInputs() const
 
 Math::Vec2F GameManager::GetHandPosition() const
 {
-	auto x = HAND_START_POSITION.X + HAND_SLOT_SIZE * static_cast<int>(_handSlot);
+	auto x = HAND_START_POSITION.X + HAND_SLOT_SIZE * static_cast<int>(_gameData.HandSlot);
 	return {x * _width, HAND_START_POSITION.Y * _height};
 }
 
 void GameManager::DecreaseHandSlot()
 {
-	if (_handSlot == HandSlot::SLOT_1) return;
+	if (_gameData.HandSlot == HandSlot::SLOT_1) return;
 
-	_handSlot = static_cast<HandSlot>(static_cast<int>(_handSlot) - 1);
+	_gameData.HandSlot = static_cast<HandSlot>(static_cast<int>(_gameData.HandSlot) - 1);
 }
 
 void GameManager::IncreaseHandSlot()
 {
-	if (_handSlot == HandSlot::SLOT_5) return;
+	if (_gameData.HandSlot == HandSlot::SLOT_5) return;
 
-	_handSlot = static_cast<HandSlot>(static_cast<int>(_handSlot) + 1);
+	_gameData.HandSlot = static_cast<HandSlot>(static_cast<int>(_gameData.HandSlot) + 1);
 }
 
 PlayerRole GameManager::GetPlayerRole()
 {
-	return _playerRole;
+	return _gameData.PlayerRole;
 }
 
 void GameManager::SetPlayerInputs(PlayerInput playerInput, PlayerInput previousPlayerInput)
@@ -65,7 +65,7 @@ void GameManager::SetHandInputs(PlayerInput playerInput, PlayerInput previousHan
 
 void GameManager::UpdatePlayersPositions(sf::Time elapsed)
 {
-	_playerPosition = GetFuturePlayerPosition(elapsed);
+	_gameData.PlayerPosition = GetFuturePlayerPosition(elapsed);
 
 	const bool isLeftPressed = IsKeyPressed(_handInputs, PlayerInputTypes::Left);
 	const bool isRightPressed = IsKeyPressed(_handInputs, PlayerInputTypes::Right);
@@ -88,7 +88,7 @@ Math::Vec2F GameManager::GetFuturePlayerPosition(sf::Time elapsed)
 	static constexpr float MOVE_SPEED = 200.f;
 	static constexpr float FALL_SPEED = 250.f;
 	static constexpr float JUMP_HEIGHT = 200.f;
-	auto playerPosition = _playerPosition;
+	auto playerPosition = _gameData.PlayerPosition;
 
 	// Change position harshly [Debug]
 	const bool isPlayerInAir = playerPosition.Y < PLAYER_START_POSITION.Y * _height;
@@ -120,3 +120,12 @@ Math::Vec2F GameManager::GetFuturePlayerPosition(sf::Time elapsed)
 	return playerPosition;
 }
 
+GameData GameManager::GetGameData() const
+{
+	return _gameData;
+}
+
+void GameManager::SetGameData(GameData gameData)
+{
+	_gameData = gameData;
+}

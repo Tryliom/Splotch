@@ -25,6 +25,17 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 		{
 			_lastRemotePlayerInputs.erase(_lastRemotePlayerInputs.begin());
 		}
+		else
+		{
+			// If we don't have any remote inputs, we need to check if last remote inputs are the same as the last confirmed inputs
+			const auto lastRemotePlayerInput = _lastRemotePlayerInputs[_lastRemotePlayerInputs.size() - 2];
+			const auto input = _confirmedGameData.PlayerRole == PlayerRole::PLAYER ? confirmationInputPacket.HandRoleInput : confirmationInputPacket.PlayerRoleInput;
+
+			if (lastRemotePlayerInput.Input != input)
+			{
+				_needToRollback = true;
+			}
+		}
 
 		_frameFromLastConfirmedInput = 0;
 	}
@@ -41,6 +52,22 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 			if (lastInput.Frame < _confirmedPlayerInputs.size() + _lastRemotePlayerInputs.size()) continue;
 
 			_lastRemotePlayerInputs.push_back(lastInput);
+
+			PlayerInput lastRemoteInput;
+
+			if (_lastRemotePlayerInputs.size() > 1)
+			{
+				lastRemoteInput = _lastRemotePlayerInputs[_lastRemotePlayerInputs.size() - 2].Input;
+			}
+			else
+			{
+				lastRemoteInput = _confirmedGameData.PlayerRole == PlayerRole::PLAYER ? _confirmedPlayerInputs.back().HandRoleInput : _confirmedPlayerInputs.back().PlayerRoleInput;
+			}
+
+			if (lastRemoteInput != lastInput.Input)
+			{
+				_needToRollback = true;
+			}
 		}
 	}
 }
@@ -66,7 +93,7 @@ std::vector<PlayerInputPerFrame> RollbackManager::GetLastPlayerInputs()
 	return playerInputs;
 }
 
-PlayerInput RollbackManager::GetPlayerInput(PlayerRole playerRole, int frame) const
+PlayerInput RollbackManager::GetPlayerInput(int frame) const
 {
 	if (frame < 0) return {};
 
@@ -77,7 +104,7 @@ PlayerInput RollbackManager::GetPlayerInput(PlayerRole playerRole, int frame) co
 		playerInputs.push_back(confirmedPlayerInput.PlayerRoleInput);
 	}
 
-	if (playerRole == PlayerRole::PLAYER)
+	if (_confirmedGameData.PlayerRole == PlayerRole::PLAYER)
 	{
 		for (auto localPlayerInput : _localPlayerInputs)
 		{
@@ -105,7 +132,7 @@ PlayerInput RollbackManager::GetPlayerInput(PlayerRole playerRole, int frame) co
 	return playerInputs.back();
 }
 
-PlayerInput RollbackManager::GetHandInput(PlayerRole playerRole, int frame) const
+PlayerInput RollbackManager::GetHandInput(int frame) const
 {
 	if (frame < 0) return {};
 
@@ -116,7 +143,7 @@ PlayerInput RollbackManager::GetHandInput(PlayerRole playerRole, int frame) cons
 		handInputs.push_back(confirmedPlayerInput.HandRoleInput);
 	}
 
-	if (playerRole == PlayerRole::HAND)
+	if (_confirmedGameData.PlayerRole == PlayerRole::HAND)
 	{
 		for (auto localPlayerInput: _localPlayerInputs)
 		{
@@ -147,4 +174,41 @@ PlayerInput RollbackManager::GetHandInput(PlayerRole playerRole, int frame) cons
 short RollbackManager::GetCurrentFrame() const
 {
 	return static_cast<short>(_confirmedPlayerInputs.size() + _localPlayerInputs.size() - 1);
+}
+
+void RollbackManager::SetConfirmedGameData(GameData gameData)
+{
+	_confirmedGameData = gameData;
+}
+
+GameData RollbackManager::GetConfirmedGameData() const
+{
+	return _confirmedGameData;
+}
+
+std::vector<FinalInputs> RollbackManager::GetAllConfirmedPlayerInputsFromLastConfirmedFrame() const
+{
+	std::vector<FinalInputs> finalInputs = {};
+
+	for (auto i = _confirmedFrameForGameData; i < _confirmedPlayerInputs.size(); i++)
+	{
+		finalInputs.push_back(_confirmedPlayerInputs[i]);
+	}
+
+	return finalInputs;
+}
+
+void RollbackManager::IncreaseFrameFromLastConfirmedInput()
+{
+	_frameFromLastConfirmedInput++;
+}
+
+bool RollbackManager::NeedToRollback() const
+{
+	return _needToRollback;
+}
+
+void RollbackManager::RollbackDone()
+{
+	_needToRollback = false;
 }

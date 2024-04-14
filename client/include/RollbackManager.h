@@ -3,6 +3,7 @@
 #include "PlayerInputs.h"
 #include "Packet.h"
 #include "Constants.h"
+#include "GameData.h"
 
 #include <vector>
 
@@ -21,15 +22,29 @@ class RollbackManager
 
 	short _frameFromLastConfirmedInput = 0;
 
+	// GameData at confirmed frame
+	GameData _confirmedGameData;
+	short _confirmedFrameForGameData = 0;
+
+	bool _needToRollback = false;
+
 public:
 	void OnPacketReceived(Packet& packet);
 
 	void AddPlayerInputs(PlayerInput playerInput);
 	std::vector<PlayerInputPerFrame> GetLastPlayerInputs();
 
-	[[nodiscard]] PlayerInput GetPlayerInput(PlayerRole playerRole, int frame) const;
-	[[nodiscard]] PlayerInput GetHandInput(PlayerRole playerRole, int frame) const;
+	[[nodiscard]] PlayerInput GetPlayerInput(int frame) const;
+	[[nodiscard]] PlayerInput GetHandInput(int frame) const;
 
 	[[nodiscard]] short GetCurrentFrame() const;
 
+	void SetConfirmedGameData(GameData gameData);
+
+	[[nodiscard]] GameData GetConfirmedGameData() const;
+	[[nodiscard]] std::vector<FinalInputs> GetAllConfirmedPlayerInputsFromLastConfirmedFrame() const;
+	void IncreaseFrameFromLastConfirmedInput();
+
+	[[nodiscard]] bool NeedToRollback() const;
+	void RollbackDone();
 };

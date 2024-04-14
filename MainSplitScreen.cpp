@@ -202,8 +202,35 @@ int main()
 					}
 				}
 
-				game.OnPlayerInput(playerInput);
-				game.FixedUpdate(sf::seconds(TIME_PER_FRAME));
+				game.RegisterPlayerInput(playerInput);
+				game.FixedUpdate(sf::seconds(TIME_PER_FRAME), rollbackManagers[i].GetCurrentFrame());
+
+				if (rollbackManagers[i].NeedToRollback())
+				{
+					//TODO: Rollback
+
+					rollbackManagers[i].RollbackDone();
+				}
+
+				const auto confirmedInputs = rollbackManagers[i].GetAllConfirmedPlayerInputsFromLastConfirmedFrame();
+
+				if (confirmedInputs.empty()) continue;
+
+				// Simulate again from last confirmed frame to actual confirmed frame with game data
+				const auto currentGameData = gameManagers[i].GetGameData();
+				const auto lastConfirmedGameData = rollbackManagers[i].GetConfirmedGameData();
+
+				gameManagers[i].SetGameData(lastConfirmedGameData);
+
+				for (const auto& confirmedInput : confirmedInputs)
+				{
+					//TODO: Rollback-like simulation
+
+					rollbackManagers[i].SetConfirmedGameData(gameManagers[i].GetGameData());
+					rollbackManagers[i].IncreaseFrameFromLastConfirmedInput();
+				}
+
+				gameManagers[i].SetGameData(currentGameData);
 			}
 
 			time -= TIME_PER_FRAME;
@@ -226,29 +253,30 @@ int main()
 
 		ImGui::SFML::Update(window, elapsed);
 
-		// Draw imgui with button to change network settings for each player
-		ImGui::Begin("Network Settings");
-
-		for (int i = 0; i < MAX_PLAYERS; i++)
 		{
-			const auto settings = clientNetworkSettingsSelected[i];
+			ImGui::Begin("Network Settings");
 
-			ImGui::Text("Player %d: %s", i + 1, ToString(static_cast<NetworkSettings>(settings)).c_str());
-
-			for (int setting = 0; setting < NETWORK_SETTINGS.size(); setting++)
+			for (int i = 0; i < MAX_PLAYERS; i++)
 			{
-				const auto str = "P" + std::to_string(i + 1) + " " + ToString(static_cast<NetworkSettings>(setting));
+				const auto settings = clientNetworkSettingsSelected[i];
 
-				if (ImGui::Button(str.c_str()))
-				{
-					clientNetworkSettingsSelected[i] = setting;
-					auto clientNetworkSettings = NETWORK_SETTINGS[setting];
-					networkClientManagers[i].SetDelaySettings(clientNetworkSettings.ChanceToDropPacket, clientNetworkSettings.MinLatency, clientNetworkSettings.MaxLatency);
-				}
+				ImGui::Text("Player %d: %s", i + 1, ToString(static_cast<NetworkSettings>(settings)).c_str());
 
-				if (setting < NETWORK_SETTINGS.size() - 1)
+				for (int setting = 0; setting < NETWORK_SETTINGS.size(); setting++)
 				{
-					ImGui::SameLine();
+					const auto str = "P" + std::to_string(i + 1) + " " + ToString(static_cast<NetworkSettings>(setting));
+
+					if (ImGui::Button(str.c_str()))
+					{
+						clientNetworkSettingsSelected[i] = setting;
+						auto clientNetworkSettings = NETWORK_SETTINGS[setting];
+						networkClientManagers[i].SetDelaySettings(clientNetworkSettings.ChanceToDropPacket, clientNetworkSettings.MinLatency, clientNetworkSettings.MaxLatency);
+					}
+
+					if (setting < NETWORK_SETTINGS.size() - 1)
+					{
+						ImGui::SameLine();
+					}
 				}
 			}
 		}
