@@ -1,5 +1,7 @@
 #include "RollbackManager.h"
 
+#include <utility>
+
 #include "MyPackets.h"
 #include "MyPackets/ConfirmationInputPacket.h"
 #include "MyPackets/PlayerInputPacket.h"
@@ -24,16 +26,35 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 		if (!_lastRemotePlayerInputs.empty())
 		{
 			_lastRemotePlayerInputs.erase(_lastRemotePlayerInputs.begin());
+
+			if (!_unconfirmedGameData.empty())
+			{
+				_confirmedGameData = _unconfirmedGameData.front();
+				_unconfirmedGameData.erase(_unconfirmedGameData.begin());
+				_lastConfirmedFrame++;
+			}
 		}
 		else
 		{
 			// If we don't have any remote inputs, we need to check if last remote inputs are the same as the last confirmed inputs
-			const auto lastRemotePlayerInput = _lastRemotePlayerInputs[_lastRemotePlayerInputs.size() - 2];
-			const auto input = _confirmedGameData.PlayerRole == PlayerRole::PLAYER ? confirmationInputPacket.HandRoleInput : confirmationInputPacket.PlayerRoleInput;
+			PlayerInput currentInput = {}, lastInput = {};
 
-			if (lastRemotePlayerInput.Input != input)
+			if (_confirmedPlayerInputs.size() > 1)
+			{
+				const auto lastConfirmedInput = _confirmedPlayerInputs[_confirmedPlayerInputs.size() - 2];
+				currentInput = _confirmedGameData.PlayerRole == PlayerRole::PLAYER ? confirmationInputPacket.HandRoleInput : confirmationInputPacket.PlayerRoleInput;
+				lastInput = _confirmedGameData.PlayerRole == PlayerRole::PLAYER ? lastConfirmedInput.HandRoleInput : lastConfirmedInput.PlayerRoleInput;
+			}
+
+			if (lastInput != currentInput)
 			{
 				_needToRollback = true;
+			}
+			else if (!_unconfirmedGameData.empty())
+			{
+				_confirmedGameData = _unconfirmedGameData.front();
+				_unconfirmedGameData.erase(_unconfirmedGameData.begin());
+				_lastConfirmedFrame++;
 			}
 		}
 
@@ -43,7 +64,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 	{
 		auto& playerInputPacket = *packet.As<MyPackets::PlayerInputPacket>();
 
-		if (playerInputPacket.LastInputs.empty()) return;
+		if (playerInputPacket.LastInputs.empty() || _confirmedPlayerInputs.empty()) return;
 
 		const auto& lastInputs = playerInputPacket.LastInputs;
 
@@ -67,6 +88,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 			if (lastRemoteInput != lastInput.Input)
 			{
 				_needToRollback = true;
+				break;
 			}
 		}
 	}
@@ -178,7 +200,8 @@ short RollbackManager::GetCurrentFrame() const
 
 void RollbackManager::SetConfirmedGameData(GameData gameData)
 {
-	_confirmedGameData = gameData;
+	_confirmedGameData = std::move(gameData);
+	_lastConfirmedFrame++;
 }
 
 GameData RollbackManager::GetConfirmedGameData() const
@@ -186,21 +209,24 @@ GameData RollbackManager::GetConfirmedGameData() const
 	return _confirmedGameData;
 }
 
-std::vector<FinalInputs> RollbackManager::GetAllConfirmedPlayerInputsFromLastConfirmedFrame() const
+short RollbackManager::GetConfirmedFrame() const
 {
-	std::vector<FinalInputs> finalInputs = {};
-
-	for (auto i = _confirmedFrameForGameData; i < _confirmedPlayerInputs.size(); i++)
-	{
-		finalInputs.push_back(_confirmedPlayerInputs[i]);
-	}
-
-	return finalInputs;
+	return _lastConfirmedFrame;
 }
 
-void RollbackManager::IncreaseFrameFromLastConfirmedInput()
+short RollbackManager::GetConfirmedInputFrame() const
 {
-	_frameFromLastConfirmedInput++;
+	return static_cast<short>(_confirmedPlayerInputs.size());
+}
+
+void RollbackManager::ResetUnconfirmedGameData()
+{
+	_unconfirmedGameData.clear();
+}
+
+void RollbackManager::AddUnconfirmedGameData(GameData gameData)
+{
+	_unconfirmedGameData.push_back(std::move(gameData));
 }
 
 bool RollbackManager::NeedToRollback() const

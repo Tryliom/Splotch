@@ -35,7 +35,7 @@ void Game::RegisterPlayerInput(PlayerInput playerInput)
 	SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastPlayerInputs()), Protocol::UDP);
 }
 
-void Game::FixedUpdate(sf::Time elapsed, short frame)
+void Game::FixedUpdate(sf::Time elapsed)
 {
 	while (Packet* packet = _networkManager.PopPacket())
 	{
@@ -60,16 +60,36 @@ void Game::FixedUpdate(sf::Time elapsed, short frame)
 
 	if (_state == GameState::GAME)
 	{
-		const auto previousFrame = frame - 1;
+		UpdateGame(elapsed, _rollbackManager.GetCurrentFrame());
 
-		const auto currentPlayerInputs = _rollbackManager.GetPlayerInput(frame);
-		const auto previousPlayerInputs = _rollbackManager.GetPlayerInput(previousFrame);
-		const auto currentHandInputs = _rollbackManager.GetHandInput(frame);
-		const auto previousHandInputs = _rollbackManager.GetHandInput(previousFrame);
+		_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
 
-		_gameManager.SetPlayerInputs(currentPlayerInputs, previousPlayerInputs);
-		_gameManager.SetHandInputs(currentHandInputs, previousHandInputs);
-		_gameManager.UpdatePlayersPositions(elapsed);
+		if (_rollbackManager.NeedToRollback())
+		{
+			const auto oldConfirmedFrame = static_cast<short>(_rollbackManager.GetConfirmedFrame() - 1);
+			const auto confirmedInputFrame = _rollbackManager.GetConfirmedInputFrame();
+			const auto currentFrame = _rollbackManager.GetCurrentFrame();
+
+			_gameManager.SetGameData(_rollbackManager.GetConfirmedGameData());
+			_rollbackManager.ResetUnconfirmedGameData();
+
+			for (auto j = oldConfirmedFrame; j <= currentFrame; j++)
+			{
+				UpdateGame(elapsed, j);
+				_gameManager.UpdatePlayerAnimations(elapsed, sf::seconds(0));
+
+				if (j < confirmedInputFrame)
+				{
+					_rollbackManager.SetConfirmedGameData(_gameManager.GetGameData());
+				}
+				else
+				{
+					_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
+				}
+			}
+
+			_rollbackManager.RollbackDone();
+		}
 	}
 
 	if (_renderer != nullptr)
@@ -142,11 +162,6 @@ void Game::SendPacket(Packet* packet, Protocol protocol)
 
 void Game::OnPacketReceived(Packet& packet)
 {
-	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::StartGame))
-	{
-		_rollbackManager.SetConfirmedGameData(_gameManager.GetGameData());
-	}
-
 	if (_renderer != nullptr)
 	{
 		_renderer->OnPacketReceived(packet);
@@ -164,4 +179,18 @@ void Game::Quit()
 void Game::OnQuit(std::function<void()> onQuit)
 {
 	_onQuit = std::move(onQuit);
+}
+
+void Game::UpdateGame(sf::Time elapsed, short frame)
+{
+	const auto previousFrame = frame - 1;
+
+	const auto currentPlayerInputs = _rollbackManager.GetPlayerInput(frame);
+	const auto previousPlayerInputs = _rollbackManager.GetPlayerInput(previousFrame);
+	const auto currentHandInputs = _rollbackManager.GetHandInput(frame);
+	const auto previousHandInputs = _rollbackManager.GetHandInput(previousFrame);
+
+	_gameManager.SetPlayerInputs(currentPlayerInputs, previousPlayerInputs);
+	_gameManager.SetHandInputs(currentHandInputs, previousHandInputs);
+	_gameManager.UpdatePlayersPositions(elapsed);
 }

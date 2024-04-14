@@ -24,7 +24,8 @@ class RollbackManager
 
 	// GameData at confirmed frame
 	GameData _confirmedGameData;
-	short _confirmedFrameForGameData = 0;
+	std::vector<GameData> _unconfirmedGameData;
+	short _lastConfirmedFrame = 0;
 
 	bool _needToRollback = false;
 
@@ -40,10 +41,12 @@ public:
 	[[nodiscard]] short GetCurrentFrame() const;
 
 	void SetConfirmedGameData(GameData gameData);
-
 	[[nodiscard]] GameData GetConfirmedGameData() const;
-	[[nodiscard]] std::vector<FinalInputs> GetAllConfirmedPlayerInputsFromLastConfirmedFrame() const;
-	void IncreaseFrameFromLastConfirmedInput();
+	[[nodiscard]] short GetConfirmedFrame() const;
+	[[nodiscard]] short GetConfirmedInputFrame() const;
+
+	void ResetUnconfirmedGameData();
+	void AddUnconfirmedGameData(GameData gameData);
 
 	[[nodiscard]] bool NeedToRollback() const;
 	void RollbackDone();

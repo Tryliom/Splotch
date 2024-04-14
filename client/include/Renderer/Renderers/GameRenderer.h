@@ -15,8 +15,6 @@ class GameRenderer final :
 	Game& _game;
 	GameManager& _gameManager;
 
-	std::array<PlayerDrawable, MAX_PLAYERS> _players;
-
 	ScreenSizeValue _height;
 	ScreenSizeValue _width;
 

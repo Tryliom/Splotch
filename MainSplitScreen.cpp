@@ -203,34 +203,7 @@ int main()
 				}
 
 				game.RegisterPlayerInput(playerInput);
-				game.FixedUpdate(sf::seconds(TIME_PER_FRAME), rollbackManagers[i].GetCurrentFrame());
-
-				if (rollbackManagers[i].NeedToRollback())
-				{
-					//TODO: Rollback
-
-					rollbackManagers[i].RollbackDone();
-				}
-
-				const auto confirmedInputs = rollbackManagers[i].GetAllConfirmedPlayerInputsFromLastConfirmedFrame();
-
-				if (confirmedInputs.empty()) continue;
-
-				// Simulate again from last confirmed frame to actual confirmed frame with game data
-				const auto currentGameData = gameManagers[i].GetGameData();
-				const auto lastConfirmedGameData = rollbackManagers[i].GetConfirmedGameData();
-
-				gameManagers[i].SetGameData(lastConfirmedGameData);
-
-				for (const auto& confirmedInput : confirmedInputs)
-				{
-					//TODO: Rollback-like simulation
-
-					rollbackManagers[i].SetConfirmedGameData(gameManagers[i].GetGameData());
-					rollbackManagers[i].IncreaseFrameFromLastConfirmedInput();
-				}
-
-				gameManagers[i].SetGameData(currentGameData);
+				game.FixedUpdate(sf::seconds(TIME_PER_FRAME));
 			}
 
 			time -= TIME_PER_FRAME;

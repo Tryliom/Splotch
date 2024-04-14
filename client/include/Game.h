@@ -35,7 +35,7 @@ class Game
 	 * @brief Used to update the game at a fixed rate, for physics calculations
 	 * @param elapsed
 	 */
-	void FixedUpdate(sf::Time elapsed, short frame);
+	void FixedUpdate(sf::Time elapsed);
 	/**
 	 * @brief Used to update the game at a variable rate, for rendering
 	 * @param elapsed
@@ -53,6 +53,7 @@ class Game
 	void OnQuit(std::function<void()> onQuit);
 
 	[[nodiscard]] bool IsReadyToPlay() const { return _readyToPlay; }
+	[[nodiscard]] GameState GetState() const { return _state;}
 
  private:
 	std::function<void()> _onQuit;
@@ -73,4 +74,5 @@ class Game
 	sf::Time _elapsedTime = sf::seconds(_timeBeforeSendUdpAck);
 
 	void OnPacketReceived(Packet& packet);
+	void UpdateGame(sf::Time elapsed, short frame);
 };

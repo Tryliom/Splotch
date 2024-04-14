@@ -16,11 +16,6 @@ class GameManager
  private:
 	GameData _gameData;
 
-	PlayerInput _playerInputs{};
-	PlayerInput _previousPlayerInputs{};
-	PlayerInput _handInputs{};
-	PlayerInput _previousHandInputs{};
-
 	ScreenSizeValue _width;
 	ScreenSizeValue _height;
 
@@ -44,6 +39,8 @@ class GameManager
 	 * @param elapsed Time for a fixed update
 	 */
 	void UpdatePlayersPositions(sf::Time elapsed);
+
+	void UpdatePlayerAnimations(sf::Time elapsed, sf::Time elapsedSinceLastFixed);
 
 	/**
 	 * @brief Get the future position of the player without updating the current position
