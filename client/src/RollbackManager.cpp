@@ -51,7 +51,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 			{
 				_needToRollback = true;
 			}
-			else if (!_unconfirmedGameData.empty())
+			else if (!_unconfirmedGameData.empty() && !_needToRollback)
 			{
 				_confirmedGameData = _unconfirmedGameData.front();
 				_unconfirmedGameData.erase(_unconfirmedGameData.begin());
