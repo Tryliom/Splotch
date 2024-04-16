@@ -163,47 +163,64 @@ int main()
 			for (int i = 0; i < MAX_PLAYERS; i++)
 			{
 				auto& game = games[i];
-				PlayerInput playerInput = {};
-				PlayerRole playerRole = gameManagers[i].GetPlayerRole();
-				std::array<sf::Keyboard::Key, 4> keys = i == 0 ? Player1Commands : Player2Commands;
 
-				if (playerRole == PlayerRole::PLAYER)
+				if (game.GetState() == GameState::GAME)
 				{
-					if (sf::Keyboard::isKeyPressed(keys[1]))
+					PlayerInput playerInput = {};
+					PlayerRole playerRole = gameManagers[i].GetPlayerRole();
+					std::array<sf::Keyboard::Key, 4> keys = i == 0 ? Player1Commands : Player2Commands;
+
+					if (playerRole == PlayerRole::PLAYER)
 					{
-						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
+						if (sf::Keyboard::isKeyPressed(keys[1]))
+						{
+							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
+						}
+
+						if (sf::Keyboard::isKeyPressed(keys[3]))
+						{
+							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
+						}
+
+						if (sf::Keyboard::isKeyPressed(keys[0]))
+						{
+							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
+						}
+					}
+					else
+					{
+						if (sf::Keyboard::isKeyPressed(keys[2]))
+						{
+							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
+						}
+
+						if (sf::Keyboard::isKeyPressed(keys[1]))
+						{
+							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
+						}
+
+						if (sf::Keyboard::isKeyPressed(keys[3]))
+						{
+							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
+						}
 					}
 
-					if (sf::Keyboard::isKeyPressed(keys[3]))
-					{
-						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
-					}
-
-					if (sf::Keyboard::isKeyPressed(keys[0]))
-					{
-						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
-					}
+					game.RegisterPlayerInput(playerInput);
 				}
-				else
-				{
-					if (sf::Keyboard::isKeyPressed(keys[2]))
-					{
-						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
-					}
 
-					if (sf::Keyboard::isKeyPressed(keys[1]))
-					{
-						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
-					}
-
-					if (sf::Keyboard::isKeyPressed(keys[3]))
-					{
-						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
-					}
-				}
-
-				game.RegisterPlayerInput(playerInput);
 				game.FixedUpdate(sf::seconds(TIME_PER_FRAME));
+			}
+
+			// If one is in game, then it means both are in game
+			if (games[0].GetState() == GameState::GAME)
+			{
+				if (rollbackManagers[0].GetConfirmedFrame() == rollbackManagers[1].GetConfirmedFrame())
+				{
+					if (rollbackManagers[0].GetConfirmedGameData() != rollbackManagers[1].GetConfirmedGameData())
+					{
+						LOG("Game data is different");
+					}
+				}
 			}
 
 			time -= TIME_PER_FRAME;

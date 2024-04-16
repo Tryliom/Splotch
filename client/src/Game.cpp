@@ -60,25 +60,25 @@ void Game::FixedUpdate(sf::Time elapsed)
 
 	if (_state == GameState::GAME)
 	{
-		UpdateGame(elapsed, _rollbackManager.GetCurrentFrame());
-
-		_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
-
 		if (_rollbackManager.NeedToRollback())
 		{
-			const auto oldConfirmedFrame = static_cast<short>(_rollbackManager.GetConfirmedFrame() - 1);
+			// The confirmed frame of the last set of confirmed game data
+			const auto oldConfirmedFrame = _rollbackManager.GetConfirmedFrame();
 			const auto confirmedInputFrame = _rollbackManager.GetConfirmedInputFrame();
 			const auto currentFrame = _rollbackManager.GetCurrentFrame();
 
 			_gameManager.SetGameData(_rollbackManager.GetConfirmedGameData());
 			_rollbackManager.ResetUnconfirmedGameData();
 
-			for (auto j = oldConfirmedFrame; j <= currentFrame; j++)
+			// Rollback before the current frame
+			for (auto frame = oldConfirmedFrame; frame < currentFrame; frame++)
 			{
-				UpdateGame(elapsed, j);
+				UpdateGame(elapsed, frame);
 				_gameManager.UpdatePlayerAnimations(elapsed, sf::seconds(0));
 
-				if (j < confirmedInputFrame)
+				// Happens when rollback is happening by reception of a confirmed input without remote inputs
+				// So, it needs to update the confirmed game data when validating the confirmed input
+				if (frame < confirmedInputFrame)
 				{
 					_rollbackManager.SetConfirmedGameData(_gameManager.GetGameData());
 				}
@@ -90,6 +90,10 @@ void Game::FixedUpdate(sf::Time elapsed)
 
 			_rollbackManager.RollbackDone();
 		}
+
+		// Update the game with the current frame
+		UpdateGame(elapsed, _rollbackManager.GetCurrentFrame());
+		_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
 	}
 
 	if (_renderer != nullptr)

@@ -20,12 +20,10 @@ class RollbackManager
 	// Confirmed player inputs from server (hand and player role)
 	std::vector<FinalInputs> _confirmedPlayerInputs;
 
-	short _frameFromLastConfirmedInput = 0;
-
 	// GameData at confirmed frame
 	GameData _confirmedGameData;
 	std::vector<GameData> _unconfirmedGameData;
-	short _lastConfirmedFrame = 0;
+	int _lastConfirmedFrame = -1;
 
 	bool _needToRollback = false;
 
@@ -42,8 +40,11 @@ public:
 
 	void SetConfirmedGameData(GameData gameData);
 	[[nodiscard]] GameData GetConfirmedGameData() const;
-	[[nodiscard]] short GetConfirmedFrame() const;
+	[[nodiscard]] int GetConfirmedFrame() const;
 	[[nodiscard]] short GetConfirmedInputFrame() const;
+	[[nodiscard]] std::size_t GetUnconfirmedGameDataSize() const;
+	[[nodiscard]] short GetLocalPlayerInputsSize() const;
+	[[nodiscard]] short GetRemotePlayerInputsSize() const;
 
 	void ResetUnconfirmedGameData();
 	void AddUnconfirmedGameData(GameData gameData);

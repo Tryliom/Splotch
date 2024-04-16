@@ -5,6 +5,7 @@
 #include "MyPackets.h"
 #include "MyPackets/ConfirmationInputPacket.h"
 #include "MyPackets/PlayerInputPacket.h"
+#include "Logger.h"
 
 RollbackManager::RollbackManager()
 {
@@ -27,7 +28,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 		{
 			_lastRemotePlayerInputs.erase(_lastRemotePlayerInputs.begin());
 
-			if (!_unconfirmedGameData.empty())
+			if (!_unconfirmedGameData.empty() && !_needToRollback)
 			{
 				_confirmedGameData = _unconfirmedGameData.front();
 				_unconfirmedGameData.erase(_unconfirmedGameData.begin());
@@ -58,7 +59,10 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 			}
 		}
 
-		_frameFromLastConfirmedInput = 0;
+		if (_lastConfirmedFrame != _confirmedPlayerInputs.size())
+		{
+			_needToRollback = true;
+		}
 	}
 	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::PlayerInput))
 	{
@@ -72,32 +76,30 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 		{
 			if (lastInput.Frame < _confirmedPlayerInputs.size() + _lastRemotePlayerInputs.size()) continue;
 
-			_lastRemotePlayerInputs.push_back(lastInput);
-
+			const auto frame = lastInput.Frame;
 			PlayerInput lastRemoteInput;
 
-			if (_lastRemotePlayerInputs.size() > 1)
+			if (_confirmedGameData.PlayerRole == PlayerRole::PLAYER)
 			{
-				lastRemoteInput = _lastRemotePlayerInputs[_lastRemotePlayerInputs.size() - 2].Input;
+				lastRemoteInput = GetHandInput(frame);
 			}
 			else
 			{
-				lastRemoteInput = _confirmedGameData.PlayerRole == PlayerRole::PLAYER ? _confirmedPlayerInputs.back().HandRoleInput : _confirmedPlayerInputs.back().PlayerRoleInput;
+				lastRemoteInput = GetPlayerInput(frame);
 			}
 
 			if (lastRemoteInput != lastInput.Input)
 			{
 				_needToRollback = true;
-				break;
 			}
+
+			_lastRemotePlayerInputs.push_back(lastInput);
 		}
 	}
 }
 
 void RollbackManager::AddPlayerInputs(PlayerInput playerInput)
 {
-	_frameFromLastConfirmedInput++;
-
 	_localPlayerInputs.push_back(playerInput);
 }
 
@@ -135,12 +137,19 @@ PlayerInput RollbackManager::GetPlayerInput(int frame) const
 	}
 	else
 	{
-		frame += _frameFromLastConfirmedInput;
-		frame -= static_cast<int>(_localPlayerInputs.size()) - static_cast<int>(_lastRemotePlayerInputs.size());
-
 		for (auto lastRemotePlayerInput : _lastRemotePlayerInputs)
 		{
 			playerInputs.push_back(lastRemotePlayerInput.Input);
+		}
+
+		if (playerInputs.empty()) return {};
+
+		const std::size_t remoteInputsToReplicate = _localPlayerInputs.size() - _lastRemotePlayerInputs.size();
+		const PlayerInput inputToReplicate = playerInputs.back();
+
+		for (std::size_t i = 0; i < remoteInputsToReplicate; i++)
+		{
+			playerInputs.push_back(inputToReplicate);
 		}
 	}
 
@@ -174,12 +183,19 @@ PlayerInput RollbackManager::GetHandInput(int frame) const
 	}
 	else
 	{
-		frame += _frameFromLastConfirmedInput;
-		frame -= static_cast<int>(_localPlayerInputs.size()) - static_cast<int>(_lastRemotePlayerInputs.size());
-
 		for (auto lastRemotePlayerInput : _lastRemotePlayerInputs)
 		{
 			handInputs.push_back(lastRemotePlayerInput.Input);
+		}
+
+		if (handInputs.empty()) return {};
+
+		const std::size_t remoteInputsToReplicate = _localPlayerInputs.size() - _lastRemotePlayerInputs.size();
+		const PlayerInput inputToReplicate = handInputs.back();
+
+		for (std::size_t i = 0; i < remoteInputsToReplicate; i++)
+		{
+			handInputs.push_back(inputToReplicate);
 		}
 	}
 
@@ -209,7 +225,7 @@ GameData RollbackManager::GetConfirmedGameData() const
 	return _confirmedGameData;
 }
 
-short RollbackManager::GetConfirmedFrame() const
+int RollbackManager::GetConfirmedFrame() const
 {
 	return _lastConfirmedFrame;
 }
@@ -217,6 +233,21 @@ short RollbackManager::GetConfirmedFrame() const
 short RollbackManager::GetConfirmedInputFrame() const
 {
 	return static_cast<short>(_confirmedPlayerInputs.size());
+}
+
+std::size_t RollbackManager::GetUnconfirmedGameDataSize() const
+{
+	return _unconfirmedGameData.size();
+}
+
+short RollbackManager::GetLocalPlayerInputsSize() const
+{
+	return static_cast<short>(_localPlayerInputs.size());
+}
+
+short RollbackManager::GetRemotePlayerInputsSize() const
+{
+	return static_cast<short>(_lastRemotePlayerInputs.size());
 }
 
 void RollbackManager::ResetUnconfirmedGameData()
@@ -237,4 +268,5 @@ bool RollbackManager::NeedToRollback() const
 void RollbackManager::RollbackDone()
 {
 	_needToRollback = false;
+	_lastConfirmedFrame = static_cast<int>(_confirmedPlayerInputs.size());
 }
