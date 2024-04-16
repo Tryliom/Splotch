@@ -235,21 +235,6 @@ short RollbackManager::GetConfirmedInputFrame() const
 	return static_cast<short>(_confirmedPlayerInputs.size());
 }
 
-std::size_t RollbackManager::GetUnconfirmedGameDataSize() const
-{
-	return _unconfirmedGameData.size();
-}
-
-short RollbackManager::GetLocalPlayerInputsSize() const
-{
-	return static_cast<short>(_localPlayerInputs.size());
-}
-
-short RollbackManager::GetRemotePlayerInputsSize() const
-{
-	return static_cast<short>(_lastRemotePlayerInputs.size());
-}
-
 void RollbackManager::ResetUnconfirmedGameData()
 {
 	_unconfirmedGameData.clear();

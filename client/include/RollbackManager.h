@@ -42,9 +42,6 @@ public:
 	[[nodiscard]] GameData GetConfirmedGameData() const;
 	[[nodiscard]] int GetConfirmedFrame() const;
 	[[nodiscard]] short GetConfirmedInputFrame() const;
-	[[nodiscard]] std::size_t GetUnconfirmedGameDataSize() const;
-	[[nodiscard]] short GetLocalPlayerInputsSize() const;
-	[[nodiscard]] short GetRemotePlayerInputsSize() const;
 
 	void ResetUnconfirmedGameData();
 	void AddUnconfirmedGameData(GameData gameData);
