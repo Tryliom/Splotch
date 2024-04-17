@@ -3,12 +3,16 @@
 #include "Constants.h"
 #include "ClientId.h"
 #include "PlayerInputs.h"
+#include "GameData.h"
 
 #include <array>
 #include <vector>
 
 namespace ServerData
 {
+	constexpr ScreenSizeValue HEIGHT = { 900.f };
+	constexpr ScreenSizeValue WIDTH = { 700.f };
+
 	struct FinalInputs
 	{
 		PlayerInput PlayerRoleInputs;
@@ -40,6 +44,8 @@ namespace ServerData
 
 		std::vector<PlayerInput> LastPlayer1Inputs;
 		std::vector<PlayerInput> LastPlayer2Inputs;
+
+		GameData LastGameData;
 
 		explicit Game(const Lobby& lobbyData);
 

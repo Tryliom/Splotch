@@ -3,7 +3,7 @@
 #include "PlayerInputs.h"
 #include "Packet.h"
 #include "Constants.h"
-#include "GameData.h"
+#include "ClientGameData.h"
 
 #include <vector>
 
@@ -21,11 +21,15 @@ class RollbackManager
 	std::vector<FinalInputs> _confirmedPlayerInputs;
 
 	// GameData at confirmed frame
-	GameData _confirmedGameData;
-	std::vector<GameData> _unconfirmedGameData;
+	ClientGameData _confirmedGameData;
+	std::vector<ClientGameData> _unconfirmedGameData;
 	int _lastConfirmedFrame = -1;
 
+	PlayerRole _playerRole = PlayerRole::PLAYER;
+
 	bool _needToRollback = false;
+
+	int _lastServerChecksum{};
 
 public:
 	void OnPacketReceived(Packet& packet);
@@ -38,14 +42,20 @@ public:
 
 	[[nodiscard]] short GetCurrentFrame() const;
 
-	void SetConfirmedGameData(GameData gameData);
-	[[nodiscard]] GameData GetConfirmedGameData() const;
+	void SetConfirmedGameData(ClientGameData gameData);
+	[[nodiscard]] ClientGameData GetConfirmedGameData() const;
 	[[nodiscard]] int GetConfirmedFrame() const;
 	[[nodiscard]] short GetConfirmedInputFrame() const;
 
 	void ResetUnconfirmedGameData();
-	void AddUnconfirmedGameData(GameData gameData);
+	void AddUnconfirmedGameData(ClientGameData gameData);
 
 	[[nodiscard]] bool NeedToRollback() const;
 	void RollbackDone();
+
+	/**
+	 * @brief Check the integrity of the last confirmed game data with the last server checksum
+	 * @return true if the last confirmed game data is valid
+	 */
+	[[nodiscard]] bool CheckIntegrity() const;
 };

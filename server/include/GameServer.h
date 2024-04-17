@@ -8,10 +8,10 @@
 
 #include <array>
 
-class Server
+class GameServer
 {
 public:
-	explicit Server(ServerNetworkInterface& serverNetworkInterface);
+	explicit GameServer(ServerNetworkInterface& serverNetworkInterface);
 
 private:
 	std::vector<ServerData::Lobby> _lobbies;

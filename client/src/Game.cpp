@@ -9,6 +9,7 @@
 #include "MyPackets/JoinLobbyPacket.h"
 #include "MyPackets/PlayerInputPacket.h"
 #include "Logger.h"
+#include "MyPackets/LeaveGamePacket.h"
 
 #include <SFML/Graphics.hpp>
 #include <utility>
@@ -94,6 +95,14 @@ void Game::FixedUpdate(sf::Time elapsed)
 		// Update the game with the current frame
 		UpdateGame(elapsed, _rollbackManager.GetCurrentFrame());
 		_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
+
+		if (!_rollbackManager.CheckIntegrity())
+		{
+			LOG("Game data is corrupted -> Leave game");
+
+			SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
+			SetState(GameState::MAIN_MENU);
+		}
 	}
 
 	if (_renderer != nullptr)
@@ -194,7 +203,6 @@ void Game::UpdateGame(sf::Time elapsed, short frame)
 	const auto currentHandInputs = _rollbackManager.GetHandInput(frame);
 	const auto previousHandInputs = _rollbackManager.GetHandInput(previousFrame);
 
-	_gameManager.SetPlayerInputs(currentPlayerInputs, previousPlayerInputs);
-	_gameManager.SetHandInputs(currentHandInputs, previousHandInputs);
-	_gameManager.UpdatePlayersPositions(elapsed);
+	_gameManager.Update(elapsed,currentPlayerInputs, previousPlayerInputs,
+		currentHandInputs, previousHandInputs);
 }

@@ -83,3 +83,6 @@ enum class PlayerRole
 	PLAYER,
 	HAND
 };
+
+constexpr int FRAME_RATE = 30;
+constexpr float TIME_PER_FRAME = 1.f / FRAME_RATE;

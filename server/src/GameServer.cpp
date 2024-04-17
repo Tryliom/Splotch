@@ -8,10 +8,10 @@
 #include "MyPackets/PlayerInputPacket.h"
 #include "MyPackets/ConfirmationInputPacket.h"
 
-Server::Server(ServerNetworkInterface& serverNetworkInterface)
+GameServer::GameServer(ServerNetworkInterface& serverNetworkInterface)
 	: _serverNetworkInterface(serverNetworkInterface) {}
 
-void Server::Update()
+void GameServer::Update()
 {
 	while (true)
 	{
@@ -39,16 +39,20 @@ void Server::Update()
 		{
 			game.AddFrame();
 
-			auto frame = game.GetLastFrame();
+			const auto frame = game.GetLastFrame();
+			const auto checksum = game.LastGameData.GenerateChecksum();
+
+			const auto p1ConfirmedPacket = new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.HandRoleInputs, checksum);
+			const auto p2ConfirmedPacket = new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.HandRoleInputs, checksum);
 
 			// Send the frame to the players
-			_serverNetworkInterface.SendPacket(new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.HandRoleInputs), game.Players[0], Protocol::TCP);
-			_serverNetworkInterface.SendPacket(new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.HandRoleInputs), game.Players[1], Protocol::TCP);
+			_serverNetworkInterface.SendPacket(p1ConfirmedPacket,game.Players[0], Protocol::TCP);
+			_serverNetworkInterface.SendPacket(p2ConfirmedPacket,game.Players[1], Protocol::TCP);
 		}
 	}
 }
 
-void Server::OnReceivePacket(PacketData packetData)
+void GameServer::OnReceivePacket(PacketData packetData)
 {
 	auto clientId = packetData.Client;
 	auto packet = packetData.PacketContent;
@@ -90,14 +94,14 @@ void Server::OnReceivePacket(PacketData packetData)
 	}
 }
 
-void Server::OnDisconnect(ClientId clientId)
+void GameServer::OnDisconnect(ClientId clientId)
 {
 	LOG("PlayerDrawable " << clientId.Index << " disconnected");
 	RemoveFromLobby(clientId);
 	RemoveFromGame(clientId);
 }
 
-void Server::JoinLobby(ClientId clientId)
+void GameServer::JoinLobby(ClientId clientId)
 {
 	static constexpr char FIRST_PLAYER_INDEX = 0;
 	static constexpr char SECOND_PLAYER_INDEX = 1;
@@ -118,7 +122,7 @@ void Server::JoinLobby(ClientId clientId)
 	AddToLobby(_lobbies.back(), clientId);
 }
 
-void Server::AddToLobby(ServerData::Lobby& lobby, ClientId clientId)
+void GameServer::AddToLobby(ServerData::Lobby& lobby, ClientId clientId)
 {
 	static constexpr char FIRST_PLAYER_INDEX = 0;
 	static constexpr char SECOND_PLAYER_INDEX = 1;
@@ -135,7 +139,7 @@ void Server::AddToLobby(ServerData::Lobby& lobby, ClientId clientId)
 	}
 }
 
-void Server::RemoveFromLobby(ClientId clientId)
+void GameServer::RemoveFromLobby(ClientId clientId)
 {
 	static constexpr char FIRST_PLAYER_INDEX = 0;
 	static constexpr char SECOND_PLAYER_INDEX = 1;
@@ -174,7 +178,7 @@ void Server::RemoveFromLobby(ClientId clientId)
 	}
 }
 
-void Server::RemoveFromGame(ClientId clientId)
+void GameServer::RemoveFromGame(ClientId clientId)
 {
 	static constexpr char FIRST_PLAYER_INDEX = 0;
 	static constexpr char SECOND_PLAYER_INDEX = 1;
@@ -194,7 +198,7 @@ void Server::RemoveFromGame(ClientId clientId)
 	}
 }
 
-void Server::StartGame(ClientId clientId)
+void GameServer::StartGame(ClientId clientId)
 {
 	// Find the lobby with the player
 	for (auto& lobby: _lobbies)
@@ -220,7 +224,7 @@ void Server::StartGame(ClientId clientId)
 	}
 }
 
-void Server::StartNewGame(ServerData::Game& game, ServerData::Lobby& lobby)
+void GameServer::StartNewGame(ServerData::Game& game, ServerData::Lobby& lobby)
 {
 	game.Reset();
 	game.FromLobby(lobby);

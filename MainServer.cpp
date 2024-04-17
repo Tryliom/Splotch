@@ -7,7 +7,7 @@ int main()
 	MyPackets::RegisterMyPackets();
 
 	NetworkServerManager networkServerManager(PORT);
-	Server server(networkServerManager);
+	GameServer server(networkServerManager);
 
 	while(networkServerManager.Running)
 	{

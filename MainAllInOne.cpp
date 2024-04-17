@@ -16,7 +16,7 @@ int main()
 	AssetManager::Initialize();
 
 	NetworkServerManager networkServerManager(PORT);
-	Server server(networkServerManager);
+	GameServer server(networkServerManager);
 
 	// Network
 	std::array<NetworkClientManager, 2> networkClientManagers = {

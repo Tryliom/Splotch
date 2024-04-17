@@ -58,11 +58,8 @@ constexpr ScreenSizeValue HEIGHT = { 900.f };
 constexpr ScreenSizeValue WIDTH_PER_SCREEN = { 700.f };
 constexpr ScreenSizeValue OFFSET_BETWEEN_SCREEN = { 10.f };
 constexpr ScreenSizeValue WIDTH = WIDTH_PER_SCREEN * 2.f + OFFSET_BETWEEN_SCREEN;
-constexpr float GAME_WIDTH = WIDTH_PER_SCREEN.Value;
+constexpr float GAME_WIDTH = WIDTH.Value;
 constexpr float GAME_HEIGHT = HEIGHT.Value;
-
-constexpr int FRAME_RATE = 30;
-constexpr float TIME_PER_FRAME = 1.f / FRAME_RATE;
 
 constexpr std::array<sf::Keyboard::Key, 4> player1Commands = {
 	sf::Keyboard::Key::W,
@@ -83,7 +80,7 @@ int main()
 	AssetManager::Initialize();
 
 	NetworkServerManager networkServerManager(PORT);
-	Server server(networkServerManager);
+	GameServer server(networkServerManager);
 
 	// Network
 	std::array<NetworkClientManager, MAX_PLAYERS> networkClientManagers = {

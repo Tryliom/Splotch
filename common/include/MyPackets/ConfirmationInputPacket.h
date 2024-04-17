@@ -10,23 +10,25 @@ namespace MyPackets
 	{
 	public:
 		ConfirmInputPacket() : Packet(static_cast<char>(MyPacketType::ConfirmationInput)) {}
-		explicit ConfirmInputPacket(PlayerInput playerInput, PlayerInput handInput) : Packet(static_cast<char>(MyPacketType::ConfirmationInput)), PlayerRoleInput(playerInput), HandRoleInput(handInput) {}
+		explicit ConfirmInputPacket(PlayerInput playerInput, PlayerInput handInput, int checksum)
+			: Packet(static_cast<char>(MyPacketType::ConfirmationInput)), PlayerRoleInput(playerInput), HandRoleInput(handInput), Checksum(checksum) {}
 
 		PlayerInput PlayerRoleInput {};
 		PlayerInput HandRoleInput {};
+		int Checksum {};
 
 		[[nodiscard]] Packet* Clone() const override { return new ConfirmInputPacket(*this); }
 		[[nodiscard]] std::string ToString() const override { return "ConfirmInputPacket"; }
 
 		void Write(sf::Packet& packet) const override
 		{
-			packet << static_cast<sf::Uint8>(PlayerRoleInput) << static_cast<sf::Uint8>(HandRoleInput);
+			packet << static_cast<sf::Uint8>(PlayerRoleInput) << static_cast<sf::Uint8>(HandRoleInput) << Checksum;
 		}
 
 		void Read(sf::Packet& packet) override
 		{
 			sf::Uint8 playerInput, handInput;
-			packet >> playerInput >> handInput;
+			packet >> playerInput >> handInput >> Checksum;
 			PlayerRoleInput = static_cast<PlayerInput>(playerInput);
 			HandRoleInput = static_cast<PlayerInput>(handInput);
 		}

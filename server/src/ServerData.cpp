@@ -50,6 +50,8 @@ namespace ServerData
 		HandRolePlayer = Math::Random::Range(0, 1);
 		PlayerRolePlayer = HandRolePlayer == 0 ? 1 : 0;
 
+		LastGameData.StartGame(WIDTH, HEIGHT);
+
 		ConfirmFrames.clear();
 	}
 
@@ -95,6 +97,16 @@ namespace ServerData
 		// Remove the frame from the last inputs
 		LastPlayer1Inputs.erase(LastPlayer1Inputs.begin());
 		LastPlayer2Inputs.erase(LastPlayer2Inputs.begin());
+
+		// Update the game data
+		const auto confirmedFrameSize = ConfirmFrames.size();
+		const auto playerInputs = ConfirmFrames[confirmedFrameSize - 1].PlayerRoleInputs;
+		const auto previousPlayerInputs = confirmedFrameSize > 1 ? ConfirmFrames[confirmedFrameSize - 2].PlayerRoleInputs : playerInputs;
+		const auto handInputs = ConfirmFrames[confirmedFrameSize - 1].HandRoleInputs;
+		const auto previousHandInputs = confirmedFrameSize > 1 ? ConfirmFrames[confirmedFrameSize - 2].HandRoleInputs : handInputs;
+
+		LastGameData.RegisterPlayersInputs(playerInputs, previousPlayerInputs, handInputs, previousHandInputs);
+		LastGameData.Update(sf::seconds(TIME_PER_FRAME));
 	}
 
 	FinalInputs Game::GetLastFrame()
