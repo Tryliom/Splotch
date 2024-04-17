@@ -17,11 +17,11 @@ void Server::Update()
 	{
 		auto packetData = _serverNetworkInterface.PopPacket();
 
-		if (packetData.Packet == nullptr) break;
+		if (packetData.PacketContent == nullptr) break;
 
 		OnReceivePacket(packetData);
 
-		delete packetData.Packet;
+		delete packetData.PacketContent;
 	}
 
 	while (true)
@@ -51,7 +51,7 @@ void Server::Update()
 void Server::OnReceivePacket(PacketData packetData)
 {
 	auto clientId = packetData.Client;
-	auto packet = packetData.Packet;
+	auto packet = packetData.PacketContent;
 
 	if (packet->Type == static_cast<char>(MyPackets::MyPacketType::JoinLobby))
 	{

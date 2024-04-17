@@ -2,11 +2,23 @@
 #include "Game.h"
 #include "MyPackets.h"
 #include "NetworkClientManager.h"
-#include "Logger.h"
 #include "GameManager.h"
 
-inline static ScreenSizeValue HEIGHT = { 900.f };
-inline static ScreenSizeValue WIDTH = { 700.f };
+constexpr ScreenSizeValue HEIGHT = { 900.f };
+constexpr ScreenSizeValue WIDTH = { 700.f };
+
+constexpr float GAME_WIDTH = WIDTH.Value;
+constexpr float GAME_HEIGHT = HEIGHT.Value;
+
+constexpr int FRAME_RATE = 30;
+constexpr float TIME_PER_FRAME = 1.f / FRAME_RATE;
+
+constexpr std::array<sf::Keyboard::Key, 4> commands = {
+	sf::Keyboard::Key::W,
+	sf::Keyboard::Key::A,
+	sf::Keyboard::Key::S,
+	sf::Keyboard::Key::D
+};
 
 int main()
 {
@@ -17,40 +29,83 @@ int main()
 	NetworkClientManager _networkClientManager(HOST_NAME, PORT);
 
 	// Set the size of the game
-	sf::RenderWindow _window(sf::RenderWindow(sf::VideoMode(WIDTH.Value, HEIGHT.Value), "Splotch", sf::Style::Default));
+	sf::RenderWindow window(sf::RenderWindow(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT),
+	"Splotch", sf::Style::Default));
 
-	_window.setVerticalSyncEnabled(true);
+	window.setVerticalSyncEnabled(true);
 
-	GameManager _gameManager(WIDTH, HEIGHT);
-	Game _game(_gameManager, _networkClientManager, WIDTH, HEIGHT);
+	GameManager gameManager(WIDTH, HEIGHT);
+	RollbackManager rollbackManager;
+	Game game(rollbackManager, gameManager, _networkClientManager, WIDTH, HEIGHT);
 
-	_game.OnQuit([&]() {
-		_window.close();
+	game.OnQuit([&]()
+	{
+	  	window.close();
 	});
 
 	sf::Clock clock;
+	float time = TIME_PER_FRAME;
 
-	while (_window.isOpen())
+	while (window.isOpen())
 	{
 		sf::Event event{};
+		const sf::Time elapsed = clock.restart();
 
-		while (_window.pollEvent(event))
+		time += elapsed.asSeconds();
+
+		while (time >= TIME_PER_FRAME)
 		{
-			if (event.type == sf::Event::Closed)
+			while (window.pollEvent(event))
 			{
-				_window.close();
-				break;
+				if (event.type == sf::Event::Closed)
+				{
+					window.close();
+					break;
+				}
+
+				game.CheckInputs(event);
 			}
 
-			_game.CheckInputs(event);
+			PlayerInput playerInput = {};
+
+			if (game.GetState() == GameState::GAME)
+			{
+				if (sf::Keyboard::isKeyPressed(commands[0]))
+				{
+					playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
+				}
+
+				if (sf::Keyboard::isKeyPressed(commands[1]))
+				{
+					playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
+				}
+
+				if (sf::Keyboard::isKeyPressed(commands[2]))
+				{
+					playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
+				}
+
+				if (sf::Keyboard::isKeyPressed(commands[3]))
+				{
+					playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
+				}
+
+				game.RegisterPlayerInput(playerInput);
+			}
+
+			game.FixedUpdate(sf::seconds(TIME_PER_FRAME));
+
+			time -= TIME_PER_FRAME;
 		}
 
-		sf::Time elapsed = clock.restart();
+		const auto mousePosition = sf::Vector2f(sf::Mouse::getPosition(window));
+		const auto timeSinceLastFixed = sf::seconds(time);
 
-		_game.Update(elapsed, sf::Vector2f(sf::Mouse::getPosition(_window)));
-		_window.clear();
-		_game.Draw(_window);
-		_window.display();
+		game.Update(elapsed, timeSinceLastFixed, mousePosition);
+
+		window.clear();
+		game.Draw(window);
+		window.display();
 	}
 
 	_networkClientManager.Stop();

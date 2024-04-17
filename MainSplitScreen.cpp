@@ -64,13 +64,13 @@ constexpr float GAME_HEIGHT = HEIGHT.Value;
 constexpr int FRAME_RATE = 30;
 constexpr float TIME_PER_FRAME = 1.f / FRAME_RATE;
 
-constexpr std::array<sf::Keyboard::Key, 4> Player1Commands = {
+constexpr std::array<sf::Keyboard::Key, 4> player1Commands = {
 	sf::Keyboard::Key::W,
 	sf::Keyboard::Key::A,
 	sf::Keyboard::Key::S,
 	sf::Keyboard::Key::D
 };
-constexpr std::array<sf::Keyboard::Key, 4> Player2Commands = {
+constexpr std::array<sf::Keyboard::Key, 4> player2Commands = {
 	sf::Keyboard::Key::Up,
 	sf::Keyboard::Key::Left,
 	sf::Keyboard::Key::Down,
@@ -91,17 +91,21 @@ int main()
 		NetworkClientManager(HOST_NAME, PORT)
 	};
 	std::array<std::size_t, MAX_PLAYERS> clientNetworkSettingsSelected = {
-		1, 1
+		static_cast<std::size_t>(NetworkSettings::NORMAL),
+		static_cast<std::size_t>(NetworkSettings::NORMAL)
 	};
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		const auto& clientNetworkSettings = NETWORK_SETTINGS[clientNetworkSettingsSelected[i]];
-		networkClientManagers[i].SetDelaySettings(clientNetworkSettings.ChanceToDropPacket, clientNetworkSettings.MinLatency, clientNetworkSettings.MaxLatency);
+		networkClientManagers[i].SetDelaySettings(clientNetworkSettings.ChanceToDropPacket,
+			clientNetworkSettings.MinLatency,
+			clientNetworkSettings.MaxLatency);
 	}
 
 	// Set the size of the game
-	sf::RenderWindow window(sf::RenderWindow(sf::VideoMode(WIDTH.Value, HEIGHT.Value), "Splotch", sf::Style::Default));
+	sf::RenderWindow window(sf::RenderWindow(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT),
+	"Splotch", sf::Style::Default));
 
 	window.setVerticalSyncEnabled(true);
 
@@ -168,7 +172,7 @@ int main()
 				{
 					PlayerInput playerInput = {};
 					PlayerRole playerRole = gameManagers[i].GetPlayerRole();
-					std::array<sf::Keyboard::Key, 4> keys = i == 0 ? Player1Commands : Player2Commands;
+					std::array<sf::Keyboard::Key, 4> keys = i == 0 ? player1Commands : player2Commands;
 
 					if (playerRole == PlayerRole::PLAYER)
 					{
@@ -260,7 +264,9 @@ int main()
 					{
 						clientNetworkSettingsSelected[i] = setting;
 						auto clientNetworkSettings = NETWORK_SETTINGS[setting];
-						networkClientManagers[i].SetDelaySettings(clientNetworkSettings.ChanceToDropPacket, clientNetworkSettings.MinLatency, clientNetworkSettings.MaxLatency);
+						networkClientManagers[i].SetDelaySettings(clientNetworkSettings.ChanceToDropPacket,
+							clientNetworkSettings.MinLatency,
+							clientNetworkSettings.MaxLatency);
 					}
 
 					if (setting < NETWORK_SETTINGS.size() - 1)

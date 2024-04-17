@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstdint>
 #include "Allocator.h"
 
 #ifdef TRACY_ENABLE

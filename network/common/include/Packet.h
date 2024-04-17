@@ -13,7 +13,7 @@ enum class PacketType :
 	COUNT // Always last
 };
 
-// Packet attributes always need to be initialized to default values
+// PacketContent attributes always need to be initialized to default values
 class Packet
 {
  public:
@@ -29,13 +29,13 @@ class Packet
 	[[nodiscard]] virtual Packet* Clone() const = 0;
 	[[nodiscard]] virtual std::string ToString() const = 0;
 	/**
-	 * @brief Write the packet to a sf::Packet, type is already written first
-	 * @param packet sf::Packet to write to
+	 * @brief Write the packet to a sf::PacketContent, type is already written first
+	 * @param packet sf::PacketContent to write to
 	 */
 	virtual void Write(sf::Packet& packet) const = 0;
 	/**
-	 * @brief Read the packet from a sf::Packet, type is already read first
-	 * @param packet sf::Packet to read from
+	 * @brief Read the packet from a sf::PacketContent, type is already read first
+	 * @param packet sf::PacketContent to read from
 	 */
 	virtual void Read(sf::Packet& packet) = 0;
 

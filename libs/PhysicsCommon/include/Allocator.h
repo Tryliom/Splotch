@@ -191,7 +191,7 @@ public:
  * \brief Custom proxy allocator respecting allocator_traits
  */
 template<typename T>
-class StandardAllocator final
+class StandardAllocator
 {
 public:
 	typedef T value_type;

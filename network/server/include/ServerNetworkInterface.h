@@ -6,7 +6,7 @@
 
 struct PacketData
 {
-	Packet* Packet{};
+	Packet* PacketContent{};
 	ClientId Client{};
 };
 
