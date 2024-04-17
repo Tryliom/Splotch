@@ -44,7 +44,7 @@ namespace Physics
 		explicit QuadTree(const Math::RectangleF& boundary) noexcept;
 
 	private:
-		LinearAllocator _nodesAllocator;
+		HeapAllocator _nodesAllocator;
 		HeapAllocator _heapAllocator {};
 		MyVector<QuadNode> _nodes { StandardAllocator <QuadNode> {_nodesAllocator} };
 		MyVector<ColliderPair> _allPossiblePairs { StandardAllocator <ColliderPair> {_heapAllocator} };

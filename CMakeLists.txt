@@ -90,7 +90,7 @@ target_include_directories(ServerPart PUBLIC server/include/)
 file(GLOB_RECURSE COMMON_FILES common/include/*.h common/src/*.cpp)
 add_library(Common STATIC ${COMMON_FILES})
 target_include_directories(Common PUBLIC common/include/)
-target_link_libraries(Common PUBLIC PhysicsCommon)
+target_link_libraries(Common PUBLIC PhysicsEngine)
 
 # Network
 # Common

@@ -212,18 +212,6 @@ int main()
 				game.FixedUpdate(sf::seconds(TIME_PER_FRAME));
 			}
 
-			// If one is in game, then it means both are in game
-			if (games[0].GetState() == GameState::GAME)
-			{
-				if (rollbackManagers[0].GetConfirmedFrame() == rollbackManagers[1].GetConfirmedFrame())
-				{
-					if (rollbackManagers[0].GetConfirmedGameData() != rollbackManagers[1].GetConfirmedGameData())
-					{
-						LOG("Game data is different");
-					}
-				}
-			}
-
 			time -= TIME_PER_FRAME;
 		}
 

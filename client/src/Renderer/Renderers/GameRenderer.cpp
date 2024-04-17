@@ -25,6 +25,15 @@ GameRenderer::GameRenderer(Game& game, GameManager& gameManager, ScreenSizeValue
 void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	//TODO: Draw hand and bricks
+	static sf::RectangleShape platform;
+	platform.setSize(sf::Vector2f(PLATFORM_SIZE.X * _width, PLATFORM_SIZE.Y * _height));
+	platform.setFillColor(sf::Color::White);
+	platform.setOutlineColor(sf::Color::Black);
+	platform.setOutlineThickness(2.f);
+	platform.setPosition(sf::Vector2f(PLATFORM_POSITION.X * _width, PLATFORM_POSITION.Y * _height));
+	platform.setOrigin(platform.getSize().x / 2.f, platform.getSize().y / 2.f);
+
+	target.draw(platform, states);
 
 	for (auto& player : _gameManager.GetGameData().Players)
 	{

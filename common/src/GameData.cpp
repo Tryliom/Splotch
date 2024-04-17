@@ -2,12 +2,53 @@
 
 #include "Constants.h"
 
-void GameData::StartGame(ScreenSizeValue width, ScreenSizeValue height)
+void GameData::StartGame(ScreenSizeValue width, ScreenSizeValue height, Physics::ContactListener* contactListener)
 {
 	_width = width;
 	_height = height;
-	PlayerPosition = {PLAYER_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height};
+	PlayerPosition = {PLAYER_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height - PLAYER_SIZE_SCALED.Y / 2.f};
 	Hand = HandSlot::SLOT_3;
+
+	SetupWorld(contactListener);
+}
+
+void GameData::SetupWorld(Physics::ContactListener* contactListener)
+{
+	World = Physics::World();
+	World.SetContactListener(contactListener);
+	World.SetGravity(GRAVITY);
+
+	// Create the base platform
+	auto platformBodyRef = World.CreateBody();
+	auto& platform = World.GetBody(platformBodyRef);
+	auto platformColliderRef = World.CreateCollider(platformBodyRef);
+	auto& platformCollider = World.GetCollider(platformColliderRef);
+
+	platform.SetUseGravity(false);
+	platform.SetBodyType(Physics::BodyType::Static);
+	platform.SetPosition({PLATFORM_POSITION.X * _width, PLATFORM_POSITION.Y * _height});
+
+	platformCollider.SetIsTrigger(false);
+	platformCollider.SetRectangle({
+	  { PLATFORM_MIN_BOUND.X * _width, PLATFORM_MIN_BOUND.Y * _height },
+	 { PLATFORM_MAX_BOUND.X * _width, PLATFORM_MAX_BOUND.Y * _height }
+	});
+
+	// Create the player
+	PlayerBody = World.CreateBody();
+	auto& player = World.GetBody(PlayerBody);
+	auto playerColliderRef = World.CreateCollider(PlayerBody);
+	auto& playerCollider = World.GetCollider(playerColliderRef);
+
+	player.SetUseGravity(true);
+	player.SetBodyType(Physics::BodyType::Dynamic);
+	player.SetPosition(PlayerPosition);
+
+	playerCollider.SetIsTrigger(false);
+	playerCollider.SetRectangle({
+			  { PLAYER_MIN_BOUND.X, PLAYER_MIN_BOUND.Y },
+	 { PLAYER_MAX_BOUND.X, PLAYER_MAX_BOUND.Y }
+	});
 }
 
 void GameData::DecreaseHandSlot()
@@ -34,8 +75,22 @@ void GameData::RegisterPlayersInputs(PlayerInput playerInput, PlayerInput previo
 
 void GameData::Update(sf::Time elapsed)
 {
-	PlayerPosition = GetNextPlayerPosition(elapsed);
+	UpdatePlayer(elapsed);
+	UpdateHand();
 
+	World.Update(elapsed.asSeconds());
+
+	PlayerPosition = World.GetBody(PlayerBody).Position();
+}
+
+void GameData::UpdatePlayer(sf::Time elapsed)
+{
+	auto& player = World.GetBody(PlayerBody);
+	player.AddForce(GetNextPlayerForce(elapsed));
+}
+
+void GameData::UpdateHand()
+{
 	const bool isLeftPressed = IsKeyPressed(_handInputs, PlayerInputTypes::Left);
 	const bool isRightPressed = IsKeyPressed(_handInputs, PlayerInputTypes::Right);
 	const bool wasLeftPressed = IsKeyPressed(_previousHandInputs, PlayerInputTypes::Left);
@@ -52,14 +107,13 @@ void GameData::Update(sf::Time elapsed)
 	}
 }
 
-Math::Vec2F GameData::GetNextPlayerPosition(sf::Time elapsed) const
+Math::Vec2F GameData::GetNextPlayerForce(sf::Time elapsed)
 {
-	static constexpr float MOVE_SPEED = 200.f;
-	static constexpr float FALL_SPEED = 250.f;
-	static constexpr float JUMP_HEIGHT = 200.f;
-	auto playerPosition = PlayerPosition;
+	auto& player = World.GetBody(PlayerBody);
+	auto playerPosition = player.Position(); // Copy the position
+	auto playerForce = player.Force(); // Copy the force
 
-	// Change position harshly [Debug]
+	//TODO: Add bool to check if the player is in air, set by game manager when detect collision with platform
 	const bool isPlayerInAir = playerPosition.Y < PLAYER_START_POSITION.Y * _height;
 	const bool isUpPressed = IsKeyPressed(_playerInputs, PlayerInputTypes::Up);
 	const bool isLeftPressed = IsKeyPressed(_playerInputs, PlayerInputTypes::Left);
@@ -68,25 +122,20 @@ Math::Vec2F GameData::GetNextPlayerPosition(sf::Time elapsed) const
 
 	if (isUpPressed && !wasUpPressed && !isPlayerInAir)
 	{
-		playerPosition.Y -= JUMP_HEIGHT;
+		playerForce += PLAYER_JUMP;
 	}
 
 	if (isLeftPressed)
 	{
-		playerPosition.X -= MOVE_SPEED * elapsed.asSeconds();
+		playerForce += {-PLAYER_SPEED, 0.0f};
 	}
 
 	if (isRightPressed)
 	{
-		playerPosition.X += MOVE_SPEED * elapsed.asSeconds();
+		playerForce += {PLAYER_SPEED, 0.0f};
 	}
 
-	if (isPlayerInAir)
-	{
-		playerPosition.Y += FALL_SPEED * elapsed.asSeconds();
-	}
-
-	return playerPosition;
+	return playerForce;
 }
 
 Math::Vec2F GameData::GetHandPosition() const
@@ -103,8 +152,8 @@ bool GameData::operator==(const GameData& other) const
 int GameData::GenerateChecksum() const
 {
 	int checksum = 0;
-	checksum += static_cast<int>(PlayerPosition.X * 100.f);
-	checksum += static_cast<int>(PlayerPosition.Y * 100.f);
+	checksum += static_cast<int>(PlayerPosition.X);
+	checksum += static_cast<int>(PlayerPosition.Y);
 	checksum += static_cast<int>(Hand);
 	return checksum;
 }

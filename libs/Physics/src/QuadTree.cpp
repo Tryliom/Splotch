@@ -10,8 +10,8 @@ namespace Physics
 	QuadNode::QuadNode(HeapAllocator& allocator) noexcept :
 		Colliders {StandardAllocator<SimplifiedCollider> {allocator}} {}
 
-	QuadTree::QuadTree(const Math::RectangleF& boundary) noexcept :
-		_nodesAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode) * 2), (getMaxNodes()) * sizeof(QuadNode) * 2)
+	QuadTree::QuadTree(const Math::RectangleF& boundary) noexcept /*:
+		_nodesAllocator(std::malloc((getMaxNodes()) * sizeof(QuadNode) * 2), (getMaxNodes()) * sizeof(QuadNode) * 2)*/
     {
 		_nodes.resize(getMaxNodes(), QuadNode {_heapAllocator});
 

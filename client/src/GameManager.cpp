@@ -1,9 +1,9 @@
 #include "GameManager.h"
 
-#include <utility>
-
 #include "MyPackets.h"
 #include "MyPackets/StartGamePacket.h"
+
+#include <utility>
 
 GameManager::GameManager(ScreenSizeValue width, ScreenSizeValue height) : _width(width), _height(height) {}
 
@@ -14,7 +14,7 @@ void GameManager::OnPacketReceived(Packet& packet)
 		auto& startGamePacket = *packet.As<MyPackets::StartGamePacket>();
 
 		_playerRole = startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::HAND;
-		_gameData.StartGame(_width, _height);
+		_gameData.StartGame(_width, _height, this);
 
 		_gameData.Players[0].SetColor(startGamePacket.IsPlayer ? sf::Color::Cyan : sf::Color::Red);
 		_gameData.Players[1].SetColor(startGamePacket.IsPlayer ? sf::Color::Red : sf::Color::Cyan);
