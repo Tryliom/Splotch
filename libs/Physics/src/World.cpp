@@ -335,7 +335,13 @@ namespace Physics
 						body.AddForce(_gravity);
 					}
 
+					static constexpr float MAX_VELOCITY_Y = 300.f;
+
 					body.AddVelocity(body.Force() * body.InverseMass() * deltaTime);
+
+					// Clamp the velocity to a maximum value
+					body.SetVelocity({ body.Velocity().X, std::min(body.Velocity().Y, MAX_VELOCITY_Y) });
+
 					body.AddPosition(body.Velocity() * deltaTime);
 					body.SetForce(Math::Vec2F(0, 0));
 				}

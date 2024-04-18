@@ -4,6 +4,7 @@
 #include "GameManager.h"
 #include "AssetManager.h"
 #include "Constants.h"
+#include "Logger.h"
 #include "MyPackets/LeaveGamePacket.h"
 
 GameRenderer::GameRenderer(Game& game, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height) :
@@ -29,7 +30,7 @@ void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) con
 	platform.setSize(sf::Vector2f(PLATFORM_SIZE.X * _width, PLATFORM_SIZE.Y * _height));
 	platform.setFillColor(sf::Color::White);
 	platform.setOutlineColor(sf::Color::Black);
-	platform.setOutlineThickness(2.f);
+	platform.setOutlineThickness(-2.f);
 	platform.setPosition(sf::Vector2f(PLATFORM_POSITION.X * _width, PLATFORM_POSITION.Y * _height));
 	platform.setOrigin(platform.getSize().x / 2.f, platform.getSize().y / 2.f);
 
@@ -39,6 +40,31 @@ void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) con
 	{
 		target.draw(player, states);
 	}
+
+	// Draw bricks
+	const auto& brick = _gameManager.GetGameData().LastBrick;
+
+	if (brick.Index == 0) return;
+
+	sf::RectangleShape brickShape;
+	auto brickCollider = _gameManager.GetGameData().World.GetCollider(brick);
+	auto brickPosition = brickCollider.GetPosition();
+	auto brickSize = brickCollider.GetRectangle().Size();
+
+	brickShape.setSize({
+		brickSize.X,
+		brickSize.Y
+	});
+	brickShape.setFillColor(sf::Color::White);
+	brickShape.setOutlineColor(sf::Color::Black);
+	brickShape.setOutlineThickness(-1.f);
+	brickShape.setOrigin(
+		brickSize.X / 2.f,
+		brickSize.Y / 2.f
+	);
+	brickShape.setPosition(brickPosition.X, brickPosition.Y);
+
+	target.draw(brickShape, states);
 }
 
 void GameRenderer::OnCheckInputs(sf::Event event)

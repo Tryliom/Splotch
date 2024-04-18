@@ -11,8 +11,8 @@ namespace Physics
     template<int i>
     struct Ref
     {
-        std::size_t Index;
-        std::size_t Generation;
+        std::size_t Index = 0;
+        std::size_t Generation = 0;
 
         constexpr bool operator==(const Ref& other) const noexcept
         {

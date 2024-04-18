@@ -99,9 +99,11 @@ void Game::FixedUpdate(sf::Time elapsed)
 		if (!_rollbackManager.CheckIntegrity())
 		{
 			LOG("Game data is corrupted -> Leave game");
+			LOG("Player position: " + std::to_string(_gameManager.GetGameData().PlayerPosition.X) + ", "
+				+ std::to_string(_gameManager.GetGameData().PlayerPosition.Y));
 
-			SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
-			SetState(GameState::MAIN_MENU);
+			/*SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
+			SetState(GameState::MAIN_MENU);*/
 		}
 	}
 

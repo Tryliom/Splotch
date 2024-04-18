@@ -4,11 +4,10 @@
 #include "Packet.h"
 #include "PlayerInputs.h"
 #include "ClientGameData.h"
-#include "ContactListener.h"
 
 #include <queue>
 
-class GameManager final : public Physics::ContactListener
+class GameManager
 {
  public:
 	GameManager(ScreenSizeValue width, ScreenSizeValue height);
@@ -32,12 +31,4 @@ class GameManager final : public Physics::ContactListener
 
 	[[nodiscard]] ClientGameData GetGameData() const;
 	void SetGameData(ClientGameData gameData);
-
-	void OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
-	void OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
-	void OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
-
-	void OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
-	void OnCollisionExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
-	void OnCollisionStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
 };

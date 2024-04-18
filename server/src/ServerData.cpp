@@ -50,7 +50,7 @@ namespace ServerData
 		HandRolePlayer = Math::Random::Range(0, 1);
 		PlayerRolePlayer = HandRolePlayer == 0 ? 1 : 0;
 
-		LastGameData.StartGame(WIDTH, HEIGHT, this);
+		LastGameData.StartGame(WIDTH, HEIGHT);
 
 		ConfirmFrames.clear();
 	}

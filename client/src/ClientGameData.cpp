@@ -3,8 +3,9 @@
 void ClientGameData::UpdatePlayersAnimations(sf::Time elapsed, sf::Time elapsedSinceLastFixed)
 {
 	const auto& body = World.GetBody(PlayerBody);
-	auto playerForce = GetNextPlayerForce(elapsedSinceLastFixed);
-	auto playerVelocity = World.GetBody(PlayerBody).Velocity();
+	auto playerForces = GetNextPlayerForces();
+	auto playerForce = playerForces.Force;
+	auto playerVelocity = playerForces.Velocity;
 	auto playerPosition = World.GetBody(PlayerBody).Position();
 
 	playerForce += GRAVITY;
@@ -28,27 +29,26 @@ void ClientGameData::UpdatePlayersAnimations(sf::Time elapsed, sf::Time elapsedS
 
 		const auto playerInput = playerInputs[i];
 
-		const bool isPlayerInAir = playerPositions[i].Y < PLAYER_START_POSITION.Y * _height;
 		const bool isUpPressed = IsKeyPressed(playerInput, PlayerInputTypes::Up);
 		const bool isLeftPressed = IsKeyPressed(playerInput, PlayerInputTypes::Left);
 		const bool isRightPressed = IsKeyPressed(playerInput, PlayerInputTypes::Right);
 		const bool isIdle = !isUpPressed && !isLeftPressed && !isRightPressed;
 
-		if (isPlayerInAir) player.SetAnimation(PlayerAnimation::JUMP);
+		if (!IsPlayerOnGround) player.SetAnimation(PlayerAnimation::JUMP);
 
 		if (isLeftPressed)
 		{
-			if (!isPlayerInAir) player.SetAnimation(PlayerAnimation::WALK);
+			if (IsPlayerOnGround) player.SetAnimation(PlayerAnimation::WALK);
 			player.SetDirection(PlayerDirection::LEFT);
 		}
 
 		if (isRightPressed)
 		{
-			if (!isPlayerInAir) player.SetAnimation(PlayerAnimation::WALK);
+			if (IsPlayerOnGround) player.SetAnimation(PlayerAnimation::WALK);
 			player.SetDirection(PlayerDirection::RIGHT);
 		}
 
-		if (isIdle && !isPlayerInAir)
+		if (isIdle && IsPlayerOnGround)
 		{
 			player.SetAnimation(PlayerAnimation::IDLE);
 		}

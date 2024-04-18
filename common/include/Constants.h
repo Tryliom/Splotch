@@ -16,7 +16,7 @@ enum class HandSlot : char
 constexpr char HAND_SLOT_COUNT = static_cast<char>(HandSlot::COUNT);
 
 /**
- * Used to represent a value of the screen size
+ * Used to represent a value of the screen size, like width or height
  */
 struct ScreenSizeValue
 {
@@ -68,16 +68,16 @@ struct ScreenPercentage
 
 using Vec2SP = Math::Vec2<ScreenPercentage>;
 
-constexpr Vec2SP BRICK_SIZE = {{ 0.15f }, { 0.05f } };
-
-constexpr Math::Vec2I PLAYER_SIZE = { 16, 16 };
+constexpr Math::Vec2F PLAYER_SIZE = { 16, 16 };
 constexpr float PLAYER_SIZE_SCALE = 3.f;
-constexpr Math::Vec2I PLAYER_SIZE_SCALED = PLAYER_SIZE * PLAYER_SIZE_SCALE;
-constexpr Math::Vec2I PLAYER_MIN_BOUND = -PLAYER_SIZE_SCALED / 2.f;
-constexpr Math::Vec2I PLAYER_MAX_BOUND = PLAYER_SIZE_SCALED / 2.f;
+constexpr Math::Vec2F PLAYER_SIZE_SCALED = PLAYER_SIZE * PLAYER_SIZE_SCALE;
+constexpr Math::Vec2F PLAYER_PHYSICAL_BOX_MIN_BOUND = {-PLAYER_SIZE_SCALED.X * 0.4f, -PLAYER_SIZE_SCALED.Y * 0.5f};
+constexpr Math::Vec2F PLAYER_PHYSICAL_BOX_MAX_BOUND = {PLAYER_SIZE_SCALED.X * 0.4f, PLAYER_SIZE_SCALED.Y * 0.5f};
 
-constexpr Vec2SP HAND_START_POSITION = {{ 0.3f }, { 0.1f } };
-constexpr ScreenPercentage HAND_SLOT_SIZE = { 0.1f };
+constexpr Vec2SP HAND_START_POSITION = {{ 0.17f }, { 0.1f } };
+constexpr ScreenPercentage HAND_SLOT_SIZE = { (1.f - HAND_START_POSITION.X.Value * 2.f) / (HAND_SLOT_COUNT - 1) };
+constexpr Vec2SP BRICK_SIZE = {HAND_SLOT_SIZE, { 0.04f } };
+constexpr ScreenPercentage BRICK_SPAWN_HEIGHT = { 0.15f };
 constexpr ScreenPercentage MAX_HAND_BRICK_SPAWN_HEIGHT = { 1.f - 0.7f };
 
 constexpr Vec2SP PLATFORM_MIN_BOUND = {{ -HAND_SLOT_SIZE.Value * 3.f }, { -0.01f }};
@@ -86,6 +86,8 @@ constexpr Vec2SP PLATFORM_SIZE = {{ HAND_SLOT_SIZE.Value * 5.f }, { PLATFORM_MAX
 constexpr Vec2SP PLATFORM_POSITION = {{ 0.5f }, { 0.95f } };
 
 constexpr Vec2SP PLAYER_START_POSITION = {{ 0.5f }, { PLATFORM_POSITION.Y - PLATFORM_MAX_BOUND.Y } };
+constexpr float PLAYER_CIRCLE_COLLIDER_RADIUS = 0.1f;
+constexpr float PLAYER_TRIGGERS_OFFSET = 0.5f - PLAYER_CIRCLE_COLLIDER_RADIUS;
 
 constexpr Math::Vec2F GRAVITY = { 0.f, 800.f };
 

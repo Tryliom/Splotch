@@ -190,14 +190,15 @@ int main()
 					}
 					else
 					{
-						if (sf::Keyboard::isKeyPressed(keys[2]))
-						{
-							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
-						}
 
 						if (sf::Keyboard::isKeyPressed(keys[1]))
 						{
 							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
+						}
+
+						if (sf::Keyboard::isKeyPressed(keys[2]))
+						{
+							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
 						}
 
 						if (sf::Keyboard::isKeyPressed(keys[3]))

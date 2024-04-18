@@ -8,7 +8,13 @@
 
 #include <SFML/System/Time.hpp>
 
-class GameData
+struct Forces
+{
+	Math::Vec2F Force;
+	Math::Vec2F Velocity;
+};
+
+class GameData : public Physics::ContactListener
 {
 public:
 	Physics::World World;
@@ -16,6 +22,14 @@ public:
 	HandSlot Hand = HandSlot::SLOT_3; // Not physical, just for the player to know where is the hand
 
 	Physics::BodyRef PlayerBody;
+	Physics::ColliderRef PlayerBottomCollider;
+	Physics::ColliderRef PlayerTopCollider;
+	Physics::ColliderRef PlayerPhysicsCollider;
+
+	Physics::ColliderRef LastBrick;
+
+	bool IsPlayerOnGround = true;
+	bool IsPlayerDead = false;
 
  protected:
 	ScreenSizeValue _width{};
@@ -28,21 +42,26 @@ public:
 	PlayerInput _previousHandInputs{};
 
 	// Constants
-	static constexpr float PLAYER_SPEED = 400.f;
+	static constexpr float PLAYER_SPEED = 200.f;
 	static constexpr Math::Vec2F PLAYER_JUMP = GRAVITY * -20.f;
 
 	void DecreaseHandSlot();
 	void IncreaseHandSlot();
 
-	[[nodiscard]] Math::Vec2F GetNextPlayerForce(sf::Time elapsed);
+	[[nodiscard]] Forces GetNextPlayerForces();
 
-	void SetupWorld(Physics::ContactListener* contactListener);
+	void SetupWorld();
 
-	void UpdatePlayer(sf::Time elapsed);
+	void UpdatePlayer();
 	void UpdateHand();
 
+	/**
+	 * @brief Spawn a brick at hand position
+	 */
+	void SpawnBrick();
+
  public:
-	void StartGame(ScreenSizeValue width, ScreenSizeValue height, Physics::ContactListener* contactListener);
+	void StartGame(ScreenSizeValue width, ScreenSizeValue height);
 
 	/**
 	 * @brief Register the player inputs, need to be called before Update
@@ -64,4 +83,12 @@ public:
 	bool operator==(const GameData& other) const;
 
 	[[nodiscard]] int GenerateChecksum() const;
+
+	void OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
+	void OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
+	void OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
+
+	void OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
+	void OnCollisionExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
+	void OnCollisionStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
 };
