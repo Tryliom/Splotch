@@ -241,6 +241,12 @@ int main()
 				const auto settings = clientNetworkSettingsSelected[i];
 
 				ImGui::Text("Player %d: %s", i + 1, ToString(static_cast<NetworkSettings>(settings)).c_str());
+				ImGui::Text(
+					"Current frame %d | Confirmed frame %d | Difference %d",
+					rollbackManagers[i].GetCurrentFrame(),
+					rollbackManagers[i].GetConfirmedFrame(),
+					rollbackManagers[i].GetCurrentFrame() - rollbackManagers[i].GetConfirmedFrame()
+				);
 
 				for (int setting = 0; setting < NETWORK_SETTINGS.size(); setting++)
 				{

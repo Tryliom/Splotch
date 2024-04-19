@@ -269,7 +269,7 @@ void RollbackManager::RollbackDone()
 
 bool RollbackManager::CheckIntegrity() const
 {
-	if (_confirmedPlayerInputs.empty()) return true;
+	if (_confirmedPlayerInputs.size() < 2) return true;
 
 	return _lastServerChecksum == _confirmedGameData.GenerateChecksum();
 }
