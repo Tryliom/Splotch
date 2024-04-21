@@ -1,6 +1,5 @@
 #include "Game.h"
 
-
 #include "Renderer/Renderers/MenuRenderer.h"
 #include "Renderer/Renderers/LobbyRenderer.h"
 #include "Renderer/Renderers/GameRenderer.h"
@@ -8,8 +7,8 @@
 #include "MyPackets.h"
 #include "MyPackets/JoinLobbyPacket.h"
 #include "MyPackets/PlayerInputPacket.h"
-#include "Logger.h"
 #include "MyPackets/LeaveGamePacket.h"
+#include "Logger.h"
 
 #include <SFML/Graphics.hpp>
 #include <utility>

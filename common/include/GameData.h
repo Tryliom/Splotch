@@ -14,6 +14,13 @@ struct Forces
 	Math::Vec2F Velocity;
 };
 
+struct Brick
+{
+	Physics::BodyRef Body;
+	Physics::ColliderRef Collider;
+	bool IsAlive = false;
+};
+
 class GameData : public Physics::ContactListener
 {
 public:
@@ -26,7 +33,11 @@ public:
 	Physics::ColliderRef PlayerTopCollider;
 	Physics::ColliderRef PlayerPhysicsCollider;
 
-	Physics::ColliderRef LastBrick;
+	Physics::ColliderRef PlatformCollider;
+
+	std::array<std::array<Brick, MAX_BRICKS_PER_COLUMN>, HAND_SLOT_COUNT> BricksPerSlot;
+
+	float BrickCooldown = COOLDOWN_SPAWN_BRICK;
 
 	bool IsPlayerOnGround = true;
 	bool IsPlayerDead = false;
@@ -42,6 +53,7 @@ public:
 	PlayerInput _previousHandInputs{};
 
 	// Constants
+	static constexpr float COOLDOWN_SPAWN_BRICK = 0.3f;
 	static constexpr float PLAYER_SPEED = 200.f;
 	static constexpr Math::Vec2F PLAYER_JUMP = GRAVITY * -20.f;
 
@@ -88,7 +100,7 @@ public:
 	void OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
 	void OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
 
-	void OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
+	void OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
 	void OnCollisionExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
 	void OnCollisionStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
 };

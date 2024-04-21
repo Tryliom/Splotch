@@ -25,7 +25,6 @@ GameRenderer::GameRenderer(Game& game, GameManager& gameManager, ScreenSizeValue
 
 void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	//TODO: Draw hand and bricks
 	static sf::RectangleShape platform;
 	platform.setSize(sf::Vector2f(PLATFORM_SIZE.X * _width, PLATFORM_SIZE.Y * _height));
 	platform.setFillColor(sf::Color::White);
@@ -42,29 +41,30 @@ void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) con
 	}
 
 	// Draw bricks
-	const auto& brick = _gameManager.GetGameData().LastBrick;
+	for (auto handIndex = 0; handIndex < HAND_SLOT_COUNT; handIndex++)
+	{
+		for (const auto& brick: _gameManager.GetGameData().BricksPerSlot[handIndex])
+		{
+			if (!brick.IsAlive) continue;
 
-	if (brick.Index == 0) return;
+			sf::RectangleShape brickShape;
+			auto brickCollider = _gameManager.GetGameData().World.GetCollider(brick.Collider);
+			auto brickPosition = brickCollider.GetPosition();
+			auto brickSize = brickCollider.GetRectangle().Size();
 
-	sf::RectangleShape brickShape;
-	auto brickCollider = _gameManager.GetGameData().World.GetCollider(brick);
-	auto brickPosition = brickCollider.GetPosition();
-	auto brickSize = brickCollider.GetRectangle().Size();
+			brickShape.setSize({brickSize.X, brickSize.Y});
+			brickShape.setFillColor(sf::Color::White);
+			brickShape.setOutlineColor(sf::Color::Black);
+			brickShape.setOutlineThickness(-1.f);
+			brickShape.setOrigin(
+				brickSize.X / 2.f,
+				brickSize.Y / 2.f
+			);
+			brickShape.setPosition(brickPosition.X, brickPosition.Y);
 
-	brickShape.setSize({
-		brickSize.X,
-		brickSize.Y
-	});
-	brickShape.setFillColor(sf::Color::White);
-	brickShape.setOutlineColor(sf::Color::Black);
-	brickShape.setOutlineThickness(-1.f);
-	brickShape.setOrigin(
-		brickSize.X / 2.f,
-		brickSize.Y / 2.f
-	);
-	brickShape.setPosition(brickPosition.X, brickPosition.Y);
-
-	target.draw(brickShape, states);
+			target.draw(brickShape, states);
+		}
+	}
 }
 
 void GameRenderer::OnCheckInputs(sf::Event event)

@@ -1,7 +1,6 @@
 #include "GameData.h"
 
 #include "Constants.h"
-#include "Logger.h"
 
 void GameData::StartGame(ScreenSizeValue width, ScreenSizeValue height)
 {
@@ -9,6 +8,8 @@ void GameData::StartGame(ScreenSizeValue width, ScreenSizeValue height)
 	_height = height;
 	PlayerPosition = {PLAYER_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height - PLAYER_SIZE_SCALED.Y / 2.f};
 	Hand = HandSlot::SLOT_3;
+
+	BrickCooldown = COOLDOWN_SPAWN_BRICK;
 
 	IsPlayerDead = false;
 	IsPlayerOnGround = true;
@@ -25,8 +26,8 @@ void GameData::SetupWorld()
 	// Create the base platform
 	auto platformBodyRef = World.CreateBody();
 	auto& platform = World.GetBody(platformBodyRef);
-	auto platformColliderRef = World.CreateCollider(platformBodyRef);
-	auto& platformCollider = World.GetCollider(platformColliderRef);
+	PlatformCollider = World.CreateCollider(platformBodyRef);
+	auto& platformCollider = World.GetCollider(PlatformCollider);
 
 	platform.SetUseGravity(false);
 	platform.SetBodyType(Physics::BodyType::Static);
@@ -101,6 +102,16 @@ void GameData::RegisterPlayersInputs(PlayerInput playerInput, PlayerInput previo
 
 void GameData::Update(sf::Time elapsed)
 {
+	if (BrickCooldown > 0.f)
+	{
+		BrickCooldown -= elapsed.asSeconds();
+
+		if (BrickCooldown < 0.f)
+		{
+			BrickCooldown = 0.f;
+		}
+	}
+
 	UpdatePlayer();
 	UpdateHand();
 
@@ -136,28 +147,42 @@ void GameData::UpdateHand()
 		IncreaseHandSlot();
 	}
 
-	if (isDownPressed && !wasDownPressed)
+	if (isDownPressed && !wasDownPressed && BrickCooldown == 0.f && !BricksPerSlot[static_cast<int>(Hand)][MAX_BRICKS_PER_COLUMN - 1].IsAlive)
 	{
 		SpawnBrick();
+
+		BrickCooldown = COOLDOWN_SPAWN_BRICK;
 	}
 }
 
 void GameData::SpawnBrick()
 {
+	auto index = 0;
+
+	for (int i = 0; i < MAX_BRICKS_PER_COLUMN; i++)
+	{
+		if (!BricksPerSlot[static_cast<int>(Hand)][i].IsAlive)
+		{
+			index = i;
+			break;
+		}
+	}
+
 	auto handPosition = GetHandPosition();
 	auto brickBodyRef = World.CreateBody();
 	auto& brick = World.GetBody(brickBodyRef);
+	auto brickColliderRef = World.CreateCollider(brickBodyRef);
 
-	LastBrick = World.CreateCollider(brickBodyRef);
+	BricksPerSlot[static_cast<int>(Hand)][index] = {brickBodyRef, brickColliderRef, true};
 
-	auto& brickCollider = World.GetCollider(LastBrick);
+	auto& brickCollider = World.GetCollider(BricksPerSlot[static_cast<int>(Hand)][index].Collider);
 	auto brickSize = Math::Vec2F{BRICK_SIZE.X * _width, BRICK_SIZE.Y * _height};
 
 	handPosition.Y = BRICK_SPAWN_HEIGHT * _height;
 
 	brick.SetUseGravity(true);
 	brick.SetBodyType(Physics::BodyType::Dynamic);
-	//brick.SetMass(1000.f);
+	brick.SetMass(10'000'000.f); // Very high mass to avoid being moved by the player
 	brick.SetPosition(handPosition);
 
 	brickCollider.SetIsTrigger(false);
@@ -216,10 +241,6 @@ int GameData::GenerateChecksum() const
 	checksum += static_cast<int>(Hand);
 	checksum += IsPlayerOnGround ? 1 : 0;
 	checksum += IsPlayerDead ? 1 : 0;
-	checksum += PlayerBody.Generation + PlayerBody.Index;
-	checksum += PlayerBottomCollider.Generation + PlayerBottomCollider.Index;
-	checksum += PlayerTopCollider.Generation + PlayerTopCollider.Index;
-	checksum += PlayerPhysicsCollider.Generation + PlayerPhysicsCollider.Index;
 	return checksum;
 }
 
@@ -249,5 +270,52 @@ void GameData::OnTriggerStay(Physics::ColliderRef colliderRef, Physics::Collider
 	if (PlayerBottomCollider == colliderRef || PlayerBottomCollider == otherColliderRef)
 	{
 		IsPlayerOnGround = true;
+	}
+}
+
+void GameData::OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept
+{
+	struct BrickData
+	{
+		int HandSlotIndex;
+		int BrickIndex;
+
+		[[nodiscard]] bool IsValid() const
+		{
+			return HandSlotIndex != -1 && BrickIndex != -1;
+		}
+	};
+
+	static constexpr int MAX_BRICK_DATA = 2;
+
+	// When a brick collides with platform or another brick, become static
+	std::array<BrickData, MAX_BRICK_DATA> bricksData = { { {-1, -1}, {-1, -1} } };
+
+	for (int i = 0; i < HAND_SLOT_COUNT; i++)
+	{
+		for (int j = 0; j < MAX_BRICKS_PER_COLUMN; j++)
+		{
+			if (BricksPerSlot[i][j].Collider == colliderRef)
+			{
+				bricksData[0] = {i, j};
+			}
+
+			if (BricksPerSlot[i][j].Collider == otherColliderRef)
+			{
+				bricksData[1] = {i, j};
+			}
+		}
+	}
+
+	if (bricksData[0].IsValid() && bricksData[1].IsValid() || colliderRef == PlatformCollider || otherColliderRef == PlatformCollider)
+	{
+		for (int i = 0; i < MAX_BRICK_DATA; i++)
+		{
+			if (bricksData[i].IsValid())
+			{
+				auto& brick = BricksPerSlot[bricksData[i].HandSlotIndex][bricksData[i].BrickIndex];
+				World.GetBody(brick.Body).SetBodyType(Physics::BodyType::Static);
+			}
+		}
 	}
 }

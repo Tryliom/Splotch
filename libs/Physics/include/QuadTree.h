@@ -49,7 +49,7 @@ namespace Physics
 		MyVector<QuadNode> _nodes { StandardAllocator <QuadNode> {_nodesAllocator} };
 		MyVector<ColliderPair> _allPossiblePairs { StandardAllocator <ColliderPair> {_heapAllocator} };
 
-        static constexpr std::size_t _maxDepth = 5;
+        static constexpr std::size_t _maxDepth = 1;
 		static constexpr std::size_t _maxCapacity = 8;
 
         static constexpr std::size_t getMaxNodes() noexcept;

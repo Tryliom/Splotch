@@ -76,14 +76,15 @@ constexpr Math::Vec2F PLAYER_PHYSICAL_BOX_MAX_BOUND = {PLAYER_SIZE_SCALED.X * 0.
 
 constexpr Vec2SP HAND_START_POSITION = {{ 0.17f }, { 0.1f } };
 constexpr ScreenPercentage HAND_SLOT_SIZE = { (1.f - HAND_START_POSITION.X.Value * 2.f) / (HAND_SLOT_COUNT - 1) };
-constexpr Vec2SP BRICK_SIZE = {HAND_SLOT_SIZE, { 0.04f } };
+constexpr Vec2SP BRICK_SIZE = {HAND_SLOT_SIZE - ScreenPercentage{0.005f}, { 0.04f } };
 constexpr ScreenPercentage BRICK_SPAWN_HEIGHT = { 0.15f };
-constexpr ScreenPercentage MAX_HAND_BRICK_SPAWN_HEIGHT = { 1.f - 0.7f };
 
 constexpr Vec2SP PLATFORM_MIN_BOUND = {{ -HAND_SLOT_SIZE.Value * 3.f }, { -0.01f }};
 constexpr Vec2SP PLATFORM_MAX_BOUND = {{ HAND_SLOT_SIZE.Value * 3.f }, { 0.01}};
 constexpr Vec2SP PLATFORM_SIZE = {{ HAND_SLOT_SIZE.Value * 5.f }, { PLATFORM_MAX_BOUND.Y * 2.f }};
 constexpr Vec2SP PLATFORM_POSITION = {{ 0.5f }, { 0.95f } };
+
+constexpr int MAX_BRICKS_PER_COLUMN = (1.f - HAND_START_POSITION.X.Value - BRICK_SPAWN_HEIGHT.Value) / BRICK_SIZE.Y.Value;
 
 constexpr Vec2SP PLAYER_START_POSITION = {{ 0.5f }, { PLATFORM_POSITION.Y - PLATFORM_MAX_BOUND.Y } };
 constexpr float PLAYER_CIRCLE_COLLIDER_RADIUS = 0.1f;

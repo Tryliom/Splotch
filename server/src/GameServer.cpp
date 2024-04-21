@@ -46,8 +46,8 @@ void GameServer::Update()
 			const auto p2ConfirmedPacket = new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.HandRoleInputs, checksum);
 
 			// Send the frame to the players
-			_serverNetworkInterface.SendPacket(p1ConfirmedPacket,game.Players[0], Protocol::TCP);
-			_serverNetworkInterface.SendPacket(p2ConfirmedPacket,game.Players[1], Protocol::TCP);
+			_serverNetworkInterface.SendPacket(p1ConfirmedPacket, game.Players[0], Protocol::TCP);
+			_serverNetworkInterface.SendPacket(p2ConfirmedPacket, game.Players[1], Protocol::TCP);
 		}
 	}
 }

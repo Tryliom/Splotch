@@ -332,10 +332,10 @@ namespace Physics
 				{
 					if (body.UseGravity())
 					{
-						body.AddForce(_gravity);
+						body.AddForce(_gravity * body.Mass());
 					}
 
-					static constexpr float MAX_VELOCITY_Y = 300.f;
+					static constexpr float MAX_VELOCITY_Y = 400.f;
 
 					body.AddVelocity(body.Force() * body.InverseMass() * deltaTime);
 
