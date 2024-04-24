@@ -10,9 +10,6 @@ constexpr ScreenSizeValue WIDTH = { 700.f };
 constexpr float GAME_WIDTH = WIDTH.Value;
 constexpr float GAME_HEIGHT = HEIGHT.Value;
 
-constexpr int FRAME_RATE = 30;
-constexpr float TIME_PER_FRAME = 1.f / FRAME_RATE;
-
 constexpr std::array<sf::Keyboard::Key, 4> commands = {
 	sf::Keyboard::Key::W,
 	sf::Keyboard::Key::A,
