@@ -38,7 +38,7 @@ public:
 	std::vector<PlayerInputPerFrame> GetLastPlayerInputs();
 
 	[[nodiscard]] PlayerInput GetPlayerInput(int frame) const;
-	[[nodiscard]] PlayerInput GetHandInput(int frame) const;
+	[[nodiscard]] PlayerInput GetGhostInput(int frame) const;
 
 	[[nodiscard]] short GetCurrentFrame() const;
 

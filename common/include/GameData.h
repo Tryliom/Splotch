@@ -26,7 +26,7 @@ class GameData : public Physics::ContactListener
 public:
 	Physics::World World;
 	Math::Vec2F PlayerPosition;
-	HandSlot Hand = HandSlot::SLOT_3; // Not physical, just for the player to know where is the hand
+	GhostSlot Ghost = GhostSlot::SLOT_3; // Not physical, just for the player to know where is the ghost
 
 	Physics::BodyRef PlayerBody;
 	Physics::ColliderRef PlayerBottomCollider;
@@ -49,23 +49,23 @@ public:
 	// Temporary values used in update
 	PlayerInput _playerInputs{};
 	PlayerInput _previousPlayerInputs{};
-	PlayerInput _handInputs{};
-	PlayerInput _previousHandInputs{};
+	PlayerInput _ghostInputs{};
+	PlayerInput _previousGhostInputs{};
 
 	// Constants
 	static constexpr float COOLDOWN_SPAWN_BRICK = 0.3f;
 	static constexpr float PLAYER_SPEED = 200.f;
 	static constexpr Math::Vec2F PLAYER_JUMP = GRAVITY * -20.f;
 
-	void DecreaseHandSlot();
-	void IncreaseHandSlot();
+	void DecreaseGhostSlot();
+	void IncreaseGhostSlot();
 
 	[[nodiscard]] Forces GetNextPlayerForces();
 
 	void SetupWorld();
 
 	void UpdatePlayer();
-	void UpdateHand();
+	void UpdateGhost();
 
 	/**
 	 * @brief Spawn a brick at hand position
@@ -79,13 +79,13 @@ public:
 	 * @brief Register the player inputs, need to be called before Update
 	 * @param playerInput
 	 * @param previousPlayerInput
-	 * @param handInput
-	 * @param previousHandInput
+	 * @param ghostInput
+	 * @param previousGhostInput
 	 */
-	void RegisterPlayersInputs(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput handInput, PlayerInput previousHandInput);
+	void RegisterPlayersInputs(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput);
 	void Update(sf::Time elapsed);
 
-	[[nodiscard]] Math::Vec2F GetHandPosition() const;
+	[[nodiscard]] Math::Vec2F GetGhostPosition() const;
 
 	/**
 	 * @brief Compare two GameData, players drawable are not compared

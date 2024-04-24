@@ -25,5 +25,5 @@ struct PlayerInputPerFrame
 struct FinalInputs
 {
 	PlayerInput PlayerRoleInput {};
-	PlayerInput HandRoleInput {};
+	PlayerInput GhostRoleInput {};
 };

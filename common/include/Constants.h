@@ -2,7 +2,7 @@
 
 #include "Vec2.h"
 
-enum class HandSlot : char
+enum class GhostSlot : char
 {
 	UNKNOWN = -1,
 	SLOT_1 = 0,
@@ -13,7 +13,7 @@ enum class HandSlot : char
 	COUNT
 };
 
-constexpr char HAND_SLOT_COUNT = static_cast<char>(HandSlot::COUNT);
+constexpr char HAND_SLOT_COUNT = static_cast<char>(GhostSlot::COUNT);
 
 /**
  * Used to represent a value of the screen size, like width or height
@@ -97,7 +97,7 @@ constexpr int MAX_PLAYERS = 2;
 enum class PlayerRole
 {
 	PLAYER,
-	HAND
+	GHOST
 };
 
 constexpr int FRAME_RATE = 30;

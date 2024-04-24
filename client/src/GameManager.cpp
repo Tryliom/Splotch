@@ -11,7 +11,7 @@ void GameManager::OnPacketReceived(Packet& packet)
 	{
 		auto& startGamePacket = *packet.As<MyPackets::StartGamePacket>();
 
-		_playerRole = startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::HAND;
+		_playerRole = startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::GHOST;
 		_gameData.StartGame(_width, _height);
 
 		_gameData.Players[0].SetColor(startGamePacket.IsPlayer ? sf::Color::Cyan : sf::Color::Red);
@@ -26,9 +26,9 @@ PlayerRole GameManager::GetPlayerRole()
 
 void GameManager::Update(sf::Time elapsed,
 	PlayerInput playerInput, PlayerInput previousPlayerInput,
-	PlayerInput handInput, PlayerInput previousHandInput)
+	PlayerInput ghostInput, PlayerInput previousGhostInput)
 {
-	_gameData.RegisterPlayersInputs(playerInput, previousPlayerInput, handInput, previousHandInput);
+	_gameData.RegisterPlayersInputs(playerInput, previousPlayerInput, ghostInput, previousGhostInput);
 	_gameData.Update(elapsed);
 }
 

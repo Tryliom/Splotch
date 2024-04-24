@@ -17,7 +17,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::ConfirmationInput))
 	{
 		auto& confirmationInputPacket = *packet.As<MyPackets::ConfirmInputPacket>();
-		_confirmedPlayerInputs.push_back({confirmationInputPacket.PlayerRoleInput, confirmationInputPacket.HandRoleInput});
+		_confirmedPlayerInputs.push_back({confirmationInputPacket.PlayerRoleInput, confirmationInputPacket.GhostRoleInput});
 		_lastServerChecksum = confirmationInputPacket.Checksum;
 
 		if (!_localPlayerInputs.empty())
@@ -44,8 +44,8 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 			if (_confirmedPlayerInputs.size() > 1)
 			{
 				const auto lastConfirmedInput = _confirmedPlayerInputs[_confirmedPlayerInputs.size() - 2];
-				currentInput = _playerRole == PlayerRole::PLAYER ? confirmationInputPacket.HandRoleInput : confirmationInputPacket.PlayerRoleInput;
-				lastInput = _playerRole == PlayerRole::PLAYER ? lastConfirmedInput.HandRoleInput : lastConfirmedInput.PlayerRoleInput;
+				currentInput = _playerRole == PlayerRole::PLAYER ? confirmationInputPacket.GhostRoleInput : confirmationInputPacket.PlayerRoleInput;
+				lastInput = _playerRole == PlayerRole::PLAYER ? lastConfirmedInput.GhostRoleInput : lastConfirmedInput.PlayerRoleInput;
 			}
 
 			if (lastInput != currentInput)
@@ -82,7 +82,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 
 			if (_playerRole == PlayerRole::PLAYER)
 			{
-				lastRemoteInput = GetHandInput(frame);
+				lastRemoteInput = GetGhostInput(frame);
 			}
 			else
 			{
@@ -101,7 +101,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 	{
 		auto& startGamePacket = *packet.As<MyPackets::StartGamePacket>();
 
-		_playerRole = startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::HAND;
+		_playerRole = startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::GHOST;
 	}
 }
 
@@ -172,7 +172,7 @@ PlayerInput RollbackManager::GetPlayerInput(int frame) const
 	return playerInputs.back();
 }
 
-PlayerInput RollbackManager::GetHandInput(int frame) const
+PlayerInput RollbackManager::GetGhostInput(int frame) const
 {
 	if (frame < 0) return {};
 
@@ -182,10 +182,10 @@ PlayerInput RollbackManager::GetHandInput(int frame) const
 
 	for (auto confirmedPlayerInput : _confirmedPlayerInputs)
 	{
-		handInputs.push_back(confirmedPlayerInput.HandRoleInput);
+		handInputs.push_back(confirmedPlayerInput.GhostRoleInput);
 	}
 
-	if (_playerRole == PlayerRole::HAND)
+	if (_playerRole == PlayerRole::GHOST)
 	{
 		for (auto localPlayerInput: _localPlayerInputs)
 		{

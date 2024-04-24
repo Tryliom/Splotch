@@ -16,7 +16,7 @@ namespace ServerData
 	struct FinalInputs
 	{
 		PlayerInput PlayerRoleInputs;
-		PlayerInput HandRoleInputs;
+		PlayerInput GhostRoleInputs;
 	};
 
 	struct Lobby
@@ -34,9 +34,9 @@ namespace ServerData
 	{
 		std::array<ClientId, 2> Players = { EMPTY_CLIENT_ID, EMPTY_CLIENT_ID };
 
-		// Index of the player who is the hand role player
-		int HandRolePlayer{};
-		// Index of the player who is the point role player
+		// Index of the player who is the ghost role
+		int GhostRolePlayer{};
+		// Index of the player who is the player role
 		int PlayerRolePlayer{};
 
 		// Confirmed frame inputs

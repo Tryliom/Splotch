@@ -47,8 +47,8 @@ namespace ServerData
 		Players = lobbyData.Players;
 
 		// Setup players roles, positions etc.
-		HandRolePlayer = Math::Random::Range(0, 1);
-		PlayerRolePlayer = HandRolePlayer == 0 ? 1 : 0;
+		GhostRolePlayer = Math::Random::Range(0, 1);
+		PlayerRolePlayer = GhostRolePlayer == 0 ? 1 : 0;
 
 		LastGameData.StartGame(WIDTH, HEIGHT);
 
@@ -102,10 +102,10 @@ namespace ServerData
 		const auto confirmedFrameSize = ConfirmFrames.size();
 		const auto playerInputs = ConfirmFrames[confirmedFrameSize - 1].PlayerRoleInputs;
 		const auto previousPlayerInputs = confirmedFrameSize > 1 ? ConfirmFrames[confirmedFrameSize - 2].PlayerRoleInputs : playerInputs;
-		const auto handInputs = ConfirmFrames[confirmedFrameSize - 1].HandRoleInputs;
-		const auto previousHandInputs = confirmedFrameSize > 1 ? ConfirmFrames[confirmedFrameSize - 2].HandRoleInputs : handInputs;
+		const auto ghostInputs = ConfirmFrames[confirmedFrameSize - 1].GhostRoleInputs;
+		const auto previousGhostInputs = confirmedFrameSize > 1 ? ConfirmFrames[confirmedFrameSize - 2].GhostRoleInputs : ghostInputs;
 
-		LastGameData.RegisterPlayersInputs(playerInputs, previousPlayerInputs, handInputs, previousHandInputs);
+		LastGameData.RegisterPlayersInputs(playerInputs, previousPlayerInputs, ghostInputs, previousGhostInputs);
 		LastGameData.Update(sf::seconds(TIME_PER_FRAME));
 	}
 

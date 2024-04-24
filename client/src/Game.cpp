@@ -199,9 +199,9 @@ void Game::UpdateGame(sf::Time elapsed, short frame)
 
 	const auto currentPlayerInputs = _rollbackManager.GetPlayerInput(frame);
 	const auto previousPlayerInputs = _rollbackManager.GetPlayerInput(previousFrame);
-	const auto currentHandInputs = _rollbackManager.GetHandInput(frame);
-	const auto previousHandInputs = _rollbackManager.GetHandInput(previousFrame);
+	const auto currentGhostInputs = _rollbackManager.GetGhostInput(frame);
+	const auto previousGhostInputs = _rollbackManager.GetGhostInput(previousFrame);
 
 	_gameManager.Update(elapsed,currentPlayerInputs, previousPlayerInputs,
-		currentHandInputs, previousHandInputs);
+		currentGhostInputs, previousGhostInputs);
 }

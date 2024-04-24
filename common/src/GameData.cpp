@@ -1,3 +1,4 @@
+#include <bit>
 #include "GameData.h"
 
 #include "Constants.h"
@@ -7,7 +8,7 @@ void GameData::StartGame(ScreenSizeValue width, ScreenSizeValue height)
 	_width = width;
 	_height = height;
 	PlayerPosition = {PLAYER_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height - PLAYER_SIZE_SCALED.Y / 2.f};
-	Hand = HandSlot::SLOT_3;
+	Ghost = GhostSlot::SLOT_3;
 
 	BrickCooldown = COOLDOWN_SPAWN_BRICK;
 
@@ -78,26 +79,26 @@ void GameData::SetupWorld()
 	playerTopCollider.SetOffset({0.f, -PLAYER_TRIGGERS_OFFSET * PLAYER_SIZE_SCALED.Y});
 }
 
-void GameData::DecreaseHandSlot()
+void GameData::DecreaseGhostSlot()
 {
-	if (Hand == HandSlot::SLOT_1) return;
+	if (Ghost == GhostSlot::SLOT_1) return;
 
-	Hand = static_cast<HandSlot>(static_cast<int>(Hand) - 1);
+	Ghost = static_cast<GhostSlot>(static_cast<int>(Ghost) - 1);
 }
 
-void GameData::IncreaseHandSlot()
+void GameData::IncreaseGhostSlot()
 {
-	if (Hand == HandSlot::SLOT_5) return;
+	if (Ghost == GhostSlot::SLOT_5) return;
 
-	Hand = static_cast<HandSlot>(static_cast<int>(Hand) + 1);
+	Ghost = static_cast<GhostSlot>(static_cast<int>(Ghost) + 1);
 }
 
-void GameData::RegisterPlayersInputs(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput handInput, PlayerInput previousHandInput)
+void GameData::RegisterPlayersInputs(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput)
 {
 	_playerInputs = playerInput;
 	_previousPlayerInputs = previousPlayerInput;
-	_handInputs = handInput;
-	_previousHandInputs = previousHandInput;
+	_ghostInputs = ghostInput;
+	_previousGhostInputs = previousGhostInput;
 }
 
 void GameData::Update(sf::Time elapsed)
@@ -113,7 +114,7 @@ void GameData::Update(sf::Time elapsed)
 	}
 
 	UpdatePlayer();
-	UpdateHand();
+	UpdateGhost();
 
 	World.Update(elapsed.asSeconds());
 
@@ -128,26 +129,26 @@ void GameData::UpdatePlayer()
 	player.SetVelocity(forces.Velocity);
 }
 
-void GameData::UpdateHand()
+void GameData::UpdateGhost()
 {
-	const bool isLeftPressed = IsKeyPressed(_handInputs, PlayerInputTypes::Left);
-	const bool isRightPressed = IsKeyPressed(_handInputs, PlayerInputTypes::Right);
-	const bool isDownPressed = IsKeyPressed(_handInputs, PlayerInputTypes::Down);
-	const bool wasLeftPressed = IsKeyPressed(_previousHandInputs, PlayerInputTypes::Left);
-	const bool wasRightPressed = IsKeyPressed(_previousHandInputs, PlayerInputTypes::Right);
-	const bool wasDownPressed = IsKeyPressed(_previousHandInputs, PlayerInputTypes::Down);
+	const bool isLeftPressed = IsKeyPressed(_ghostInputs, PlayerInputTypes::Left);
+	const bool isRightPressed = IsKeyPressed(_ghostInputs, PlayerInputTypes::Right);
+	const bool isDownPressed = IsKeyPressed(_ghostInputs, PlayerInputTypes::Down);
+	const bool wasLeftPressed = IsKeyPressed(_previousGhostInputs, PlayerInputTypes::Left);
+	const bool wasRightPressed = IsKeyPressed(_previousGhostInputs, PlayerInputTypes::Right);
+	const bool wasDownPressed = IsKeyPressed(_previousGhostInputs, PlayerInputTypes::Down);
 
 	if (isLeftPressed && !wasLeftPressed)
 	{
-		DecreaseHandSlot();
+		DecreaseGhostSlot();
 	}
 
 	if (isRightPressed && !wasRightPressed)
 	{
-		IncreaseHandSlot();
+		IncreaseGhostSlot();
 	}
 
-	if (isDownPressed && !wasDownPressed && BrickCooldown == 0.f && !BricksPerSlot[static_cast<int>(Hand)][MAX_BRICKS_PER_COLUMN - 1].IsAlive)
+	if (isDownPressed && !wasDownPressed && BrickCooldown == 0.f && !BricksPerSlot[static_cast<int>(Ghost)][MAX_BRICKS_PER_COLUMN - 1].IsAlive)
 	{
 		SpawnBrick();
 
@@ -161,21 +162,21 @@ void GameData::SpawnBrick()
 
 	for (int i = 0; i < MAX_BRICKS_PER_COLUMN; i++)
 	{
-		if (!BricksPerSlot[static_cast<int>(Hand)][i].IsAlive)
+		if (!BricksPerSlot[static_cast<int>(Ghost)][i].IsAlive)
 		{
 			index = i;
 			break;
 		}
 	}
 
-	auto handPosition = GetHandPosition();
+	auto handPosition = GetGhostPosition();
 	auto brickBodyRef = World.CreateBody();
 	auto& brick = World.GetBody(brickBodyRef);
 	auto brickColliderRef = World.CreateCollider(brickBodyRef);
 
-	BricksPerSlot[static_cast<int>(Hand)][index] = {brickBodyRef, brickColliderRef, true};
+	BricksPerSlot[static_cast<int>(Ghost)][index] = { brickBodyRef, brickColliderRef, true};
 
-	auto& brickCollider = World.GetCollider(BricksPerSlot[static_cast<int>(Hand)][index].Collider);
+	auto& brickCollider = World.GetCollider(BricksPerSlot[static_cast<int>(Ghost)][index].Collider);
 	auto brickSize = Math::Vec2F{BRICK_SIZE.X * _width, BRICK_SIZE.Y * _height};
 
 	handPosition.Y = BRICK_SPAWN_HEIGHT * _height;
@@ -222,23 +223,23 @@ Forces GameData::GetNextPlayerForces()
 	return {playerForce, playerVelocity};
 }
 
-Math::Vec2F GameData::GetHandPosition() const
+Math::Vec2F GameData::GetGhostPosition() const
 {
-	auto x = HAND_START_POSITION.X + HAND_SLOT_SIZE * static_cast<int>(Hand);
+	auto x = HAND_START_POSITION.X + HAND_SLOT_SIZE * static_cast<int>(Ghost);
 	return {x * _width, HAND_START_POSITION.Y * _height};
 }
 
 bool GameData::operator==(const GameData& other) const
 {
-	return PlayerPosition == other.PlayerPosition && Hand == other.Hand;
+	return PlayerPosition == other.PlayerPosition && Ghost == other.Ghost;
 }
 
 int GameData::GenerateChecksum() const
 {
 	int checksum = 0;
-	checksum += static_cast<int>(PlayerPosition.X * 100.f);
-	checksum += static_cast<int>(PlayerPosition.Y * 100.f);
-	checksum += static_cast<int>(Hand);
+	checksum += std::bit_cast<int>(PlayerPosition.X);
+	checksum += std::bit_cast<int>(PlayerPosition.Y);
+	checksum += static_cast<int>(Ghost);
 	checksum += IsPlayerOnGround ? 1 : 0;
 	checksum += IsPlayerDead ? 1 : 0;
 	return checksum;
@@ -277,12 +278,12 @@ void GameData::OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::Colli
 {
 	struct BrickData
 	{
-		int HandSlotIndex;
+		int GhostSlotIndex;
 		int BrickIndex;
 
 		[[nodiscard]] bool IsValid() const
 		{
-			return HandSlotIndex != -1 && BrickIndex != -1;
+			return GhostSlotIndex != -1 && BrickIndex != -1;
 		}
 	};
 
@@ -313,7 +314,7 @@ void GameData::OnCollisionEnter(Physics::ColliderRef colliderRef, Physics::Colli
 		{
 			if (bricksData[i].IsValid())
 			{
-				auto& brick = BricksPerSlot[bricksData[i].HandSlotIndex][bricksData[i].BrickIndex];
+				auto& brick = BricksPerSlot[bricksData[i].GhostSlotIndex][bricksData[i].BrickIndex];
 				World.GetBody(brick.Body).SetBodyType(Physics::BodyType::Static);
 			}
 		}

@@ -42,8 +42,8 @@ void GameServer::Update()
 			const auto frame = game.GetLastFrame();
 			const auto checksum = game.LastGameData.GenerateChecksum();
 
-			const auto p1ConfirmedPacket = new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.HandRoleInputs, checksum);
-			const auto p2ConfirmedPacket = new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.HandRoleInputs, checksum);
+			const auto p1ConfirmedPacket = new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.GhostRoleInputs, checksum);
+			const auto p2ConfirmedPacket = new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.GhostRoleInputs, checksum);
 
 			// Send the frame to the players
 			_serverNetworkInterface.SendPacket(p1ConfirmedPacket, game.Players[0], Protocol::TCP);

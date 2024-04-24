@@ -14,10 +14,10 @@ void ClientGameData::UpdatePlayersAnimations(sf::Time elapsed, sf::Time elapsedS
 	playerPosition += playerVelocity * elapsedSinceLastFixed.asSeconds();
 
 	std::array<Math::Vec2F, MAX_PLAYERS> playerPositions = {
-		playerPosition, GetHandPosition()
+		playerPosition, GetGhostPosition()
 	};
 	const std::array<PlayerInput, MAX_PLAYERS> playerInputs = {
-		_playerInputs, _handInputs
+		_playerInputs, _ghostInputs
 	};
 
 	for (auto i = 0; i < MAX_PLAYERS; i++)
