@@ -13,9 +13,7 @@ void GameManager::OnPacketReceived(Packet& packet)
 
 		_playerRole = startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::GHOST;
 		_gameData.StartGame(_width, _height);
-
-		_gameData.Players[0].SetColor(startGamePacket.IsPlayer ? sf::Color::Cyan : sf::Color::Red);
-		_gameData.Players[1].SetColor(startGamePacket.IsPlayer ? sf::Color::Red : sf::Color::Cyan);
+		_gameData.SetPlayersRole(startGamePacket.IsPlayer);
 	}
 }
 

@@ -8,6 +8,7 @@ namespace AssetManager
 	static std::array<sf::Texture, PLAYER_IDLE_FRAMES> playerIdleTextures;
 	static std::array<sf::Texture, PLAYER_WALK_FRAMES> playerWalkTextures;
 	static std::array<sf::Texture, PLAYER_JUMP_FRAMES> playerJumpTextures;
+	static std::array<sf::Texture, GHOST_IDLE_FRAMES> ghostIdleTextures;
 
 	static bool initialized = false;
 
@@ -28,6 +29,11 @@ namespace AssetManager
 		for (auto i = 0; i < PLAYER_JUMP_FRAMES; i++)
 		{
 			playerJumpTextures[i].loadFromFile("data/textures/player/jump_" + std::to_string(i) + ".png");
+		}
+
+		for (auto i = 0; i < GHOST_IDLE_FRAMES; i++)
+		{
+			ghostIdleTextures[i].loadFromFile("data/textures/ghost/idle_" + std::to_string(i) + ".png");
 		}
 
 		mainFont.loadFromFile("data/font/Retro Gaming.ttf");
@@ -57,6 +63,13 @@ namespace AssetManager
 		if (frame >= PLAYER_JUMP_FRAMES) frame %= PLAYER_JUMP_FRAMES;
 
 		return playerJumpTextures[frame];
+	}
+
+	sf::Texture& GetGhostIdleTexture(int frame)
+	{
+		if (frame >= GHOST_IDLE_FRAMES) frame %= GHOST_IDLE_FRAMES;
+
+		return ghostIdleTextures[frame];
 	}
 
 	bool IsInitialized()

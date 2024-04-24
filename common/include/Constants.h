@@ -74,6 +74,10 @@ constexpr Math::Vec2F PLAYER_SIZE_SCALED = PLAYER_SIZE * PLAYER_SIZE_SCALE;
 constexpr Math::Vec2F PLAYER_PHYSICAL_BOX_MIN_BOUND = {-PLAYER_SIZE_SCALED.X * 0.4f, -PLAYER_SIZE_SCALED.Y * 0.5f};
 constexpr Math::Vec2F PLAYER_PHYSICAL_BOX_MAX_BOUND = {PLAYER_SIZE_SCALED.X * 0.4f, PLAYER_SIZE_SCALED.Y * 0.5f};
 
+constexpr Math::Vec2F GHOST_SIZE = { 22, 22 };
+constexpr float GHOST_SIZE_SCALE = 2.5f;
+constexpr Math::Vec2F GHOST_SIZE_SCALED = GHOST_SIZE * GHOST_SIZE_SCALE;
+
 constexpr Vec2SP HAND_START_POSITION = {{ 0.17f }, { 0.1f } };
 constexpr ScreenPercentage HAND_SLOT_SIZE = { (1.f - HAND_START_POSITION.X.Value * 2.f) / (HAND_SLOT_COUNT - 1) };
 constexpr Vec2SP BRICK_SIZE = {HAND_SLOT_SIZE - ScreenPercentage{0.005f}, { 0.04f } };

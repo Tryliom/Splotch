@@ -7,15 +7,32 @@ void PlayerDrawable::draw(sf::RenderTarget& target, sf::RenderStates states) con
 {
 	// Draw the player sprite
 	sf::Sprite sprite;
-	sprite.setTextureRect(sf::IntRect(0, 0, PLAYER_SIZE.X, PLAYER_SIZE.Y));
-	sprite.setOrigin(PLAYER_SIZE.X / 2.0f, PLAYER_SIZE.Y / 2.0f);
+
+	if (_role == PlayerRole::PLAYER)
+	{
+		sprite.setTextureRect(sf::IntRect(0, 0, PLAYER_SIZE.X, PLAYER_SIZE.Y));
+		sprite.setOrigin(PLAYER_SIZE.X / 2.0f, PLAYER_SIZE.Y / 2.0f);
+	}
+	else
+	{
+		sprite.setTextureRect(sf::IntRect(0, 0, GHOST_SIZE.X, GHOST_SIZE.Y));
+		sprite.setOrigin(GHOST_SIZE.X / 2.0f, GHOST_SIZE.Y / 2.0f);
+	}
+
 	sprite.setPosition(_position);
 	sprite.setColor(_color);
 
 	switch (_animation)
 	{
 	case PlayerAnimation::IDLE:
-		sprite.setTexture(AssetManager::GetPlayerIdleTexture(_frame));
+		if (_role == PlayerRole::PLAYER)
+		{
+			sprite.setTexture(AssetManager::GetPlayerIdleTexture(_frame));
+		}
+		else
+		{
+			sprite.setTexture(AssetManager::GetGhostIdleTexture(_frame));
+		}
 		break;
 	case PlayerAnimation::WALK:
 		sprite.setTexture(AssetManager::GetPlayerWalkTexture(_frame));
@@ -72,9 +89,19 @@ void PlayerDrawable::Update(sf::Time elapsed)
 	}
 }
 
+void PlayerDrawable::SetPlayerRole(PlayerRole role, bool isLocalPlayer)
+{
+	static auto LOCAL_PLAYER_COLOR = sf::Color::Cyan;
+	static auto REMOTE_PLAYER_COLOR = sf::Color::Red;
+
+	_role = role;
+	_color = isLocalPlayer ? LOCAL_PLAYER_COLOR : REMOTE_PLAYER_COLOR;
+}
+
 void PlayerDrawable::SetAnimation(PlayerAnimation animation)
 {
 	if (_animation == animation) return;
+	if (_role == PlayerRole::GHOST && animation != PlayerAnimation::IDLE) return;
 
 	_animation = animation;
 	_frame = 0;
@@ -89,9 +116,4 @@ void PlayerDrawable::SetDirection(PlayerDirection direction)
 void PlayerDrawable::SetPosition(sf::Vector2f position)
 {
 	_position = position;
-}
-
-void PlayerDrawable::SetColor(sf::Color color)
-{
-	_color = color;
 }
