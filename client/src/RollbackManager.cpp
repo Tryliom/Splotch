@@ -9,7 +9,7 @@
 
 RollbackManager::RollbackManager()
 {
-	_confirmedPlayerInputs.reserve(2'000);
+	_confirmedFrames.reserve(2'000);
 }
 
 void RollbackManager::OnPacketReceived(Packet& packet)
@@ -17,8 +17,11 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::ConfirmationInput))
 	{
 		auto& confirmationInputPacket = *packet.As<MyPackets::ConfirmInputPacket>();
-		_confirmedPlayerInputs.push_back({confirmationInputPacket.PlayerRoleInput, confirmationInputPacket.GhostRoleInput});
-		_lastServerChecksum = confirmationInputPacket.Checksum;
+
+		_confirmedFrames.push_back({
+			{ confirmationInputPacket.PlayerRoleInput, confirmationInputPacket.GhostRoleInput },
+		  { confirmationInputPacket.Checksum }
+		});
 
 		if (!_localPlayerInputs.empty())
 		{
@@ -34,6 +37,8 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 				_confirmedGameData = _unconfirmedGameData.front();
 				_unconfirmedGameData.erase(_unconfirmedGameData.begin());
 				_lastConfirmedFrame++;
+
+				_integrityIsOk = _confirmedGameData.GenerateChecksum() == _confirmedFrames.back().Checksum;
 			}
 		}
 		else
@@ -41,11 +46,11 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 			// If we don't have any remote inputs, we need to check if last remote inputs are the same as the last confirmed inputs
 			PlayerInput currentInput = {}, lastInput = {};
 
-			if (_confirmedPlayerInputs.size() > 1)
+			if (_confirmedFrames.size() > 1)
 			{
-				const auto lastConfirmedInput = _confirmedPlayerInputs[_confirmedPlayerInputs.size() - 2];
+				const auto lastConfirmedInput = _confirmedFrames[_confirmedFrames.size() - 2];
 				currentInput = _playerRole == PlayerRole::PLAYER ? confirmationInputPacket.GhostRoleInput : confirmationInputPacket.PlayerRoleInput;
-				lastInput = _playerRole == PlayerRole::PLAYER ? lastConfirmedInput.GhostRoleInput : lastConfirmedInput.PlayerRoleInput;
+				lastInput = _playerRole == PlayerRole::PLAYER ? lastConfirmedInput.Inputs.GhostRoleInput : lastConfirmedInput.Inputs.PlayerRoleInput;
 			}
 
 			if (lastInput != currentInput)
@@ -57,10 +62,12 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 				_confirmedGameData = _unconfirmedGameData.front();
 				_unconfirmedGameData.erase(_unconfirmedGameData.begin());
 				_lastConfirmedFrame++;
+
+				_integrityIsOk = _confirmedGameData.GenerateChecksum() == _confirmedFrames.back().Checksum;
 			}
 		}
 
-		if (_lastConfirmedFrame != _confirmedPlayerInputs.size())
+		if (_lastConfirmedFrame != _confirmedFrames.size())
 		{
 			_needToRollback = true;
 		}
@@ -69,13 +76,13 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 	{
 		auto& playerInputPacket = *packet.As<MyPackets::PlayerInputPacket>();
 
-		if (playerInputPacket.LastInputs.empty() || _confirmedPlayerInputs.empty()) return;
+		if (playerInputPacket.LastInputs.empty() || _confirmedFrames.empty()) return;
 
 		const auto& lastInputs = playerInputPacket.LastInputs;
 
 		for (auto lastInput : lastInputs)
 		{
-			if (lastInput.Frame < _confirmedPlayerInputs.size() + _lastRemotePlayerInputs.size()) continue;
+			if (lastInput.Frame < _confirmedFrames.size() + _lastRemotePlayerInputs.size()) continue;
 
 			const auto frame = lastInput.Frame;
 			PlayerInput lastRemoteInput;
@@ -114,7 +121,7 @@ std::vector<PlayerInputPerFrame> RollbackManager::GetLastLocalPlayerInputs()
 {
 	// Send all last player inputs to the server
 	std::vector<PlayerInputPerFrame> playerInputs = {};
-	int currentFrame = static_cast<int>(_confirmedPlayerInputs.size());
+	int currentFrame = static_cast<int>(_confirmedFrames.size());
 
 	while (playerInputs.size() < _localPlayerInputs.size())
 	{
@@ -130,11 +137,11 @@ PlayerInput RollbackManager::GetPlayerInput(int frame) const
 
 	std::vector<PlayerInput> playerInputs = {};
 
-	playerInputs.reserve(_confirmedPlayerInputs.size() + _localPlayerInputs.size());
+	playerInputs.reserve(_confirmedFrames.size() + _localPlayerInputs.size());
 
-	for (auto confirmedPlayerInput : _confirmedPlayerInputs)
+	for (auto confirmedPlayerInput : _confirmedFrames)
 	{
-		playerInputs.push_back(confirmedPlayerInput.PlayerRoleInput);
+		playerInputs.push_back(confirmedPlayerInput.Inputs.PlayerRoleInput);
 	}
 
 	if (_playerRole == PlayerRole::PLAYER)
@@ -178,11 +185,11 @@ PlayerInput RollbackManager::GetGhostInput(int frame) const
 
 	std::vector<PlayerInput> handInputs = {};
 
-	handInputs.reserve(_confirmedPlayerInputs.size() + _localPlayerInputs.size());
+	handInputs.reserve(_confirmedFrames.size() + _localPlayerInputs.size());
 
-	for (auto confirmedPlayerInput : _confirmedPlayerInputs)
+	for (auto confirmedPlayerInput : _confirmedFrames)
 	{
-		handInputs.push_back(confirmedPlayerInput.GhostRoleInput);
+		handInputs.push_back(confirmedPlayerInput.Inputs.GhostRoleInput);
 	}
 
 	if (_playerRole == PlayerRole::GHOST)
@@ -222,7 +229,7 @@ PlayerInput RollbackManager::GetGhostInput(int frame) const
 
 short RollbackManager::GetCurrentFrame() const
 {
-	return static_cast<short>(_confirmedPlayerInputs.size() + _localPlayerInputs.size() - 1);
+	return static_cast<short>(_confirmedFrames.size() + _localPlayerInputs.size() - 1);
 }
 
 void RollbackManager::SetConfirmedGameData(ClientGameData gameData)
@@ -243,7 +250,7 @@ int RollbackManager::GetConfirmedFrame() const
 
 short RollbackManager::GetConfirmedInputFrame() const
 {
-	return static_cast<short>(_confirmedPlayerInputs.size());
+	return static_cast<short>(_confirmedFrames.size());
 }
 
 void RollbackManager::ResetUnconfirmedGameData()
@@ -264,12 +271,17 @@ bool RollbackManager::NeedToRollback() const
 void RollbackManager::RollbackDone()
 {
 	_needToRollback = false;
-	_lastConfirmedFrame = static_cast<int>(_confirmedPlayerInputs.size());
+	_lastConfirmedFrame = static_cast<int>(_confirmedFrames.size());
 }
 
-bool RollbackManager::CheckIntegrity() const
+bool RollbackManager::IsIntegrityOk() const
 {
-	if (_confirmedPlayerInputs.size() < 2) return true;
+	return _integrityIsOk;
+}
 
-	return _lastServerChecksum == _confirmedGameData.GenerateChecksum();
+void RollbackManager::CheckIntegrity(int frame)
+{
+	if (frame < 0 || frame >= _confirmedFrames.size() || _confirmedFrames.size() < 2) return;
+
+	_integrityIsOk = _confirmedGameData.GenerateChecksum() == _confirmedFrames[frame].Checksum;
 }

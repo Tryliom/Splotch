@@ -70,7 +70,6 @@ void Application::FixedUpdate()
 			const auto confirmedInputFrame = _rollbackManager.GetConfirmedInputFrame();
 			const auto currentFrame = _rollbackManager.GetCurrentFrame();
 
-			//TODO: Check checksums
 			_gameManager.SetGameData(_rollbackManager.GetConfirmedGameData());
 			_rollbackManager.ResetUnconfirmedGameData();
 
@@ -85,11 +84,14 @@ void Application::FixedUpdate()
 				if (frame < confirmedInputFrame)
 				{
 					_rollbackManager.SetConfirmedGameData(_gameManager.GetGameData());
+					_rollbackManager.CheckIntegrity(frame);
 				}
 				else
 				{
 					_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
 				}
+
+				if (!_rollbackManager.IsIntegrityOk()) IntegrityCrash();
 			}
 
 			_rollbackManager.RollbackDone();
@@ -99,19 +101,21 @@ void Application::FixedUpdate()
 		UpdateGame(elapsed, _rollbackManager.GetCurrentFrame());
 		_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
 
-		if (!_rollbackManager.CheckIntegrity())
-		{
-			LOG("Application data is corrupted -> Leave game");
-
-			_networkManager.SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
-			SetState(GameState::MAIN_MENU);
-		}
+		if (!_rollbackManager.IsIntegrityOk()) IntegrityCrash();
 	}
 
 	if (_renderer != nullptr)
 	{
 		_renderer->FixedUpdate(elapsed);
 	}
+}
+
+void Application::IntegrityCrash()
+{
+	LOG("Application data is corrupted -> Leave game");
+
+	_networkManager.SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
+	SetState(GameState::MAIN_MENU);
 }
 
 void Application::Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)

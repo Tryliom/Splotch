@@ -2,6 +2,7 @@
 
 #include "Constants.h"
 #include "PlayerInputs.h"
+#include "Checksum.h"
 
 #include "Vec2.h"
 #include "World.h"
@@ -94,7 +95,7 @@ public:
 	 */
 	bool operator==(const GameData& other) const;
 
-	[[nodiscard]] int GenerateChecksum() const;
+	[[nodiscard]] Checksum GenerateChecksum() const;
 
 	void OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
 	void OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;

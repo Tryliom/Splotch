@@ -237,15 +237,17 @@ bool GameData::operator==(const GameData& other) const
 	return PlayerPosition == other.PlayerPosition && Ghost == other.Ghost;
 }
 
-int GameData::GenerateChecksum() const
+Checksum GameData::GenerateChecksum() const
 {
 	int checksum = 0;
+
 	checksum += std::bit_cast<int>(PlayerPosition.X);
 	checksum += std::bit_cast<int>(PlayerPosition.Y);
 	checksum += static_cast<int>(Ghost);
 	checksum += IsPlayerOnGround ? 1 : 0;
 	checksum += IsPlayerDead ? 1 : 0;
-	return checksum;
+
+	return { checksum };
 }
 
 void GameData::OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept

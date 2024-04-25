@@ -7,18 +7,24 @@
 
 #include <vector>
 
+struct ConfirmedFrame
+{
+	FinalInputs Inputs;
+	Checksum Checksum {};
+};
+
 class RollbackManager
 {
  public:
 	RollbackManager();
 
  private:
-	// PlayerDrawable inputs from my player (hand or player role) from confirm frame
+	// PlayerDrawable inputs from my player (ghost or player role) from confirm frame
 	std::vector<PlayerInput> _localPlayerInputs;
 	std::vector<PlayerInputPerFrame> _lastRemotePlayerInputs;
 
-	// Confirmed player inputs from server (hand and player role)
-	std::vector<FinalInputs> _confirmedPlayerInputs;
+	// Confirmed player inputs from server (ghost and player role)
+	std::vector<ConfirmedFrame> _confirmedFrames;
 
 	// GameData at confirmed frame
 	ClientGameData _confirmedGameData;
@@ -28,8 +34,7 @@ class RollbackManager
 	PlayerRole _playerRole = PlayerRole::PLAYER;
 
 	bool _needToRollback = false;
-
-	int _lastServerChecksum {};
+	bool _integrityIsOk = true;
 
 public:
 	void OnPacketReceived(Packet& packet);
@@ -57,5 +62,6 @@ public:
 	 * @brief Check the integrity of the last confirmed game data with the last server checksum
 	 * @return true if the last confirmed game data is valid
 	 */
-	[[nodiscard]] bool CheckIntegrity() const;
+	[[nodiscard]] bool IsIntegrityOk() const;
+	void CheckIntegrity(int frame);
 };

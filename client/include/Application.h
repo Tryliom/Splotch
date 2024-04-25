@@ -77,4 +77,6 @@ class Application
 	void OnPacketReceived(Packet& packet);
 	void UpdateGame(sf::Time elapsed, int frame);
 	void SetState(GameState state);
+
+	void IntegrityCrash();
 };
