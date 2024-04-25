@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Renderer/Renderer.h"
 #include "Packet.h"
 #include "Constants.h"
-#include "Renderer/Renderer.h"
 #include "GameManager.h"
 #include "RollbackManager.h"
 
@@ -20,22 +20,22 @@ enum class GameState
 	GAME
 };
 
-class Game
+class Application
 {
  public:
-	explicit Game(RollbackManager& rollbackManager, GameManager& gameManager, ClientNetworkInterface& networkManager, ScreenSizeValue width, ScreenSizeValue height);
+	explicit Application(RollbackManager& rollbackManager, GameManager& gameManager, ClientNetworkInterface& networkManager,
+			ScreenSizeValue width, ScreenSizeValue height);
 
-	void CheckInputs(const sf::Event& event);
+	void OnInput(const sf::Event& event);
 	/**
-	 * @brief Register the player input into rollback manager and send it to the server
+	 * @brief Save local player input from current frame and send it to the server
 	 * @param playerInput
 	 */
-	void RegisterPlayerInput(PlayerInput playerInput);
+	void AddLocalPlayerInput(PlayerInput playerInput);
 	/**
-	 * @brief Used to update the game at a fixed rate, for physics calculations
-	 * @param elapsed
+	 * @brief Used to update the game at a fixed rate, for physics calculations, use FIXED_TIME_STEP
 	 */
-	void FixedUpdate(sf::Time elapsed);
+	void FixedUpdate();
 	/**
 	 * @brief Used to update the game at a variable rate, for rendering
 	 * @param elapsed
@@ -44,22 +44,21 @@ class Game
 	 */
 	void Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition);
 
-	void SetState(GameState state);
 	void Draw(sf::RenderTarget& target);
 
-	void SendPacket(Packet* packet, Protocol protocol);
+	void LeaveLobby();
+	void LeaveGame();
+	void StartGame();
+	void JoinLobby();
 	void Quit();
 
-	void OnQuit(std::function<void()> onQuit);
-
-	[[nodiscard]] bool IsReadyToPlay() const { return _readyToPlay; }
-	[[nodiscard]] GameState GetState() const { return _state;}
+	[[nodiscard]] bool IsRunning() const { return _running; }
 
  private:
 	std::function<void()> _onQuit;
 	// Renderer
 	Renderer* _renderer { nullptr };
-	// Game
+	// Application
 	RollbackManager& _rollbackManager;
 	GameManager& _gameManager;
 	ClientNetworkInterface& _networkManager;
@@ -73,6 +72,9 @@ class Game
 	static constexpr float _timeBeforeSendUdpAck = 1.0f;
 	sf::Time _elapsedTime = sf::seconds(_timeBeforeSendUdpAck);
 
+	bool _running { true };
+
 	void OnPacketReceived(Packet& packet);
-	void UpdateGame(sf::Time elapsed, short frame);
+	void UpdateGame(sf::Time elapsed, int frame);
+	void SetState(GameState state);
 };

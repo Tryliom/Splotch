@@ -1,4 +1,4 @@
-#include "Game.h"
+#include "Application.h"
 
 #include "Renderer/Renderers/MenuRenderer.h"
 #include "Renderer/Renderers/LobbyRenderer.h"
@@ -9,39 +9,42 @@
 #include "MyPackets/PlayerInputPacket.h"
 #include "MyPackets/LeaveGamePacket.h"
 #include "Logger.h"
+#include "MyPackets/LeaveLobbyPacket.h"
 
 #include <SFML/Graphics.hpp>
 #include <utility>
 
-Game::Game(RollbackManager& rollbackManager, GameManager& gameManager, ClientNetworkInterface& clientNetworkInterface, ScreenSizeValue width, ScreenSizeValue height) :
+Application::Application(RollbackManager& rollbackManager, GameManager& gameManager, ClientNetworkInterface& clientNetworkInterface, ScreenSizeValue width, ScreenSizeValue height) :
 	_rollbackManager(rollbackManager), _gameManager(gameManager), _networkManager(clientNetworkInterface), _width(width), _height(height)
 {
 	SetState(GameState::MAIN_MENU);
 }
 
-void Game::CheckInputs(const sf::Event& event)
+void Application::OnInput(const sf::Event& event)
 {
-	if (_renderer != nullptr)
-	{
-		_renderer->CheckInputs(event);
-	}
+	if (_renderer == nullptr) return;
+
+	_renderer->Input(event);
 }
 
-void Game::RegisterPlayerInput(PlayerInput playerInput)
+void Application::AddLocalPlayerInput(PlayerInput playerInput)
 {
 	if (_state != GameState::GAME) return;
 
 	_rollbackManager.AddPlayerInputs(playerInput);
-	SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastPlayerInputs()), Protocol::UDP);
+	_networkManager.SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastLocalPlayerInputs()), Protocol::UDP);
 }
 
-void Game::FixedUpdate(sf::Time elapsed)
+void Application::FixedUpdate()
 {
+	sf::Time elapsed = sf::seconds(FIXED_TIME_STEP);
+
 	while (Packet* packet = _networkManager.PopPacket())
 	{
 		if (packet->Type == static_cast<char>(PacketType::ConfirmUDPConnection))
 		{
 			_readyToPlay = true;
+			if (_renderer != nullptr) _renderer->OnEvent(Event::READY_TO_PLAY);
 			delete packet;
 			continue;
 		}
@@ -67,6 +70,7 @@ void Game::FixedUpdate(sf::Time elapsed)
 			const auto confirmedInputFrame = _rollbackManager.GetConfirmedInputFrame();
 			const auto currentFrame = _rollbackManager.GetCurrentFrame();
 
+			//TODO: Check checksums
 			_gameManager.SetGameData(_rollbackManager.GetConfirmedGameData());
 			_rollbackManager.ResetUnconfirmedGameData();
 
@@ -97,9 +101,9 @@ void Game::FixedUpdate(sf::Time elapsed)
 
 		if (!_rollbackManager.CheckIntegrity())
 		{
-			LOG("Game data is corrupted -> Leave game");
+			LOG("Application data is corrupted -> Leave game");
 
-			SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
+			_networkManager.SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
 			SetState(GameState::MAIN_MENU);
 		}
 	}
@@ -110,7 +114,7 @@ void Game::FixedUpdate(sf::Time elapsed)
 	}
 }
 
-void Game::Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)
+void Application::Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)
 {
 	if (_renderer != nullptr)
 	{
@@ -129,32 +133,24 @@ void Game::Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f
 	}
 }
 
-void Game::SetState(GameState state)
+void Application::SetState(GameState state)
 {
 	if (_state == state) return;
 
 	delete _renderer;
 
-	if (state == GameState::MAIN_MENU)
+	switch (state)
 	{
-		_renderer = new MenuRenderer(*this, _width, _height);
-	}
-
-	if (state == GameState::LOBBY)
-	{
-		_renderer = new LobbyRenderer(*this, _width, _height);
-		_networkManager.SendPacket(new MyPackets::JoinLobbyPacket(), Protocol::TCP);
-	}
-
-	if (state == GameState::GAME)
-	{
-		_renderer = new GameRenderer(*this, _gameManager, _width, _height);
+		case GameState::MAIN_MENU: _renderer = new MenuRenderer(*this, _width, _height); break;
+		case GameState::LOBBY: _renderer = new LobbyRenderer(*this, _width, _height); break;
+		case GameState::GAME: _renderer = new GameRenderer(*this, _gameManager, _width, _height); break;
+		default: break;
 	}
 
 	_state = state;
 }
 
-void Game::Draw(sf::RenderTarget& target)
+void Application::Draw(sf::RenderTarget& target)
 {
 	// Draw white background
 	sf::RectangleShape background(sf::Vector2f(_width.Value, _height.Value));
@@ -167,33 +163,49 @@ void Game::Draw(sf::RenderTarget& target)
 	}
 }
 
-void Game::SendPacket(Packet* packet, Protocol protocol)
+void Application::LeaveLobby()
 {
-	_networkManager.SendPacket(packet, protocol);
+	SetState(GameState::MAIN_MENU);
+	_networkManager.SendPacket(new MyPackets::LeaveLobbyPacket(), Protocol::TCP);
 }
 
-void Game::OnPacketReceived(Packet& packet)
+void Application::LeaveGame()
 {
-	if (_renderer != nullptr)
+	SetState(GameState::MAIN_MENU);
+	_networkManager.SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
+}
+
+void Application::StartGame()
+{
+	SetState(GameState::GAME);
+}
+
+void Application::JoinLobby()
+{
+	SetState(GameState::LOBBY);
+	_networkManager.SendPacket(new MyPackets::JoinLobbyPacket(), Protocol::TCP);
+}
+
+void Application::OnPacketReceived(Packet& packet)
+{
+	if (_renderer == nullptr) return;
+
+	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::LeaveGame))
 	{
-		_renderer->OnPacketReceived(packet);
+		_renderer->OnEvent(Event::PLAYER_LEAVE_GAME);
+	}
+	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::StartGame))
+	{
+		_renderer->OnEvent(Event::START_GAME);
 	}
 }
 
-void Game::Quit()
+void Application::Quit()
 {
-	if (_onQuit != nullptr)
-	{
-		_onQuit();
-	}
+	_running = false;
 }
 
-void Game::OnQuit(std::function<void()> onQuit)
-{
-	_onQuit = std::move(onQuit);
-}
-
-void Game::UpdateGame(sf::Time elapsed, short frame)
+void Application::UpdateGame(sf::Time elapsed, int frame)
 {
 	const auto previousFrame = frame - 1;
 
@@ -202,6 +214,6 @@ void Game::UpdateGame(sf::Time elapsed, short frame)
 	const auto currentGhostInputs = _rollbackManager.GetGhostInput(frame);
 	const auto previousGhostInputs = _rollbackManager.GetGhostInput(previousFrame);
 
-	_gameManager.Update(elapsed,currentPlayerInputs, previousPlayerInputs,
+	_gameManager.Update(currentPlayerInputs, previousPlayerInputs,
 		currentGhostInputs, previousGhostInputs);
 }

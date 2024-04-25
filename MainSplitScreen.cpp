@@ -2,7 +2,7 @@
 #include "PacketManager.h"
 #include "MyPackets.h"
 #include "AssetManager.h"
-#include "Game.h"
+#include "Application.h"
 #include "NetworkClientManager.h"
 #include "Logger.h"
 #include "GameManager.h"
@@ -95,14 +95,11 @@ int main()
 	for (int i = 0; i < MAX_PLAYERS; i++)
 	{
 		const auto& clientNetworkSettings = NETWORK_SETTINGS[clientNetworkSettingsSelected[i]];
-		networkClientManagers[i].SetDelaySettings(clientNetworkSettings.ChanceToDropPacket,
-			clientNetworkSettings.MinLatency,
-			clientNetworkSettings.MaxLatency);
+		networkClientManagers[i].SetDelaySettings(clientNetworkSettings.ChanceToDropPacket, clientNetworkSettings.MinLatency, clientNetworkSettings.MaxLatency);
 	}
 
 	// Set the size of the game
-	sf::RenderWindow window(sf::RenderWindow(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT),
-	"Splotch", sf::Style::Default));
+	sf::RenderWindow window(sf::RenderWindow(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT),"Splotch", sf::Style::Default));
 
 	window.setVerticalSyncEnabled(true);
 
@@ -116,30 +113,22 @@ int main()
 		RollbackManager(),
 		RollbackManager()
 	};
-	std::array<Game, MAX_PLAYERS> games = {
-		Game(rollbackManagers[0], gameManagers[0], networkClientManagers[0], WIDTH_PER_SCREEN, HEIGHT),
-		Game(rollbackManagers[1], gameManagers[1], networkClientManagers[1], WIDTH_PER_SCREEN, HEIGHT)
+	std::array<Application, MAX_PLAYERS> games = {
+		Application(rollbackManagers[0], gameManagers[0], networkClientManagers[0], WIDTH_PER_SCREEN, HEIGHT),
+		Application(rollbackManagers[1], gameManagers[1], networkClientManagers[1], WIDTH_PER_SCREEN, HEIGHT)
 	};
 
-	for (auto& game : games)
-	{
-		game.OnQuit([&]()
-		{
-		  window.close();
-		});
-	}
-
 	sf::Clock clock;
-	float time = TIME_PER_FRAME;
+	float time = FIXED_TIME_STEP;
 
-	while (window.isOpen())
+	while (games[0].IsRunning() && games[1].IsRunning())
 	{
 		sf::Event event{};
 		sf::Time elapsed = clock.restart();
 
 		time += elapsed.asSeconds();
 
-		while (time >= TIME_PER_FRAME)
+		while (time >= FIXED_TIME_STEP)
 		{
 			server.Update();
 
@@ -157,7 +146,7 @@ int main()
 				{
 					auto& game = games[i];
 
-					game.CheckInputs(event);
+					game.OnInput(event);
 				}
 			}
 
@@ -165,54 +154,50 @@ int main()
 			{
 				auto& game = games[i];
 
-				if (game.GetState() == GameState::GAME)
+				PlayerInput playerInput = {};
+				PlayerRole playerRole = gameManagers[i].GetPlayerRole();
+				std::array<sf::Keyboard::Key, 4> keys = i == 0 ? player1Commands : player2Commands;
+
+				if (playerRole == PlayerRole::PLAYER)
 				{
-					PlayerInput playerInput = {};
-					PlayerRole playerRole = gameManagers[i].GetPlayerRole();
-					std::array<sf::Keyboard::Key, 4> keys = i == 0 ? player1Commands : player2Commands;
-
-					if (playerRole == PlayerRole::PLAYER)
+					if (sf::Keyboard::isKeyPressed(keys[1]))
 					{
-						if (sf::Keyboard::isKeyPressed(keys[1]))
-						{
-							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
-						}
-
-						if (sf::Keyboard::isKeyPressed(keys[3]))
-						{
-							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
-						}
-
-						if (sf::Keyboard::isKeyPressed(keys[0]))
-						{
-							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
-						}
-					}
-					else
-					{
-						if (sf::Keyboard::isKeyPressed(keys[1]))
-						{
-							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
-						}
-
-						if (sf::Keyboard::isKeyPressed(keys[2]))
-						{
-							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
-						}
-
-						if (sf::Keyboard::isKeyPressed(keys[3]))
-						{
-							playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
-						}
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
 					}
 
-					game.RegisterPlayerInput(playerInput);
+					if (sf::Keyboard::isKeyPressed(keys[3]))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
+					}
+
+					if (sf::Keyboard::isKeyPressed(keys[0]))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
+					}
+				}
+				else
+				{
+					if (sf::Keyboard::isKeyPressed(keys[1]))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
+					}
+
+					if (sf::Keyboard::isKeyPressed(keys[2]))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
+					}
+
+					if (sf::Keyboard::isKeyPressed(keys[3]))
+					{
+						playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
+					}
 				}
 
-				game.FixedUpdate(sf::seconds(TIME_PER_FRAME));
+				game.AddLocalPlayerInput(playerInput);
+				game.FixedUpdate();
 			}
 
-			time -= TIME_PER_FRAME;
+			time -= FIXED_TIME_STEP;
 		}
 
 		auto mousePosition = sf::Vector2f(sf::Mouse::getPosition(window));

@@ -1,11 +1,8 @@
 #include "Renderer/Renderers/LobbyRenderer.h"
 
-#include "Game.h"
-#include "Logger.h"
-#include "AssetManager.h"
-#include "MyPackets/LeaveLobbyPacket.h"
+#include "Application.h"
 
-LobbyRenderer::LobbyRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue height) :
+LobbyRenderer::LobbyRenderer(Application& game, ScreenSizeValue width, ScreenSizeValue height) :
 		_game(game),
 		_height(height),
 		_width(width)
@@ -19,11 +16,7 @@ LobbyRenderer::LobbyRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue 
 	leaveButton.SetText({
 			TextLine({ CustomText{ .Text = "LEAVE", .Style = sf::Text::Style::Bold, .Size = 24 }})
 	});
-	leaveButton.SetOnClick([this]()
-	{
-		_game.SendPacket(new MyPackets::LeaveLobbyPacket(), Protocol::TCP);
-		_game.SetState(GameState::MAIN_MENU);
-	});
+	leaveButton.SetOnClick([this](){ _game.LeaveLobby(); });
 
 	_buttons.emplace_back(leaveButton);
 
@@ -41,10 +34,9 @@ LobbyRenderer::LobbyRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue 
 	_texts.emplace_back(waiting);
 }
 
-void LobbyRenderer::OnPacketReceived(Packet& packet)
+void LobbyRenderer::OnEvent(Event event)
 {
-	if (packet.Type == static_cast<char>(MyPackets::MyPacketType::StartGame))
-	{
-		_game.SetState(GameState::GAME);
-	}
+	if (event != Event::START_GAME) return;
+
+	_game.StartGame();
 }

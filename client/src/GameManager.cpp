@@ -22,12 +22,10 @@ PlayerRole GameManager::GetPlayerRole()
 	return _playerRole;
 }
 
-void GameManager::Update(sf::Time elapsed,
-	PlayerInput playerInput, PlayerInput previousPlayerInput,
-	PlayerInput ghostInput, PlayerInput previousGhostInput)
+void GameManager::Update(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput)
 {
-	_gameData.RegisterPlayersInputs(playerInput, previousPlayerInput, ghostInput, previousGhostInput);
-	_gameData.Update(elapsed);
+	_gameData.AddPlayersInputs(playerInput, previousPlayerInput, ghostInput, previousGhostInput);
+	_gameData.FixedUpdate();
 }
 
 ClientGameData GameManager::GetGameData() const

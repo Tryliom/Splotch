@@ -82,8 +82,8 @@ public:
 	 * @param ghostInput
 	 * @param previousGhostInput
 	 */
-	void RegisterPlayersInputs(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput);
-	void Update(sf::Time elapsed);
+	void AddPlayersInputs(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput);
+	void FixedUpdate();
 
 	[[nodiscard]] Math::Vec2F GetGhostPosition() const;
 

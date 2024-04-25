@@ -1,5 +1,5 @@
 #include "AssetManager.h"
-#include "Game.h"
+#include "Application.h"
 #include "MyPackets.h"
 #include "NetworkClientManager.h"
 #include "GameManager.h"
@@ -23,34 +23,28 @@ int main()
 	AssetManager::Initialize();
 
 	// Network
-	NetworkClientManager _networkClientManager(HOST_NAME, PORT);
+	NetworkClientManager networkClientManager(HOST_NAME, PORT);
 
-	// Set the size of the game
-	sf::RenderWindow window(sf::RenderWindow(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT),
-	"Splotch", sf::Style::Default));
+	// Set the size of the application
+	sf::RenderWindow window(sf::RenderWindow(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT),"Splotch", sf::Style::Default));
 
 	window.setVerticalSyncEnabled(true);
 
 	GameManager gameManager(WIDTH, HEIGHT);
 	RollbackManager rollbackManager;
-	Game game(rollbackManager, gameManager, _networkClientManager, WIDTH, HEIGHT);
-
-	game.OnQuit([&]()
-	{
-	  	window.close();
-	});
+	Application application(rollbackManager, gameManager, networkClientManager, WIDTH, HEIGHT);
 
 	sf::Clock clock;
-	float time = TIME_PER_FRAME;
+	float time = FIXED_TIME_STEP;
 
-	while (window.isOpen())
+	while (application.IsRunning())
 	{
 		sf::Event event{};
 		const sf::Time elapsed = clock.restart();
 
 		time += elapsed.asSeconds();
 
-		while (time >= TIME_PER_FRAME)
+		while (time >= FIXED_TIME_STEP)
 		{
 			while (window.pollEvent(event))
 			{
@@ -60,52 +54,49 @@ int main()
 					break;
 				}
 
-				game.CheckInputs(event);
+				application.OnInput(event);
 			}
 
 			PlayerInput playerInput = {};
 
-			if (game.GetState() == GameState::GAME)
+			if (sf::Keyboard::isKeyPressed(commands[0]))
 			{
-				if (sf::Keyboard::isKeyPressed(commands[0]))
-				{
-					playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
-				}
-
-				if (sf::Keyboard::isKeyPressed(commands[1]))
-				{
-					playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
-				}
-
-				if (sf::Keyboard::isKeyPressed(commands[2]))
-				{
-					playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
-				}
-
-				if (sf::Keyboard::isKeyPressed(commands[3]))
-				{
-					playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
-				}
-
-				game.RegisterPlayerInput(playerInput);
+				playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Up);
 			}
 
-			game.FixedUpdate(sf::seconds(TIME_PER_FRAME));
+			if (sf::Keyboard::isKeyPressed(commands[1]))
+			{
+				playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Left);
+			}
 
-			time -= TIME_PER_FRAME;
+			if (sf::Keyboard::isKeyPressed(commands[2]))
+			{
+				playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Down);
+			}
+
+			if (sf::Keyboard::isKeyPressed(commands[3]))
+			{
+				playerInput |= static_cast<std::uint8_t>(PlayerInputTypes::Right);
+			}
+
+			application.AddLocalPlayerInput(playerInput);
+			application.FixedUpdate();
+
+			time -= FIXED_TIME_STEP;
 		}
 
 		const auto mousePosition = sf::Vector2f(sf::Mouse::getPosition(window));
 		const auto timeSinceLastFixed = sf::seconds(time);
 
-		game.Update(elapsed, timeSinceLastFixed, mousePosition);
+		application.Update(elapsed, timeSinceLastFixed, mousePosition);
 
 		window.clear();
-		game.Draw(window);
+		application.Draw(window);
 		window.display();
 	}
 
-	_networkClientManager.Stop();
+	window.close();
+	networkClientManager.Stop();
 
 	return EXIT_SUCCESS;
 }

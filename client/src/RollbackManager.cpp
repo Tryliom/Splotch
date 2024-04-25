@@ -110,7 +110,7 @@ void RollbackManager::AddPlayerInputs(PlayerInput playerInput)
 	_localPlayerInputs.push_back(playerInput);
 }
 
-std::vector<PlayerInputPerFrame> RollbackManager::GetLastPlayerInputs()
+std::vector<PlayerInputPerFrame> RollbackManager::GetLastLocalPlayerInputs()
 {
 	// Send all last player inputs to the server
 	std::vector<PlayerInputPerFrame> playerInputs = {};

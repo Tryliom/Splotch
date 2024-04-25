@@ -230,8 +230,8 @@ void GameServer::StartNewGame(ServerData::Game& game, ServerData::Lobby& lobby)
 	game.FromLobby(lobby);
 
 	// Send a message to the players that the game is starting
-	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(game.PlayerRolePlayer == 0), lobby.Players[0], Protocol::TCP);
-	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(game.PlayerRolePlayer == 1), lobby.Players[1], Protocol::TCP);
+	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(game.PlayerRoleClientIndex == 0), lobby.Players[0], Protocol::TCP);
+	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(game.PlayerRoleClientIndex == 1), lobby.Players[1], Protocol::TCP);
 
 	// Remove the lobby
 	lobby.Reset();

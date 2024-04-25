@@ -1,9 +1,8 @@
 #include "Renderer/Renderers/MenuRenderer.h"
 
-#include "Game.h"
-#include "AssetManager.h"
+#include "Application.h"
 
-MenuRenderer::MenuRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue height) : _game(game)
+MenuRenderer::MenuRenderer(Application& game, ScreenSizeValue width, ScreenSizeValue height) : _application(game)
 {
 	// Create buttons
 	auto playButton = Button(
@@ -45,21 +44,14 @@ MenuRenderer::MenuRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue he
 	_texts.emplace_back(title);
 }
 
-void MenuRenderer::OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)
+void MenuRenderer::OnEvent(Event event)
 {
-	if (_game.IsReadyToPlay())
-	{
-		_buttons[0].SetText({
-			TextLine({CustomText{.Text = "PLAY", .Style = sf::Text::Style::Bold, .Size = 24}})
-		});
-		_buttons[0].SetOnClick([this]() {
-			_game.SetState(GameState::LOBBY);
-		});
-	}
-	else
-	{
-		_buttons[0].SetText({
-			TextLine({CustomText{.Text = "CONNECTING..", .Style = sf::Text::Style::Bold, .Size = 24}})
-		});
-	}
+	if (event != Event::READY_TO_PLAY) return;
+
+	_buttons[0].SetText({
+		TextLine({CustomText{.Text = "PLAY", .Style = sf::Text::Style::Bold, .Size = 24}})
+	});
+	_buttons[0].SetOnClick([this]() {
+	  _application.JoinLobby();
+	});
 }

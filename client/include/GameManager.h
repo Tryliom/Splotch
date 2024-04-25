@@ -25,8 +25,7 @@ class GameManager
 
 	PlayerRole GetPlayerRole();
 
-	void Update(sf::Time elapsed, PlayerInput playerInput, PlayerInput previousPlayerInput,
-		PlayerInput ghostInput, PlayerInput previousGhostInput);
+	void Update(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput);
 	void UpdatePlayerAnimations(sf::Time elapsed, sf::Time elapsedSinceLastFixed);
 
 	[[nodiscard]] ClientGameData GetGameData() const;

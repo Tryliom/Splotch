@@ -34,10 +34,10 @@ namespace ServerData
 	{
 		std::array<ClientId, 2> Players = { EMPTY_CLIENT_ID, EMPTY_CLIENT_ID };
 
-		// Index of the player who is the ghost role
-		int GhostRolePlayer{};
-		// Index of the player who is the player role
-		int PlayerRolePlayer{};
+		// Client index of the player who is the ghost role
+		int GhostRoleClientIndex{};
+		// Client index of the player who is the player role
+		int PlayerRoleClientIndex{};
 
 		// Confirmed frame inputs
 		std::vector<FinalInputs> ConfirmFrames;

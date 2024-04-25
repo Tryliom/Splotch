@@ -2,7 +2,7 @@
 
 #include "Button.h"
 #include "Text.h"
-#include "Packet.h"
+#include "Event.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -23,12 +23,12 @@ protected:
 	 * @brief Draw additional elements after background and before buttons and texts
 	 */
 	virtual void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const {}
-	virtual void OnCheckInputs(sf::Event event) {}
+	virtual void OnInput(sf::Event event) {}
 
 public:
 	void FixedUpdate(sf::Time elapsed);
 	void Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition);
-	void CheckInputs(sf::Event event);
+	void Input(sf::Event event);
 
-	virtual void OnPacketReceived(Packet& packet) {}
+	virtual void OnEvent(Event event) {}
 };

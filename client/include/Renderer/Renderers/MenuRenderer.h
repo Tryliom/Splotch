@@ -5,15 +5,15 @@
 
 #include <array>
 
-class Game;
-class GameManager;
+class Application;
 
 class MenuRenderer final : public Renderer
 {
 private:
-	Game& _game;
+	Application& _application;
 
 public:
-	explicit MenuRenderer(Game& game, ScreenSizeValue width, ScreenSizeValue height);
-	void OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition) override;
+	explicit MenuRenderer(Application& game, ScreenSizeValue width, ScreenSizeValue height);
+
+	void OnEvent(Event event) override;
 };

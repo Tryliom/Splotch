@@ -25,7 +25,7 @@ namespace ServerData
 		Players = { EMPTY_CLIENT_ID, EMPTY_CLIENT_ID };
 	}
 
-	// Game
+	// Application
 
 	Game::Game(const Lobby& lobbyData)
 	{
@@ -47,8 +47,8 @@ namespace ServerData
 		Players = lobbyData.Players;
 
 		// Setup players roles, positions etc.
-		GhostRolePlayer = Math::Random::Range(0, 1);
-		PlayerRolePlayer = GhostRolePlayer == 0 ? 1 : 0;
+		GhostRoleClientIndex = Math::Random::Range(0, 1);
+		PlayerRoleClientIndex = GhostRoleClientIndex == 0 ? 1 : 0;
 
 		LastGameData.StartGame(WIDTH, HEIGHT);
 
@@ -85,7 +85,7 @@ namespace ServerData
 	void Game::AddFrame()
 	{
 		// Add the frame to the confirmed frames
-		if (PlayerRolePlayer == 0)
+		if (PlayerRoleClientIndex == 0)
 		{
 			ConfirmFrames.push_back({ LastPlayer1Inputs[0], LastPlayer2Inputs[0] });
 		}
@@ -105,8 +105,8 @@ namespace ServerData
 		const auto ghostInputs = ConfirmFrames[confirmedFrameSize - 1].GhostRoleInputs;
 		const auto previousGhostInputs = confirmedFrameSize > 1 ? ConfirmFrames[confirmedFrameSize - 2].GhostRoleInputs : ghostInputs;
 
-		LastGameData.RegisterPlayersInputs(playerInputs, previousPlayerInputs, ghostInputs, previousGhostInputs);
-		LastGameData.Update(sf::seconds(TIME_PER_FRAME));
+		LastGameData.AddPlayersInputs(playerInputs, previousPlayerInputs, ghostInputs, previousGhostInputs);
+		LastGameData.FixedUpdate();
 	}
 
 	FinalInputs Game::GetLastFrame()

@@ -53,9 +53,9 @@ void Renderer::Update(const sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf
 	OnUpdate(elapsed, elapsedSinceLastFixed, mousePosition);
 }
 
-void Renderer::CheckInputs(const sf::Event event)
+void Renderer::Input(sf::Event event)
 {
-	OnCheckInputs(event);
+	OnInput(event);
 
 	if (event.type == sf::Event::MouseButtonPressed)
 	{

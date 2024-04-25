@@ -1,7 +1,8 @@
-#include <bit>
 #include "GameData.h"
 
 #include "Constants.h"
+
+#include <bit>
 
 void GameData::StartGame(ScreenSizeValue width, ScreenSizeValue height)
 {
@@ -93,7 +94,7 @@ void GameData::IncreaseGhostSlot()
 	Ghost = static_cast<GhostSlot>(static_cast<int>(Ghost) + 1);
 }
 
-void GameData::RegisterPlayersInputs(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput)
+void GameData::AddPlayersInputs(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput)
 {
 	_playerInputs = playerInput;
 	_previousPlayerInputs = previousPlayerInput;
@@ -101,8 +102,10 @@ void GameData::RegisterPlayersInputs(PlayerInput playerInput, PlayerInput previo
 	_previousGhostInputs = previousGhostInput;
 }
 
-void GameData::Update(sf::Time elapsed)
+void GameData::FixedUpdate()
 {
+	sf::Time elapsed = sf::seconds(FIXED_TIME_STEP);
+
 	if (BrickCooldown > 0.f)
 	{
 		BrickCooldown -= elapsed.asSeconds();

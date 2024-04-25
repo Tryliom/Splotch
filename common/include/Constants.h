@@ -104,5 +104,5 @@ enum class PlayerRole
 	GHOST
 };
 
-constexpr int FRAME_RATE = 30;
-constexpr float TIME_PER_FRAME = 1.f / FRAME_RATE;
+constexpr int PHYSICAL_FRAME_RATE = 30;
+constexpr float FIXED_TIME_STEP = 1.f / PHYSICAL_FRAME_RATE;

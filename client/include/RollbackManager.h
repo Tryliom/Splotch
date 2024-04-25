@@ -29,13 +29,13 @@ class RollbackManager
 
 	bool _needToRollback = false;
 
-	int _lastServerChecksum{};
+	int _lastServerChecksum {};
 
 public:
 	void OnPacketReceived(Packet& packet);
 
 	void AddPlayerInputs(PlayerInput playerInput);
-	std::vector<PlayerInputPerFrame> GetLastPlayerInputs();
+	std::vector<PlayerInputPerFrame> GetLastLocalPlayerInputs();
 
 	[[nodiscard]] PlayerInput GetPlayerInput(int frame) const;
 	[[nodiscard]] PlayerInput GetGhostInput(int frame) const;

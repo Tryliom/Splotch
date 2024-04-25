@@ -2,7 +2,7 @@
 #include "PacketManager.h"
 #include "MyPackets.h"
 #include "AssetManager.h"
-#include "Game.h"
+#include "Application.h"
 #include "NetworkClientManager.h"
 #include "Logger.h"
 #include "GameManager.h"
@@ -33,9 +33,9 @@ int main()
 		GameManager(WIDTH, HEIGHT),
 		GameManager(WIDTH, HEIGHT)
 	};
-	std::array<Game, 2> games = {
-		Game(gameManagers[0], networkClientManagers[0], WIDTH, HEIGHT),
-		Game(gameManagers[1], networkClientManagers[1], WIDTH, HEIGHT)
+	std::array<Application, 2> games = {
+		Application(gameManagers[0], networkClientManagers[0], WIDTH, HEIGHT),
+		Application(gameManagers[1], networkClientManagers[1], WIDTH, HEIGHT)
 	};
 
 	for (auto& game : games)
@@ -49,7 +49,7 @@ int main()
 	int gameIndex = 0;
 	auto gameNumber = Text(
 			sf::Vector2f(10, 10),
-			{ TextLine({ CustomText{ .Text = "Game " + std::to_string(gameIndex), .Size = 18 }}) }, -1, false
+			{ TextLine({ CustomText{ .Text = "Application " + std::to_string(gameIndex), .Size = 18 }}) }, -1, false
 	);
 
 	while (window.isOpen())
@@ -72,11 +72,11 @@ int main()
 				gameIndex = (gameIndex + 1) % static_cast<int>(games.size());
 				gameNumber = Text(
 						sf::Vector2f(10, 10),
-						{ TextLine({ CustomText{ .Text = "Game " + std::to_string(gameIndex), .Size = 18 }}) }, -1, false
+						{ TextLine({ CustomText{ .Text = "Application " + std::to_string(gameIndex), .Size = 18 }}) }, -1, false
 				);
 			}
 
-			games[gameIndex].CheckInputs(event);
+			games[gameIndex].OnInput(event);
 		}
 
 		for (auto& game : games)
