@@ -121,7 +121,7 @@ int main()
 	sf::Clock clock;
 	float time = FIXED_TIME_STEP;
 
-	while (games[0].IsRunning() && games[1].IsRunning())
+	while (games[0].IsRunning() && games[1].IsRunning() && window.isOpen())
 	{
 		sf::Event event{};
 		sf::Time elapsed = clock.restart();
@@ -283,6 +283,8 @@ int main()
 
 		window.display();
 	}
+
+	window.close();
 
 	for (auto& networkClientManager : networkClientManagers)
 	{

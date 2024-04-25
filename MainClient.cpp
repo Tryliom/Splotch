@@ -37,7 +37,7 @@ int main()
 	sf::Clock clock;
 	float time = FIXED_TIME_STEP;
 
-	while (application.IsRunning())
+	while (application.IsRunning() && window.isOpen())
 	{
 		sf::Event event{};
 		const sf::Time elapsed = clock.restart();
