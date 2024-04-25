@@ -1,6 +1,7 @@
 #include "GameData.h"
 
 #include "Constants.h"
+#include "Logger.h"
 
 #include <bit>
 
@@ -78,6 +79,55 @@ void GameData::SetupWorld()
 		PLAYER_CIRCLE_COLLIDER_RADIUS * PLAYER_SIZE_SCALED.X
 	});
 	playerTopCollider.SetOffset({0.f, -PLAYER_TRIGGERS_OFFSET * PLAYER_SIZE_SCALED.Y});
+
+	// Create static colliders on each side to block the player from going out of bounds and a killer one at bottom
+	const Math::RectangleF leftSideRectangle = {
+		{ 0, 0 },
+		{ SIDE_COLLIDER_WIDTH, _height.Value }
+	};
+	const Math::RectangleF rightSideRectangle = {
+		{ _width.Value - SIDE_COLLIDER_WIDTH, 0 },
+		{ _width.Value, _height.Value }
+	};
+	const Math::RectangleF bottomSideRectangle = {
+		{ 0, _height.Value - BOTTOM_COLLIDER_HEIGHT },
+		{ _width.Value, _height.Value }
+	};
+
+	const auto leftSideBody = World.CreateBody();
+	const auto rightSideBody = World.CreateBody();
+	const auto bottomSideBody = World.CreateBody();
+	const auto leftSideCollider = World.CreateCollider(leftSideBody);
+	const auto rightSideCollider = World.CreateCollider(rightSideBody);
+	PlayerKillCollider = World.CreateCollider(bottomSideBody);
+	auto& leftBody = World.GetBody(leftSideBody);
+	auto& rightBody = World.GetBody(rightSideBody);
+	auto& killBody = World.GetBody(bottomSideBody);
+
+	leftBody.SetUseGravity(false);
+	leftBody.SetBodyType(Physics::BodyType::Static);
+	leftBody.SetPosition(leftSideRectangle.Center());
+
+	rightBody.SetUseGravity(false);
+	rightBody.SetBodyType(Physics::BodyType::Static);
+	rightBody.SetPosition(rightSideRectangle.Center());
+
+	killBody.SetUseGravity(false);
+	killBody.SetBodyType(Physics::BodyType::Static);
+	killBody.SetPosition(bottomSideRectangle.Center());
+
+	auto& leftCollider = World.GetCollider(leftSideCollider);
+	auto& rightCollider = World.GetCollider(rightSideCollider);
+	auto& killCollider = World.GetCollider(PlayerKillCollider);
+
+	leftCollider.SetIsTrigger(false);
+	leftCollider.SetRectangle(leftSideRectangle);
+
+	rightCollider.SetIsTrigger(false);
+	rightCollider.SetRectangle(rightSideRectangle);
+
+	killCollider.SetIsTrigger(true);
+	killCollider.SetRectangle(bottomSideRectangle);
 }
 
 void GameData::DecreaseGhostSlot()

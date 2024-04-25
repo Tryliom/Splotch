@@ -82,6 +82,7 @@ namespace Math
 				_maxBound.Y = minBound.Y;
 			}
 		}
+		constexpr explicit Rectangle(Vec2<T> size) noexcept : _minBound(Vec2<T>::Zero()), _maxBound(size) {}
 
     private:
         Vec2<T> _minBound = Vec2<T>::Zero();
