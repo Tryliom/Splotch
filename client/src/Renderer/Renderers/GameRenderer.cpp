@@ -3,8 +3,8 @@
 #include "Application.h"
 #include "GameManager.h"
 
-GameRenderer::GameRenderer(Application& game, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height) :
-	_application(game), _gameManager(gameManager), _height(height), _width(width)
+GameRenderer::GameRenderer(Application& application, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height) :
+	_application(application), _gameManager(gameManager), _height(height), _width(width)
 {
 	std::array<std::string_view, LINES_COUNT> lines;
 
@@ -78,6 +78,12 @@ void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) con
 			target.draw(brickShape, states);
 		}
 	}
+
+	if (!_gameOver) return;
+
+	sf::RectangleShape rectangle(sf::Vector2f(_width.Value, _height.Value));
+	rectangle.setFillColor(sf::Color(0, 0, 0, 200));
+	target.draw(rectangle);
 }
 
 void GameRenderer::OnInput(sf::Event event)
@@ -87,8 +93,6 @@ void GameRenderer::OnInput(sf::Event event)
 
 	_application.LeaveGame();
 }
-
-void GameRenderer::OnFixedUpdate(sf::Time elapsed) {}
 
 void GameRenderer::OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)
 {
@@ -103,22 +107,56 @@ void GameRenderer::OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf
 	if (_messageTimer <= 0.f)
 	{
 		_messageTimer = 0.f;
-		_texts.clear();
+		_texts[0] = Text();
 	}
 }
 
 void GameRenderer::OnEvent(Event event)
 {
-	if (event != Event::PLAYER_LEAVE_GAME) return;
+	if (event == Event::PLAYER_LEAVE_GAME)
+	{
+		_texts[0] = Text(
+			sf::Vector2f(_width.Value / 2.f, 150.f),
+			{
+				TextLine({CustomText{.Text = "Other player leave", .Size = 30}})
+			}
+		);
+	}
+	else if (event == Event::WIN_GAME)
+	{
+		_texts[0] = Text(
+			sf::Vector2f(_width.Value / 2.f, 150.f),
+			{
+				TextLine({CustomText{.Text = WIN_MESSAGE.data(), .Size = 30}})
+			}
+		);
 
-	_gameOver = true;
+		_gameOver = true;
+	}
+	else if (event == Event::LOSE_GAME)
+	{
+		_texts[0] = Text(
+			sf::Vector2f(_width.Value / 2.f, 150.f),
+			{
+				TextLine({CustomText{.Text = LOSE_MESSAGE.data(), .Size = 30}})
+			}
+		);
 
-	_texts[1] = Text(
-		sf::Vector2f(_width.Value / 2.f, 150.f),
-		{
-			TextLine({ CustomText{ .Text = "Other player leave", .Size = 30 }})
-		}
+		_gameOver = true;
+	}
+
+	auto leaveButton = Button(
+		sf::Vector2f(_width.Value / 2.f, ScreenPercentage(0.9f) * _height),
+		sf::Vector2f(200, 50),
+		true
 	);
+
+	leaveButton.SetText({
+        TextLine({ CustomText{ .Text = "LEAVE", .Style = sf::Text::Style::Bold, .Size = 24 }})
+    });
+	leaveButton.SetOnClick([this](){ _application.LeaveGame(); });
+
+	_buttons.emplace_back(leaveButton);
 }
 
 sf::Color GameRenderer::LerpColor(sf::Color a, sf::Color b, float t)

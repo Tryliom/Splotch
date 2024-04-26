@@ -2,10 +2,10 @@
 
 #include "Application.h"
 
-LobbyRenderer::LobbyRenderer(Application& game, ScreenSizeValue width, ScreenSizeValue height) :
-		_game(game),
-		_height(height),
-		_width(width)
+LobbyRenderer::LobbyRenderer(Application& application, ScreenSizeValue width, ScreenSizeValue height) :
+	_application(application),
+	_height(height),
+	_width(width)
 {
 	auto leaveButton = Button(
 			sf::Vector2f(_width.Value / 2.f, ScreenPercentage(0.9f) * _height),
@@ -16,7 +16,7 @@ LobbyRenderer::LobbyRenderer(Application& game, ScreenSizeValue width, ScreenSiz
 	leaveButton.SetText({
 			TextLine({ CustomText{ .Text = "LEAVE", .Style = sf::Text::Style::Bold, .Size = 24 }})
 	});
-	leaveButton.SetOnClick([this](){ _game.LeaveLobby(); });
+	leaveButton.SetOnClick([this](){ _application.LeaveLobby(); });
 
 	_buttons.emplace_back(leaveButton);
 
@@ -38,5 +38,5 @@ void LobbyRenderer::OnEvent(Event event)
 {
 	if (event != Event::START_GAME) return;
 
-	_game.StartGame();
+	_application.StartGame();
 }

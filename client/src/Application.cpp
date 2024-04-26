@@ -102,6 +102,17 @@ void Application::FixedUpdate()
 		_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
 
 		if (!_rollbackManager.IsIntegrityOk()) IntegrityCrash();
+
+		if (_gameManager.GetGameData().BricksLeft == 0)
+		{
+			_renderer->OnEvent(_gameManager.GetPlayerRole() == PlayerRole::PLAYER ? Event::WIN_GAME : Event::LOSE_GAME);
+		}
+		else if (_gameManager.GetGameData().IsPlayerDead)
+		{
+			_gameManager.GetGameData().SwitchPlayerAndGhost();
+
+			//TODO: Switch player and ghost
+		}
 	}
 
 	if (_renderer != nullptr)

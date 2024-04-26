@@ -34,10 +34,9 @@ public:
 	Physics::ColliderRef PlayerTopCollider;
 	Physics::ColliderRef PlayerPhysicsCollider;
 	Physics::ColliderRef PlatformCollider;
-	Physics::ColliderRef PlayerKillCollider;
 
 	std::array<std::array<Brick, MAX_BRICKS_PER_COLUMN>, HAND_SLOT_COUNT> BricksPerSlot;
-
+	int BricksLeft = MAX_BRICKS_THAT_CAN_BE_USED;
 	float BrickCooldown = COOLDOWN_SPAWN_BRICK;
 
 	bool IsPlayerOnGround = true;
@@ -57,8 +56,6 @@ public:
 	static constexpr float COOLDOWN_SPAWN_BRICK = 0.3f;
 	static constexpr float PLAYER_SPEED = 200.f;
 	static constexpr Math::Vec2F PLAYER_JUMP = GRAVITY * -20.f;
-	static constexpr float SIDE_COLLIDER_WIDTH = 5.f;
-	static constexpr float BOTTOM_COLLIDER_HEIGHT = 20.f;
 
 	void DecreaseGhostSlot();
 	void IncreaseGhostSlot();
@@ -87,6 +84,8 @@ public:
 	 */
 	void AddPlayersInputs(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput);
 	void FixedUpdate();
+
+	void SwitchPlayerAndGhost();
 
 	[[nodiscard]] Math::Vec2F GetGhostPosition() const;
 

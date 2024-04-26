@@ -27,6 +27,8 @@ class GameRenderer final :
 	static constexpr float MESSAGE_TIMER = 6.f;
 	float _messageTimer = 0;
 
+	static constexpr std::string_view WIN_MESSAGE = "You win !";
+	static constexpr std::string_view LOSE_MESSAGE = "You lose !";
 	bool _gameOver = false;
 
 	void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -35,9 +37,8 @@ class GameRenderer final :
 	static sf::Color LerpColor(sf::Color a, sf::Color b, float t) ;
 
  public:
-	explicit GameRenderer(Application& game, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height);
+	explicit GameRenderer(Application& application, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height);
 
-	void OnFixedUpdate(sf::Time elapsed) override;
 	void OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition) override;
 	void OnEvent(Event event) override;
 };

@@ -10,7 +10,7 @@ class Application;
 class LobbyRenderer final : public Renderer
 {
 private:
-	Application& _game;
+	Application& _application;
 
 	ScreenSizeValue _height;
 	ScreenSizeValue _width;

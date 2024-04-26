@@ -52,7 +52,7 @@ struct ScreenPercentage
 
 	constexpr ScreenPercentage operator*(int multiplier) const
 	{
-		return { Value * multiplier };
+		return { Value * static_cast<float>(multiplier) };
 	}
 
 	constexpr ScreenPercentage operator+(ScreenPercentage screenPercentage) const
@@ -88,7 +88,8 @@ constexpr Vec2SP PLATFORM_MAX_BOUND = {{ HAND_SLOT_SIZE.Value * 3.f }, { 0.01}};
 constexpr Vec2SP PLATFORM_SIZE = {{ HAND_SLOT_SIZE.Value * 5.f }, { PLATFORM_MAX_BOUND.Y * 2.f }};
 constexpr Vec2SP PLATFORM_POSITION = {{ 0.5f }, { 0.95f } };
 
-constexpr int MAX_BRICKS_PER_COLUMN = (1.f - HAND_START_POSITION.X.Value - BRICK_SPAWN_HEIGHT.Value) / BRICK_SIZE.Y.Value;
+constexpr int MAX_BRICKS_PER_COLUMN = static_cast<int>((1.f - HAND_START_POSITION.X.Value) / BRICK_SIZE.Y.Value);
+constexpr int MAX_BRICKS_THAT_CAN_BE_USED = (MAX_BRICKS_PER_COLUMN * HAND_SLOT_COUNT) / 2;
 
 constexpr Vec2SP PLAYER_START_POSITION = {{ 0.5f }, { PLATFORM_POSITION.Y - PLATFORM_MAX_BOUND.Y } };
 constexpr float PLAYER_CIRCLE_COLLIDER_RADIUS = 0.1f;
