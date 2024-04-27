@@ -64,4 +64,6 @@ public:
 	 */
 	[[nodiscard]] bool IsIntegrityOk() const;
 	void CheckIntegrity(int frame);
+
+	void SwitchRoles();
 };

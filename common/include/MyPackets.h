@@ -15,6 +15,7 @@ namespace MyPackets
 		StartGame,
 		PlayerInput,
 		ConfirmationInput,
+		SwitchRole,
 		COUNT
 	};
 }

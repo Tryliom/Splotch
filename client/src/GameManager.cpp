@@ -42,3 +42,10 @@ void GameManager::UpdatePlayerAnimations(sf::Time elapsed, sf::Time elapsedSince
 {
 	_gameData.UpdatePlayersAnimations(elapsed, elapsedSinceLastFixed);
 }
+
+void GameManager::SwitchRoles()
+{
+	_gameData.SwitchPlayerAndGhost();
+	_playerRole = _playerRole == PlayerRole::PLAYER ? PlayerRole::GHOST : PlayerRole::PLAYER;
+	_gameData.SetPlayersRole(_playerRole == PlayerRole::PLAYER);
+}

@@ -79,7 +79,7 @@ void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) con
 		}
 	}
 
-	if (!_gameOver) return;
+	if (!_gameManager.GetGameData().IsGameOver()) return;
 
 	sf::RectangleShape rectangle(sf::Vector2f(_width.Value, _height.Value));
 	rectangle.setFillColor(sf::Color(0, 0, 0, 200));
@@ -130,8 +130,6 @@ void GameRenderer::OnEvent(Event event)
 				TextLine({CustomText{.Text = WIN_MESSAGE.data(), .Size = 30}})
 			}
 		);
-
-		_gameOver = true;
 	}
 	else if (event == Event::LOSE_GAME)
 	{
@@ -141,8 +139,6 @@ void GameRenderer::OnEvent(Event event)
 				TextLine({CustomText{.Text = LOSE_MESSAGE.data(), .Size = 30}})
 			}
 		);
-
-		_gameOver = true;
 	}
 
 	auto leaveButton = Button(

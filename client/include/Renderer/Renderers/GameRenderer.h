@@ -29,7 +29,6 @@ class GameRenderer final :
 
 	static constexpr std::string_view WIN_MESSAGE = "You win !";
 	static constexpr std::string_view LOSE_MESSAGE = "You lose !";
-	bool _gameOver = false;
 
 	void OnDraw(sf::RenderTarget& target, sf::RenderStates states) const override;
 	void OnInput(sf::Event event) override;

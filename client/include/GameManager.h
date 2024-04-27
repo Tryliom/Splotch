@@ -30,4 +30,6 @@ class GameManager
 
 	[[nodiscard]] ClientGameData GetGameData() const;
 	void SetGameData(ClientGameData gameData);
+
+	void SwitchRoles();
 };

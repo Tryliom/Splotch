@@ -7,6 +7,7 @@
 #include "MyPackets/LeaveGamePacket.h"
 #include "MyPackets/PlayerInputPacket.h"
 #include "MyPackets/ConfirmationInputPacket.h"
+#include "MyPackets/SwitchRolePacket.h"
 
 GameServer::GameServer(ServerNetworkInterface& serverNetworkInterface)
 	: _serverNetworkInterface(serverNetworkInterface) {}
@@ -48,6 +49,18 @@ void GameServer::Update()
 			// Send the frame to the players
 			_serverNetworkInterface.SendPacket(p1ConfirmedPacket, game.Players[0], Protocol::TCP);
 			_serverNetworkInterface.SendPacket(p2ConfirmedPacket, game.Players[1], Protocol::TCP);
+		}
+
+		if (game.LastGameData.IsGameOver())
+		{
+			game.Reset();
+		}
+		else if (game.LastGameData.IsPlayerDead)
+		{
+			_serverNetworkInterface.SendPacket(new MyPackets::SwitchRolePacket(), game.Players[0], Protocol::TCP);
+			_serverNetworkInterface.SendPacket(new MyPackets::SwitchRolePacket(), game.Players[1], Protocol::TCP);
+
+			game.SwitchRoles();
 		}
 	}
 }

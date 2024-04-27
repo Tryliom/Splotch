@@ -60,6 +60,11 @@ namespace ServerData
 		void AddFrame();
 		FinalInputs GetLastFrame();
 
+		/**
+		 * @brief Switch the roles of the players and start the game again from frame 0
+		 */
+		void SwitchRoles();
+
 		void OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
 		void OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
 		void OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}

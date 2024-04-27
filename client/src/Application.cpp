@@ -29,7 +29,7 @@ void Application::OnInput(const sf::Event& event)
 
 void Application::AddLocalPlayerInput(PlayerInput playerInput)
 {
-	if (_state != GameState::GAME) return;
+	if (_state != GameState::GAME || _gameManager.GetGameData().IsGameOver()) return;
 
 	_rollbackManager.AddPlayerInputs(playerInput);
 	_networkManager.SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastLocalPlayerInputs()), Protocol::UDP);
@@ -76,7 +76,7 @@ void Application::FixedUpdate()
 			// Rollback before the current frame
 			for (auto frame = oldConfirmedFrame; frame < currentFrame; frame++)
 			{
-				UpdateGame(elapsed, frame);
+				UpdateGame(frame);
 				_gameManager.UpdatePlayerAnimations(elapsed, sf::seconds(0));
 
 				// Happens when rollback is happening by reception of a confirmed input without remote inputs
@@ -98,7 +98,7 @@ void Application::FixedUpdate()
 		}
 
 		// Update the game with the current frame
-		UpdateGame(elapsed, _rollbackManager.GetCurrentFrame());
+		UpdateGame(_rollbackManager.GetCurrentFrame());
 		_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
 
 		if (!_rollbackManager.IsIntegrityOk()) IntegrityCrash();
@@ -106,12 +106,6 @@ void Application::FixedUpdate()
 		if (_gameManager.GetGameData().BricksLeft == 0)
 		{
 			_renderer->OnEvent(_gameManager.GetPlayerRole() == PlayerRole::PLAYER ? Event::WIN_GAME : Event::LOSE_GAME);
-		}
-		else if (_gameManager.GetGameData().IsPlayerDead)
-		{
-			_gameManager.GetGameData().SwitchPlayerAndGhost();
-
-			//TODO: Switch player and ghost
 		}
 	}
 
@@ -123,10 +117,10 @@ void Application::FixedUpdate()
 
 void Application::IntegrityCrash()
 {
-	LOG("Application data is corrupted -> Leave game");
+	/*LOG("Application data is corrupted -> Leave game");*/
 
-	_networkManager.SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
-	SetState(GameState::MAIN_MENU);
+	/*_networkManager.SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
+	SetState(GameState::MAIN_MENU);*/
 }
 
 void Application::Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)
@@ -213,6 +207,11 @@ void Application::OnPacketReceived(Packet& packet)
 	{
 		_renderer->OnEvent(Event::START_GAME);
 	}
+	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::SwitchRole))
+	{
+		_gameManager.SwitchRoles();
+		_rollbackManager.SwitchRoles();
+	}
 }
 
 void Application::Quit()
@@ -220,7 +219,7 @@ void Application::Quit()
 	_running = false;
 }
 
-void Application::UpdateGame(sf::Time elapsed, int frame)
+void Application::UpdateGame(int frame)
 {
 	const auto previousFrame = frame - 1;
 

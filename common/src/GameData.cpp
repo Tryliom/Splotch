@@ -1,7 +1,6 @@
 #include "GameData.h"
 
 #include "Constants.h"
-#include "Logger.h"
 
 #include <bit>
 
@@ -132,7 +131,29 @@ void GameData::FixedUpdate()
 
 void GameData::SwitchPlayerAndGhost()
 {
-	//TODO: Switch player and ghost, like set new ghost position and player on the ground
+	Ghost = GhostSlot::SLOT_3;
+	IsPlayerDead = false;
+	IsPlayerOnGround = false;
+	BrickCooldown = COOLDOWN_SPAWN_BRICK;
+
+	// Place the player on the platform of slot 1
+	const auto bricks = BricksPerSlot[0];
+
+	for (int i = 0; i < MAX_BRICKS_PER_COLUMN; i++)
+	{
+		if (bricks[i].IsAlive)
+		{
+			World.GetBody(PlayerBody).SetPosition(World.GetBody(bricks[i].Body).Position() - Math::Vec2F{0.f, (BRICK_SIZE.Y * _height) / 2.f});
+			break;
+		}
+
+		if (i == MAX_BRICKS_PER_COLUMN - 1)
+		{
+			World.GetBody(PlayerBody).SetPosition({HAND_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height - PLAYER_SIZE_SCALED.Y / 2.f});
+		}
+	}
+
+	PlayerPosition = World.GetBody(PlayerBody).Position();
 }
 
 void GameData::UpdatePlayer()
@@ -260,6 +281,11 @@ Checksum GameData::GenerateChecksum() const
 	checksum += IsPlayerDead ? 1 : 0;
 
 	return { checksum };
+}
+
+bool GameData::IsGameOver() const
+{
+	return BricksLeft == 0;
 }
 
 void GameData::OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept

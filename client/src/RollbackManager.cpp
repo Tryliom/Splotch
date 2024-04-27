@@ -285,3 +285,8 @@ void RollbackManager::CheckIntegrity(int frame)
 
 	_integrityIsOk = _confirmedGameData.GenerateChecksum() == _confirmedFrames[frame].Checksum;
 }
+
+void RollbackManager::SwitchRoles()
+{
+	_playerRole = _playerRole == PlayerRole::PLAYER ? PlayerRole::GHOST : PlayerRole::PLAYER;
+}

@@ -19,7 +19,6 @@ void ClientGameData::UpdatePlayersAnimations(sf::Time elapsed, sf::Time elapsedS
 	playerVelocity += playerForce * body.InverseMass() * elapsedSinceLastFixed.asSeconds();
 	playerPosition += playerVelocity * elapsedSinceLastFixed.asSeconds();
 
-	//TODO: With inversion of roles, we will need to get inputs according to player role for each
 	const std::array<Math::Vec2F, MAX_PLAYERS> playerPositions = {
 		playerPosition, GetGhostPosition()
 	};

@@ -98,6 +98,8 @@ public:
 
 	[[nodiscard]] Checksum GenerateChecksum() const;
 
+	[[nodiscard]] bool IsGameOver() const;
+
 	void OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
 	void OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;
 	void OnTriggerStay(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override;

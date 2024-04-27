@@ -113,4 +113,11 @@ namespace ServerData
 	{
 		return ConfirmFrames.back();
 	}
+
+	void Game::SwitchRoles()
+	{
+		std::swap(Players[0], Players[1]);
+
+		LastGameData.SwitchPlayerAndGhost();
+	}
 }
