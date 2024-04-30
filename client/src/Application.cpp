@@ -38,6 +38,7 @@ void Application::AddLocalPlayerInput(PlayerInput playerInput)
 void Application::FixedUpdate()
 {
 	sf::Time elapsed = sf::seconds(FIXED_TIME_STEP);
+	bool exitPacketLoop = false;
 
 	while (Packet* packet = _networkManager.PopPacket())
 	{
@@ -53,12 +54,23 @@ void Application::FixedUpdate()
 		_gameManager.OnPacketReceived(*packet);
 		OnPacketReceived(*packet);
 
+		if (packet->Type == static_cast<char>(MyPackets::MyPacketType::SwitchRole))
+		{
+			_gameManager.SetGameData(_rollbackManager.GetConfirmedGameData());
+			_rollbackManager.ResetUnconfirmedGameData();
+			_gameManager.SwitchRoles();
+			_rollbackManager.SwitchRoles();
+			exitPacketLoop = true;
+		}
+
 		auto packetTypeValue = packet->Type;
 
 		if (packetTypeValue >= 0 && packetTypeValue <= static_cast<char>(MyPackets::MyPacketType::COUNT))
 		{
 			delete packet;
 		}
+
+		if (exitPacketLoop) break;
 	}
 
 	if (_state == GameState::GAME && _renderer != nullptr)
@@ -203,11 +215,6 @@ void Application::OnPacketReceived(Packet& packet)
 	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::StartGame))
 	{
 		_renderer->OnEvent(Event::START_GAME);
-	}
-	else if (packet.Type == static_cast<char>(MyPackets::MyPacketType::SwitchRole))
-	{
-		_gameManager.SwitchRoles();
-		_rollbackManager.SwitchRoles();
 	}
 }
 
