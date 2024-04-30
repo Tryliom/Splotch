@@ -36,6 +36,7 @@ ClientGameData GameManager::GetGameData() const
 void GameManager::SetGameData(ClientGameData gameData)
 {
 	_gameData = std::move(gameData);
+	_gameData.World.SetContactListener(&_gameData);
 }
 
 void GameManager::UpdatePlayerAnimations(sf::Time elapsed, sf::Time elapsedSinceLastFixed)

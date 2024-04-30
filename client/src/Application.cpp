@@ -61,7 +61,7 @@ void Application::FixedUpdate()
 		}
 	}
 
-	if (_state == GameState::GAME)
+	if (_state == GameState::GAME && _renderer != nullptr)
 	{
 		if (_rollbackManager.NeedToRollback())
 		{
@@ -91,7 +91,7 @@ void Application::FixedUpdate()
 					_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
 				}
 
-				if (!_rollbackManager.IsIntegrityOk()) IntegrityCrash();
+				if (!_rollbackManager.IsIntegrityOk()) IntegrityLog();
 			}
 
 			_rollbackManager.RollbackDone();
@@ -101,7 +101,7 @@ void Application::FixedUpdate()
 		UpdateGame(_rollbackManager.GetCurrentFrame());
 		_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
 
-		if (!_rollbackManager.IsIntegrityOk()) IntegrityCrash();
+		if (!_rollbackManager.IsIntegrityOk()) IntegrityLog();
 
 		if (_gameManager.GetGameData().BricksLeft == 0)
 		{
@@ -115,12 +115,9 @@ void Application::FixedUpdate()
 	}
 }
 
-void Application::IntegrityCrash()
+void Application::IntegrityLog()
 {
-	/*LOG("Application data is corrupted -> Leave game");*/
-
-	/*_networkManager.SendPacket(new MyPackets::LeaveGamePacket(), Protocol::TCP);
-	SetState(GameState::MAIN_MENU);*/
+	LOG("Application data is corrupted");
 }
 
 void Application::Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)

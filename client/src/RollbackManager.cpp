@@ -20,7 +20,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 
 		_confirmedFrames.push_back({
 			{ confirmationInputPacket.PlayerRoleInput, confirmationInputPacket.GhostRoleInput },
-		  { confirmationInputPacket.Checksum }
+		  { confirmationInputPacket.CurrentChecksum }
 		});
 
 		if (!_localPlayerInputs.empty())

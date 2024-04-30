@@ -78,5 +78,5 @@ class Application
 	void UpdateGame(int frame);
 	void SetState(GameState state);
 
-	void IntegrityCrash();
+	static void IntegrityLog();
 };

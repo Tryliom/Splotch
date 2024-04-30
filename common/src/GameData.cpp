@@ -1,6 +1,7 @@
 #include "GameData.h"
 
 #include "Constants.h"
+#include "Logger.h"
 
 #include <bit>
 
@@ -136,22 +137,8 @@ void GameData::SwitchPlayerAndGhost()
 	IsPlayerOnGround = false;
 	BrickCooldown = COOLDOWN_SPAWN_BRICK;
 
-	// Place the player on the platform of slot 1
-	const auto bricks = BricksPerSlot[0];
-
-	for (int i = 0; i < MAX_BRICKS_PER_COLUMN; i++)
-	{
-		if (bricks[i].IsAlive)
-		{
-			World.GetBody(PlayerBody).SetPosition(World.GetBody(bricks[i].Body).Position() - Math::Vec2F{0.f, (BRICK_SIZE.Y * _height) / 2.f});
-			break;
-		}
-
-		if (i == MAX_BRICKS_PER_COLUMN - 1)
-		{
-			World.GetBody(PlayerBody).SetPosition({HAND_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height - PLAYER_SIZE_SCALED.Y / 2.f});
-		}
-	}
+	// Place the player at hand position
+	World.GetBody(PlayerBody).SetPosition(GetGhostPosition());
 
 	PlayerPosition = World.GetBody(PlayerBody).Position();
 }
@@ -298,6 +285,7 @@ void GameData::OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::Collide
 	if (PlayerTopCollider == colliderRef || PlayerTopCollider == otherColliderRef)
 	{
 		IsPlayerDead = true;
+		LOG("Collision with top collider");
 	}
 }
 
