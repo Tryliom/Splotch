@@ -46,6 +46,12 @@ public:
 	ScreenSizeValue _width{};
 	ScreenSizeValue _height{};
 
+	//TODO:
+	// Add local input and remote input in ClientGameData, override method to set these inputs, set PlayerRole and add a function to attribute player & ghost inputs
+	// Override AddPlayersInputs to set these inputs, change his name to AddInputs(localInput, lastLocalInput, remoteInput, lastRemoteInput)
+	// Add ServerGameData with a function to attribute player & ghost inputs, add who is the player and who is the ghost
+	// Override switchPlayerAndGhost for ClientGameData and ServerGameData
+
 	// Temporary values used in update
 	PlayerInput _playerInputs{};
 	PlayerInput _previousPlayerInputs{};

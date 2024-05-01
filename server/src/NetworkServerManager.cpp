@@ -180,8 +180,15 @@ void NetworkServerManager::ReceivePacketFromUdp()
 		sf::IpAddress sender;
 		unsigned short port;
 		sf::Packet packet;
+		sf::Socket::Status status;
 
-		if (_udpSocket.receive(packet, sender, port) != sf::Socket::Done) continue;
+		do
+		{
+			status = _udpSocket.receive(packet, sender, port);
+		}
+		while (status == sf::Socket::Partial);
+
+		if (status != sf::Socket::Done) continue;
 
 		auto* packetData = PacketManager::FromPacket(&packet);
 
@@ -209,6 +216,7 @@ void NetworkServerManager::ReceivePacketFromUdp()
 
 			if (index == MAX_CLIENTS - 1)
 			{
+				//TODO: Log all clients and their addresses + ports + this port
 				LOG_ERROR("Could not find client in UDP connection confirmation packet");
 				delete packetData;
 				continue;
