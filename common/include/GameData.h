@@ -52,7 +52,7 @@ public:
 	// Add ServerGameData with a function to attribute player & ghost inputs, add who is the player and who is the ghost
 	// Override switchPlayerAndGhost for ClientGameData and ServerGameData
 
-	// Temporary values used in update
+	// Temporary values used in update, set by SetInputs
 	PlayerInput _playerInputs{};
 	PlayerInput _previousPlayerInputs{};
 	PlayerInput _ghostInputs{};
@@ -80,6 +80,19 @@ public:
 
  public:
 	void StartGame(ScreenSizeValue width, ScreenSizeValue height);
+
+	/**
+	 * @brief Set the player inputs, each implementation will know which player has which role to attribute the inputs correctly
+	 * @param player1Input
+	 * @param player1PreviousInput
+	 * @param player2Input
+	 * @param player2PreviousInput
+	 */
+	virtual void SetInputs(PlayerInput player1Input, PlayerInput player1PreviousInput, PlayerInput player2Input, PlayerInput player2PreviousInput) = 0;
+	/**
+	 * @brief Switch player and ghost, each implementation will know which player has which role to switch the player and ghost
+	 */
+	virtual void OnSwitchPlayerAndGhost() = 0;
 
 	/**
 	 * @brief Register the player inputs, need to be called before Update

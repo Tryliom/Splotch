@@ -141,6 +141,8 @@ void GameData::SwitchPlayerAndGhost()
 	World.GetBody(PlayerBody).SetPosition(GetGhostPosition());
 
 	PlayerPosition = World.GetBody(PlayerBody).Position();
+
+	OnSwitchPlayerAndGhost();
 }
 
 void GameData::UpdatePlayer()

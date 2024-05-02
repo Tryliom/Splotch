@@ -4,6 +4,8 @@ void ClientGameData::SetPlayersRole(bool isLocalPlayer)
 {
 	Players[0].SetPlayerRole(PlayerRole::PLAYER, isLocalPlayer);
 	Players[1].SetPlayerRole(PlayerRole::GHOST, !isLocalPlayer);
+
+	PlayerRole = isLocalPlayer ? PlayerRole::PLAYER : PlayerRole::GHOST;
 }
 
 void ClientGameData::UpdatePlayersAnimations(sf::Time elapsed, sf::Time elapsedSinceLastFixed)
@@ -77,4 +79,27 @@ void ClientGameData::UpdatePlayersAnimations(sf::Time elapsed, sf::Time elapsedS
 			}
 		}
 	}
+}
+
+void ClientGameData::SetInputs(PlayerInput player1Input, PlayerInput player1PreviousInput, PlayerInput player2Input, PlayerInput player2PreviousInput)
+{
+	if (PlayerRole == PlayerRole::PLAYER)
+	{
+		_playerInputs = player1Input;
+		_previousPlayerInputs = player1PreviousInput;
+		_ghostInputs = player2Input;
+		_previousGhostInputs = player2PreviousInput;
+	}
+	else
+	{
+		_playerInputs = player2Input;
+		_previousPlayerInputs = player2PreviousInput;
+		_ghostInputs = player1Input;
+		_previousGhostInputs = player1PreviousInput;
+	}
+}
+
+void ClientGameData::OnSwitchPlayerAndGhost()
+{
+	PlayerRole = PlayerRole == PlayerRole::PLAYER ? PlayerRole::GHOST : PlayerRole::PLAYER;
 }
