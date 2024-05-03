@@ -108,8 +108,15 @@ void GameData::FixedUpdate()
 		}
 	}
 
-	UpdatePlayer();
-	UpdateGhost();
+	if (FreezePlayersForFrames > 0)
+	{
+		FreezePlayersForFrames--;
+	}
+	else
+	{
+		UpdatePlayer();
+		UpdateGhost();
+	}
 
 	World.Update(elapsed.asSeconds());
 
@@ -133,10 +140,38 @@ void GameData::SwitchPlayerAndGhost()
 	IsPlayerOnGround = false;
 	BrickCooldown = COOLDOWN_SPAWN_BRICK;
 
-	// Place the player at hand position
-	World.GetBody(PlayerBody).SetPosition(GetGhostPosition());
+	// Freeze the players for a few frames
+	FreezePlayersForFrames = PHYSICAL_FRAME_RATE * FREEZE_TIME;
 
-	PlayerPosition = World.GetBody(PlayerBody).Position();
+	// Place the player on the platform or top brick equal to the ghost slot 3
+	auto& player = World.GetBody(PlayerBody);
+	int topBrickIndex = -1;
+
+	for (int i = MAX_BRICKS_PER_COLUMN - 1; i >= 0; i--)
+	{
+		if (BricksPerSlot[static_cast<int>(Ghost)][i].IsAlive)
+		{
+			topBrickIndex = i;
+			break;
+		}
+	}
+
+	if (topBrickIndex != -1)
+	{
+		auto& topBrick = World.GetBody(BricksPerSlot[static_cast<int>(Ghost)][topBrickIndex].Body);
+		auto& topBrickCollider = World.GetCollider(BricksPerSlot[static_cast<int>(Ghost)][topBrickIndex].Collider);
+		auto topBrickPosition = topBrick.Position();
+		auto topBrickSize = topBrickCollider.GetRectangle().Size();
+		auto playerSize = PLAYER_SIZE_SCALED;
+
+		player.SetPosition({topBrickPosition.X, topBrickPosition.Y - topBrickSize.Y / 2.f - playerSize.Y / 2.f});
+	}
+	else
+	{
+		player.SetPosition({PLAYER_START_POSITION.X * _width, PLAYER_START_POSITION.Y * _height - PLAYER_SIZE_SCALED.Y / 2.f});
+	}
+
+	player.SetVelocity({0.f, 0.f});
 
 	OnSwitchPlayerAndGhost();
 }

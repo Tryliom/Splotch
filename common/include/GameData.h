@@ -39,18 +39,16 @@ public:
 	int BricksLeft = MAX_BRICKS_THAT_CAN_BE_USED;
 	float BrickCooldown = COOLDOWN_SPAWN_BRICK;
 
+	static constexpr int FREEZE_TIME = 3;
+	// Used to freeze the players for a few frames when they die, if 0, players are not frozen
+	int FreezePlayersForFrames = 0;
+
 	bool IsPlayerOnGround = true;
 	bool IsPlayerDead = false;
 
  protected:
 	ScreenSizeValue _width{};
 	ScreenSizeValue _height{};
-
-	//TODO:
-	// Add local input and remote input in ClientGameData, override method to set these inputs, set PlayerRole and add a function to attribute player & ghost inputs
-	// Override AddPlayersInputs to set these inputs, change his name to AddInputs(localInput, lastLocalInput, remoteInput, lastRemoteInput)
-	// Add ServerGameData with a function to attribute player & ghost inputs, add who is the player and who is the ghost
-	// Override switchPlayerAndGhost for ClientGameData and ServerGameData
 
 	// Temporary values used in update, set by SetInputs
 	PlayerInput _playerInputs{};

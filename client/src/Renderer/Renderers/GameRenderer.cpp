@@ -38,6 +38,8 @@ GameRenderer::GameRenderer(Application& application, GameManager& gameManager, S
 
 void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) const
 {
+	ClientGameData gameData = _gameManager.GetGameData();
+
 	static sf::RectangleShape platform;
 	platform.setSize(sf::Vector2f(PLATFORM_SIZE.X * _width, PLATFORM_SIZE.Y * _height));
 	platform.setFillColor(sf::Color::White);
@@ -48,7 +50,7 @@ void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) con
 
 	target.draw(platform, states);
 
-	for (auto& player : _gameManager.GetGameData().Players)
+	for (auto& player : gameData.Players)
 	{
 		target.draw(player, states);
 	}
@@ -56,12 +58,12 @@ void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) con
 	// Draw bricks
 	for (auto handIndex = 0; handIndex < HAND_SLOT_COUNT; handIndex++)
 	{
-		for (const auto& brick: _gameManager.GetGameData().BricksPerSlot[handIndex])
+		for (const auto& brick: gameData.BricksPerSlot[handIndex])
 		{
 			if (!brick.IsAlive) continue;
 
 			sf::RectangleShape brickShape;
-			auto brickCollider = _gameManager.GetGameData().World.GetCollider(brick.Collider);
+			auto brickCollider = gameData.World.GetCollider(brick.Collider);
 			auto brickPosition = brickCollider.GetPosition();
 			auto brickSize = brickCollider.GetRectangle().Size();
 
@@ -79,7 +81,33 @@ void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) con
 		}
 	}
 
-	if (!_gameManager.GetGameData().IsGameOver()) return;
+	if (gameData.FreezePlayersForFrames > 0)
+	{
+		const auto freezeTime = gameData.FreezePlayersForFrames / (PHYSICAL_FRAME_RATE / 10);
+		const auto seconds = freezeTime / 10;
+		const auto milliseconds = freezeTime % 10;
+
+		// Draw text to indicate that players are frozen for x seconds
+		auto text = Text(
+			sf::Vector2f(_width.Value / 2.f, _height.Value / 2.f),
+			{
+				TextLine({ CustomText{
+					.Text = "Players are frozen for",
+					.Color = sf::Color::Red,
+					.Size = 30,
+				}}),
+				TextLine({ CustomText{
+					.Text = std::to_string(seconds) + "." + std::to_string(milliseconds) + " seconds",
+					.Color = sf::Color::Red,
+					.Size = 30,
+				}})
+			}
+		);
+
+		target.draw(text, states);
+	}
+
+	if (!gameData.IsGameOver()) return;
 
 	sf::RectangleShape rectangle(sf::Vector2f(_width.Value, _height.Value));
 	rectangle.setFillColor(sf::Color(0, 0, 0, 200));
