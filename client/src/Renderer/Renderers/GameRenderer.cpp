@@ -10,11 +10,11 @@ GameRenderer::GameRenderer(Application& application, GameManager& gameManager, S
 
 	if (_gameManager.GetLocalPlayerRole() == PlayerRole::PLAYER)
 	{
-		lines = { START_PLAYER_MESSAGE_LINE_0, START_PLAYER_MESSAGE_LINE_1 };
+		lines = { START_PLAYER_COLOR_INFO, START_PLAYER_MESSAGE_LINE_0, START_PLAYER_MESSAGE_LINE_1 };
 	}
 	else
 	{
-		lines = { START_GHOST_MESSAGE_LINE_0, START_GHOST_MESSAGE_LINE_1 };
+		lines = { START_PLAYER_COLOR_INFO, START_GHOST_MESSAGE_LINE_0, START_GHOST_MESSAGE_LINE_1 };
 	}
 
 	_texts.push_back(Text(
@@ -27,6 +27,11 @@ GameRenderer::GameRenderer(Application& application, GameManager& gameManager, S
 			}}),
 			TextLine({ CustomText{
 				.Text = lines[1].data(),
+			    .Color = sf::Color::Cyan,
+			    .Size = 25,
+			}}),
+			TextLine({ CustomText{
+				.Text = lines[2].data(),
 			    .Color = sf::Color::Cyan,
 			    .Size = 25,
 			}})

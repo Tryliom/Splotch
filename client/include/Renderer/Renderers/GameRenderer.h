@@ -16,10 +16,11 @@ class GameRenderer final :
 	ScreenSizeValue _height;
 	ScreenSizeValue _width;
 
-	static constexpr short LINES_COUNT = 2;
-	static constexpr std::string_view START_PLAYER_MESSAGE_LINE_0 = "You're blue ! Evade and climb on bricks !";
+	static constexpr short LINES_COUNT = 3;
+	static constexpr std::string_view START_PLAYER_COLOR_INFO = "You're blue !";
+	static constexpr std::string_view START_PLAYER_MESSAGE_LINE_0 = "Evade and climb on bricks !";
 	static constexpr std::string_view START_PLAYER_MESSAGE_LINE_1 = "Use WASD to move";
-	static constexpr std::string_view START_GHOST_MESSAGE_LINE_0 = "You're blue ! Crush the player under bricks !";
+	static constexpr std::string_view START_GHOST_MESSAGE_LINE_0 = "Crush the player under bricks !";
 	static constexpr std::string_view START_GHOST_MESSAGE_LINE_1 = "Use AD to move and S to spawn bricks";
 	const sf::Color START_COLOR = sf::Color::Cyan;
 	const sf::Color END_COLOR = sf::Color::White;
