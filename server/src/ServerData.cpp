@@ -46,10 +46,7 @@ namespace ServerData
 	{
 		Players = lobbyData.Players;
 
-		// Setup players roles, positions etc.
-		GhostRoleClientIndex = Math::Random::Range(0, 1);
-		PlayerRoleClientIndex = GhostRoleClientIndex == 0 ? 1 : 0;
-
+		LastGameData.SetFirstPlayerRoles(Math::Random::Range(0, 1) == 0 ? PlayerRole::PLAYER : PlayerRole::GHOST);
 		LastGameData.StartGame(WIDTH, HEIGHT);
 
 		ConfirmFrames.clear();
@@ -85,14 +82,7 @@ namespace ServerData
 	void Game::AddFrame()
 	{
 		// Add the frame to the confirmed frames
-		if (PlayerRoleClientIndex == 0)
-		{
-			ConfirmFrames.push_back({ LastPlayer1Inputs[0], LastPlayer2Inputs[0] });
-		}
-		else
-		{
-			ConfirmFrames.push_back({ LastPlayer2Inputs[0], LastPlayer1Inputs[0] });
-		}
+		ConfirmFrames.push_back({ LastPlayer1Inputs[0], LastPlayer2Inputs[0] });
 
 		// Remove the frame from the last inputs
 		LastPlayer1Inputs.erase(LastPlayer1Inputs.begin());
@@ -100,24 +90,17 @@ namespace ServerData
 
 		// Update the game data
 		const auto confirmedFrameSize = ConfirmFrames.size();
-		const auto playerInputs = ConfirmFrames[confirmedFrameSize - 1].PlayerRoleInputs;
-		const auto previousPlayerInputs = confirmedFrameSize > 1 ? ConfirmFrames[confirmedFrameSize - 2].PlayerRoleInputs : playerInputs;
-		const auto ghostInputs = ConfirmFrames[confirmedFrameSize - 1].GhostRoleInputs;
-		const auto previousGhostInputs = confirmedFrameSize > 1 ? ConfirmFrames[confirmedFrameSize - 2].GhostRoleInputs : ghostInputs;
+		const auto player1Input = ConfirmFrames[confirmedFrameSize - 1].Player1Input;
+		const auto previousPlayer1Input = confirmedFrameSize > 1 ? ConfirmFrames[confirmedFrameSize - 2].Player1Input : player1Input;
+		const auto player2Input = ConfirmFrames[confirmedFrameSize - 1].Player2Input;
+		const auto previousPlayer2Input = confirmedFrameSize > 1 ? ConfirmFrames[confirmedFrameSize - 2].Player2Input : player2Input;
 
-		LastGameData.AddPlayersInputs(playerInputs, previousPlayerInputs, ghostInputs, previousGhostInputs);
+		LastGameData.SetInputs(player1Input, previousPlayer1Input, player2Input, previousPlayer2Input);
 		LastGameData.FixedUpdate();
 	}
 
 	FinalInputs Game::GetLastFrame()
 	{
 		return ConfirmFrames.back();
-	}
-
-	void Game::SwitchRoles()
-	{
-		std::swap(Players[0], Players[1]);
-
-		LastGameData.SwitchPlayerAndGhost();
 	}
 }

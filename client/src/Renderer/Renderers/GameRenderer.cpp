@@ -8,7 +8,7 @@ GameRenderer::GameRenderer(Application& application, GameManager& gameManager, S
 {
 	std::array<std::string_view, LINES_COUNT> lines;
 
-	if (_gameManager.GetPlayerRole() == PlayerRole::PLAYER)
+	if (_gameManager.GetLocalPlayerRole() == PlayerRole::PLAYER)
 	{
 		lines = { START_PLAYER_MESSAGE_LINE_0, START_PLAYER_MESSAGE_LINE_1 };
 	}

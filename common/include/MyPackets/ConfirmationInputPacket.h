@@ -12,10 +12,10 @@ namespace MyPackets
 	public:
 		ConfirmInputPacket() : Packet(static_cast<char>(MyPacketType::ConfirmationInput)) {}
 		explicit ConfirmInputPacket(PlayerInput playerInput, PlayerInput handInput, Checksum checksum)
-			: Packet(static_cast<char>(MyPacketType::ConfirmationInput)), PlayerRoleInput(playerInput), GhostRoleInput(handInput), CurrentChecksum(checksum) {}
+			: Packet(static_cast<char>(MyPacketType::ConfirmationInput)), Player1Input(playerInput), Player2Input(handInput), CurrentChecksum(checksum) {}
 
-		PlayerInput PlayerRoleInput {};
-		PlayerInput GhostRoleInput {};
+		PlayerInput Player1Input {};
+		PlayerInput Player2Input {};
 		Checksum CurrentChecksum {};
 
 		[[nodiscard]] Packet* Clone() const override { return new ConfirmInputPacket(*this); }
@@ -23,15 +23,15 @@ namespace MyPackets
 
 		void Write(sf::Packet& packet) const override
 		{
-			packet << static_cast<sf::Uint8>(PlayerRoleInput) << static_cast<sf::Uint8>(GhostRoleInput) << CurrentChecksum.Value;
+			packet << static_cast<sf::Uint8>(Player1Input) << static_cast<sf::Uint8>(Player2Input) << CurrentChecksum.Value;
 		}
 
 		void Read(sf::Packet& packet) override
 		{
 			sf::Uint8 playerInput, handInput;
 			packet >> playerInput >> handInput >> CurrentChecksum.Value;
-			PlayerRoleInput = static_cast<PlayerInput>(playerInput);
-			GhostRoleInput = static_cast<PlayerInput>(handInput);
+			Player1Input = static_cast<PlayerInput>(playerInput);
+			Player2Input = static_cast<PlayerInput>(handInput);
 		}
 	};
 }

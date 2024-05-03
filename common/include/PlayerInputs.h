@@ -24,6 +24,12 @@ struct PlayerInputPerFrame
 
 struct FinalInputs
 {
-	PlayerInput PlayerRoleInput {};
-	PlayerInput GhostRoleInput {};
+	PlayerInput Player1Input {};
+	PlayerInput Player2Input {};
+};
+
+enum class PlayerNumber
+{
+	PLAYER1 = 0,
+	PLAYER2 = 1
 };

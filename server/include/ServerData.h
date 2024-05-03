@@ -3,7 +3,7 @@
 #include "Constants.h"
 #include "ClientId.h"
 #include "PlayerInputs.h"
-#include "GameData.h"
+#include "ServerGameData.h"
 
 #include <array>
 #include <vector>
@@ -15,8 +15,8 @@ namespace ServerData
 
 	struct FinalInputs
 	{
-		PlayerInput PlayerRoleInputs;
-		PlayerInput GhostRoleInputs;
+		PlayerInput Player1Input;
+		PlayerInput Player2Input;
 	};
 
 	struct Lobby
@@ -34,18 +34,13 @@ namespace ServerData
 	{
 		std::array<ClientId, 2> Players = { EMPTY_CLIENT_ID, EMPTY_CLIENT_ID };
 
-		// Client index of the player who is the ghost role
-		int GhostRoleClientIndex{};
-		// Client index of the player who is the player role
-		int PlayerRoleClientIndex{};
-
 		// Confirmed frame inputs
 		std::vector<FinalInputs> ConfirmFrames;
 
 		std::vector<PlayerInput> LastPlayer1Inputs;
 		std::vector<PlayerInput> LastPlayer2Inputs;
 
-		GameData LastGameData;
+		ServerGameData LastGameData;
 
 		explicit Game(const Lobby& lobbyData);
 
@@ -59,11 +54,6 @@ namespace ServerData
 		[[nodiscard]] bool IsNextFrameReady() const;
 		void AddFrame();
 		FinalInputs GetLastFrame();
-
-		/**
-		 * @brief Switch the roles of the players and start the game again from frame 0
-		 */
-		void SwitchRoles();
 
 		void OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}
 		void OnTriggerExit(Physics::ColliderRef colliderRef, Physics::ColliderRef otherColliderRef) noexcept override {}

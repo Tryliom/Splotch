@@ -1,7 +1,6 @@
 #include "GameData.h"
 
 #include "Constants.h"
-#include "Logger.h"
 
 #include <bit>
 
@@ -15,7 +14,7 @@ void GameData::StartGame(ScreenSizeValue width, ScreenSizeValue height)
 	BrickCooldown = COOLDOWN_SPAWN_BRICK;
 
 	IsPlayerDead = false;
-	IsPlayerOnGround = true;
+	IsPlayerOnGround = false;
 
 	SetupWorld();
 }
@@ -95,14 +94,6 @@ void GameData::IncreaseGhostSlot()
 	Ghost = static_cast<GhostSlot>(static_cast<int>(Ghost) + 1);
 }
 
-void GameData::AddPlayersInputs(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput)
-{
-	_playerInputs = playerInput;
-	_previousPlayerInputs = previousPlayerInput;
-	_ghostInputs = ghostInput;
-	_previousGhostInputs = previousGhostInput;
-}
-
 void GameData::FixedUpdate()
 {
 	sf::Time elapsed = sf::seconds(FIXED_TIME_STEP);
@@ -127,6 +118,11 @@ void GameData::FixedUpdate()
 	if (PlayerPosition.Y > _height.Value)
 	{
 		IsPlayerDead = true;
+	}
+
+	if (IsPlayerDead)
+	{
+		SwitchPlayerAndGhost();
 	}
 }
 
@@ -287,7 +283,6 @@ void GameData::OnTriggerEnter(Physics::ColliderRef colliderRef, Physics::Collide
 	if (PlayerTopCollider == colliderRef || PlayerTopCollider == otherColliderRef)
 	{
 		IsPlayerDead = true;
-		LOG("Collision with top collider");
 	}
 }
 

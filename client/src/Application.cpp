@@ -10,6 +10,7 @@
 #include "MyPackets/LeaveGamePacket.h"
 #include "Logger.h"
 #include "MyPackets/LeaveLobbyPacket.h"
+#include "MyPackets/StartGamePacket.h"
 
 #include <SFML/Graphics.hpp>
 #include <utility>
@@ -38,7 +39,6 @@ void Application::AddLocalPlayerInput(PlayerInput playerInput)
 void Application::FixedUpdate()
 {
 	sf::Time elapsed = sf::seconds(FIXED_TIME_STEP);
-	bool exitPacketLoop = false;
 
 	while (Packet* packet = _networkManager.PopPacket())
 	{
@@ -54,23 +54,12 @@ void Application::FixedUpdate()
 		_gameManager.OnPacketReceived(*packet);
 		OnPacketReceived(*packet);
 
-		if (packet->Type == static_cast<char>(MyPackets::MyPacketType::SwitchRole))
-		{
-			_gameManager.SetGameData(_rollbackManager.GetConfirmedGameData());
-			_rollbackManager.ResetUnconfirmedGameData();
-			_gameManager.SwitchRoles();
-			_rollbackManager.SwitchRoles();
-			exitPacketLoop = true;
-		}
-
 		auto packetTypeValue = packet->Type;
 
 		if (packetTypeValue >= 0 && packetTypeValue <= static_cast<char>(MyPackets::MyPacketType::COUNT))
 		{
 			delete packet;
 		}
-
-		if (exitPacketLoop) break;
 	}
 
 	if (_state == GameState::GAME && _renderer != nullptr)
@@ -117,7 +106,7 @@ void Application::FixedUpdate()
 
 		if (_gameManager.GetGameData().BricksLeft == 0)
 		{
-			_renderer->OnEvent(_gameManager.GetPlayerRole() == PlayerRole::PLAYER ? Event::WIN_GAME : Event::LOSE_GAME);
+			_renderer->OnEvent(_gameManager.GetLocalPlayerRole() == PlayerRole::PLAYER ? Event::WIN_GAME : Event::LOSE_GAME);
 		}
 	}
 
@@ -227,11 +216,10 @@ void Application::UpdateGame(int frame)
 {
 	const auto previousFrame = frame - 1;
 
-	const auto currentPlayerInputs = _rollbackManager.GetPlayerInput(frame);
-	const auto previousPlayerInputs = _rollbackManager.GetPlayerInput(previousFrame);
-	const auto currentGhostInputs = _rollbackManager.GetGhostInput(frame);
-	const auto previousGhostInputs = _rollbackManager.GetGhostInput(previousFrame);
+	const auto currentPlayer1Inputs = _rollbackManager.GetPlayerInput(PlayerNumber::PLAYER1, frame);
+	const auto previousPlayer1Inputs = _rollbackManager.GetPlayerInput(PlayerNumber::PLAYER1, previousFrame);
+	const auto currentPlayer2Inputs = _rollbackManager.GetPlayerInput(PlayerNumber::PLAYER2, frame);
+	const auto previousPlayer2Inputs = _rollbackManager.GetPlayerInput(PlayerNumber::PLAYER2, previousFrame);
 
-	_gameManager.Update(currentPlayerInputs, previousPlayerInputs,
-		currentGhostInputs, previousGhostInputs);
+	_gameManager.Update(currentPlayer1Inputs, previousPlayer1Inputs, currentPlayer2Inputs, previousPlayer2Inputs);
 }

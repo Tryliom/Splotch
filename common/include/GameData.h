@@ -94,16 +94,7 @@ public:
 	 */
 	virtual void OnSwitchPlayerAndGhost() = 0;
 
-	/**
-	 * @brief Register the player inputs, need to be called before Update
-	 * @param playerInput
-	 * @param previousPlayerInput
-	 * @param ghostInput
-	 * @param previousGhostInput
-	 */
-	void AddPlayersInputs(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput);
 	void FixedUpdate();
-
 	void SwitchPlayerAndGhost();
 
 	[[nodiscard]] Math::Vec2F GetGhostPosition() const;

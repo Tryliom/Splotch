@@ -15,21 +15,17 @@ class GameManager
  private:
 	ClientGameData _gameData;
 
-	PlayerRole _playerRole = PlayerRole::PLAYER;
-
 	ScreenSizeValue _width;
 	ScreenSizeValue _height;
 
  public:
 	void OnPacketReceived(Packet& packet);
 
-	PlayerRole GetPlayerRole();
+	[[nodiscard]] PlayerRole GetLocalPlayerRole() const;
 
-	void Update(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput);
+	void Update(PlayerInput player1Input, PlayerInput player1PreviousInput, PlayerInput player2Input, PlayerInput player2PreviousInput);
 	void UpdatePlayerAnimations(sf::Time elapsed, sf::Time elapsedSinceLastFixed);
 
 	[[nodiscard]] ClientGameData GetGameData() const;
 	void SetGameData(ClientGameData gameData);
-
-	void SwitchRoles();
 };

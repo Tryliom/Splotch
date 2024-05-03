@@ -155,7 +155,7 @@ int main()
 				auto& game = games[i];
 
 				PlayerInput playerInput = {};
-				PlayerRole playerRole = gameManagers[i].GetPlayerRole();
+				PlayerRole playerRole = gameManagers[i].GetLocalPlayerRole();
 				std::array<sf::Keyboard::Key, 4> keys = i == 0 ? player1Commands : player2Commands;
 
 				if (playerRole == PlayerRole::PLAYER)

@@ -9,8 +9,9 @@ namespace MyPackets
 	{
 	public:
 		StartGamePacket() : Packet(static_cast<char>(MyPacketType::StartGame)) {}
-		explicit StartGamePacket(bool isPlayer) : Packet(static_cast<char>(MyPacketType::StartGame)), IsPlayer(isPlayer) {}
+		explicit StartGamePacket(bool isFirstNumber, bool isPlayer) : Packet(static_cast<char>(MyPacketType::StartGame)), IsFirstNumber(isFirstNumber), IsPlayer(isPlayer) {}
 
+		bool IsFirstNumber{};
 		bool IsPlayer{};
 
 		[[nodiscard]] Packet* Clone() const override { return new StartGamePacket(*this); }
@@ -18,12 +19,12 @@ namespace MyPackets
 
 		void Write(sf::Packet& packet) const override
 		{
-			packet << IsPlayer;
+			packet << IsFirstNumber << IsPlayer;
 		}
 
 		void Read(sf::Packet& packet) override
 		{
-			packet >> IsPlayer;
+			packet >> IsFirstNumber >> IsPlayer;
 		}
 	};
 }

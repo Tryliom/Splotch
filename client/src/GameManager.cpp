@@ -11,20 +11,19 @@ void GameManager::OnPacketReceived(Packet& packet)
 	{
 		auto& startGamePacket = *packet.As<MyPackets::StartGamePacket>();
 
-		_playerRole = startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::GHOST;
+		_gameData.SetLocalPlayerRole(startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::GHOST, startGamePacket.IsFirstNumber);
 		_gameData.StartGame(_width, _height);
-		_gameData.SetPlayersRole(startGamePacket.IsPlayer);
 	}
 }
 
-PlayerRole GameManager::GetPlayerRole()
+PlayerRole GameManager::GetLocalPlayerRole() const
 {
-	return _playerRole;
+	return _gameData.LocalPlayerRole;
 }
 
-void GameManager::Update(PlayerInput playerInput, PlayerInput previousPlayerInput, PlayerInput ghostInput, PlayerInput previousGhostInput)
+void GameManager::Update(PlayerInput player1Input, PlayerInput player1PreviousInput, PlayerInput player2Input, PlayerInput player2PreviousInput)
 {
-	_gameData.AddPlayersInputs(playerInput, previousPlayerInput, ghostInput, previousGhostInput);
+	_gameData.SetInputs(player1Input, player1PreviousInput, player2Input, player2PreviousInput);
 	_gameData.FixedUpdate();
 }
 
@@ -42,11 +41,4 @@ void GameManager::SetGameData(ClientGameData gameData)
 void GameManager::UpdatePlayerAnimations(sf::Time elapsed, sf::Time elapsedSinceLastFixed)
 {
 	_gameData.UpdatePlayersAnimations(elapsed, elapsedSinceLastFixed);
-}
-
-void GameManager::SwitchRoles()
-{
-	_gameData.SwitchPlayerAndGhost();
-	_playerRole = _playerRole == PlayerRole::PLAYER ? PlayerRole::GHOST : PlayerRole::PLAYER;
-	_gameData.SetPlayersRole(_playerRole == PlayerRole::PLAYER);
 }

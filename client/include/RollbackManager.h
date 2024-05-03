@@ -31,8 +31,7 @@ class RollbackManager
 	std::vector<ClientGameData> _unconfirmedGameData;
 	int _lastConfirmedFrame = -1;
 
-	PlayerRole _playerRole = PlayerRole::PLAYER;
-
+	PlayerNumber _localPlayerNumber = PlayerNumber::PLAYER1;
 	bool _needToRollback = false;
 	bool _integrityIsOk = true;
 
@@ -42,8 +41,7 @@ public:
 	void AddPlayerInputs(PlayerInput playerInput);
 	std::vector<PlayerInputPerFrame> GetLastLocalPlayerInputs();
 
-	[[nodiscard]] PlayerInput GetPlayerInput(int frame) const;
-	[[nodiscard]] PlayerInput GetGhostInput(int frame) const;
+	[[nodiscard]] PlayerInput GetPlayerInput(PlayerNumber playerNumber, int frame) const;
 
 	[[nodiscard]] short GetCurrentFrame() const;
 
@@ -64,6 +62,4 @@ public:
 	 */
 	[[nodiscard]] bool IsIntegrityOk() const;
 	void CheckIntegrity(int frame);
-
-	void SwitchRoles();
 };

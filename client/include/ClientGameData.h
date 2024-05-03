@@ -14,9 +14,10 @@ class ClientGameData final : public GameData
 	std::array<PlayerDrawable, MAX_PLAYERS> Players;
 
 	// Role of the local player
-	PlayerRole PlayerRole = PlayerRole::PLAYER;
+	PlayerRole LocalPlayerRole = PlayerRole::PLAYER;
+	bool IsFirstPlayer = true;
 
-	void SetPlayersRole(bool isLocalPlayer);
+	void SetLocalPlayerRole(PlayerRole playerRole, bool isFirstPlayer);
 	void UpdatePlayersAnimations(sf::Time elapsed, sf::Time elapsedSinceLastFixed);
 
 	/**

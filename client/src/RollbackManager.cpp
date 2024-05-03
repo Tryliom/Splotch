@@ -19,7 +19,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 		auto& confirmationInputPacket = *packet.As<MyPackets::ConfirmInputPacket>();
 
 		_confirmedFrames.push_back({
-			{ confirmationInputPacket.PlayerRoleInput, confirmationInputPacket.GhostRoleInput },
+			{ confirmationInputPacket.Player1Input, confirmationInputPacket.Player2Input },
 		  { confirmationInputPacket.CurrentChecksum }
 		});
 
@@ -44,14 +44,9 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 		else
 		{
 			// If we don't have any remote inputs, we need to check if last remote inputs are the same as the last confirmed inputs
-			PlayerInput currentInput = {}, lastInput = {};
-
-			if (_confirmedFrames.size() > 1)
-			{
-				const auto lastConfirmedInput = _confirmedFrames[_confirmedFrames.size() - 2];
-				currentInput = _playerRole == PlayerRole::PLAYER ? confirmationInputPacket.GhostRoleInput : confirmationInputPacket.PlayerRoleInput;
-				lastInput = _playerRole == PlayerRole::PLAYER ? lastConfirmedInput.Inputs.GhostRoleInput : lastConfirmedInput.Inputs.PlayerRoleInput;
-			}
+			const auto otherPlayerNumber = _localPlayerNumber == PlayerNumber::PLAYER1 ? PlayerNumber::PLAYER2 : PlayerNumber::PLAYER1;
+			PlayerInput currentInput = _localPlayerNumber == PlayerNumber::PLAYER1 ? confirmationInputPacket.Player2Input : confirmationInputPacket.Player1Input;
+			PlayerInput lastInput = GetPlayerInput(otherPlayerNumber, _confirmedFrames.size() - 1);
 
 			if (lastInput != currentInput)
 			{
@@ -79,22 +74,14 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 		if (playerInputPacket.LastInputs.empty() || _confirmedFrames.empty()) return;
 
 		const auto& lastInputs = playerInputPacket.LastInputs;
+		const auto otherPlayerNumber = _localPlayerNumber == PlayerNumber::PLAYER1 ? PlayerNumber::PLAYER2 : PlayerNumber::PLAYER1;
 
 		for (auto lastInput : lastInputs)
 		{
 			if (lastInput.Frame < _confirmedFrames.size() + _lastRemotePlayerInputs.size()) continue;
 
 			const auto frame = lastInput.Frame;
-			PlayerInput lastRemoteInput;
-
-			if (_playerRole == PlayerRole::PLAYER)
-			{
-				lastRemoteInput = GetGhostInput(frame);
-			}
-			else
-			{
-				lastRemoteInput = GetPlayerInput(frame);
-			}
+			PlayerInput lastRemoteInput = GetPlayerInput(otherPlayerNumber, frame);
 
 			if (lastRemoteInput != lastInput.Input)
 			{
@@ -108,7 +95,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 	{
 		auto& startGamePacket = *packet.As<MyPackets::StartGamePacket>();
 
-		_playerRole = startGamePacket.IsPlayer ? PlayerRole::PLAYER : PlayerRole::GHOST;
+		_localPlayerNumber = startGamePacket.IsFirstNumber ? PlayerNumber::PLAYER1 : PlayerNumber::PLAYER2;
 	}
 }
 
@@ -131,100 +118,55 @@ std::vector<PlayerInputPerFrame> RollbackManager::GetLastLocalPlayerInputs()
 	return playerInputs;
 }
 
-PlayerInput RollbackManager::GetPlayerInput(int frame) const
+PlayerInput RollbackManager::GetPlayerInput(PlayerNumber playerNumber, int frame) const
 {
 	if (frame < 0) return {};
 
-	std::vector<PlayerInput> playerInputs = {};
+	// If we are asking for the local player, we need to check if we are the local player 1 or 2
+	const auto askForLocalPlayer = playerNumber == _localPlayerNumber;
+	// Inputs asked are all the inputs that we need to ask for the frame
+	std::vector<PlayerInput> inputsAsked = {};
 
-	playerInputs.reserve(_confirmedFrames.size() + _localPlayerInputs.size());
+	inputsAsked.reserve(_confirmedFrames.size() + _localPlayerInputs.size());
 
 	for (auto confirmedPlayerInput : _confirmedFrames)
 	{
-		playerInputs.push_back(confirmedPlayerInput.Inputs.PlayerRoleInput);
+		inputsAsked.push_back(playerNumber == PlayerNumber::PLAYER1 ? confirmedPlayerInput.Inputs.Player1Input : confirmedPlayerInput.Inputs.Player2Input);
 	}
 
-	if (_playerRole == PlayerRole::PLAYER)
+	if (askForLocalPlayer)
 	{
 		for (auto localPlayerInput : _localPlayerInputs)
 		{
-			playerInputs.push_back(localPlayerInput);
+			inputsAsked.push_back(localPlayerInput);
 		}
 	}
 	else
 	{
 		for (auto lastRemotePlayerInput : _lastRemotePlayerInputs)
 		{
-			playerInputs.push_back(lastRemotePlayerInput.Input);
+			inputsAsked.push_back(lastRemotePlayerInput.Input);
 		}
 
-		if (playerInputs.empty()) return {};
+		if (inputsAsked.empty()) return {};
 
 		const std::size_t remoteInputsToReplicate = _localPlayerInputs.size() - _lastRemotePlayerInputs.size();
-		const PlayerInput inputToReplicate = playerInputs.back();
+		const PlayerInput inputToReplicate = inputsAsked.back();
 
 		for (std::size_t i = 0; i < remoteInputsToReplicate; i++)
 		{
-			playerInputs.push_back(inputToReplicate);
+			inputsAsked.push_back(inputToReplicate);
 		}
 	}
 
-	if (playerInputs.empty()) return {};
+	if (inputsAsked.empty()) return {};
 
-	if (frame < playerInputs.size())
+	if (frame < inputsAsked.size())
 	{
-		return playerInputs[frame];
+		return inputsAsked[frame];
 	}
 
-	return playerInputs.back();
-}
-
-PlayerInput RollbackManager::GetGhostInput(int frame) const
-{
-	if (frame < 0) return {};
-
-	std::vector<PlayerInput> handInputs = {};
-
-	handInputs.reserve(_confirmedFrames.size() + _localPlayerInputs.size());
-
-	for (auto confirmedPlayerInput : _confirmedFrames)
-	{
-		handInputs.push_back(confirmedPlayerInput.Inputs.GhostRoleInput);
-	}
-
-	if (_playerRole == PlayerRole::GHOST)
-	{
-		for (auto localPlayerInput: _localPlayerInputs)
-		{
-			handInputs.push_back(localPlayerInput);
-		}
-	}
-	else
-	{
-		for (auto lastRemotePlayerInput : _lastRemotePlayerInputs)
-		{
-			handInputs.push_back(lastRemotePlayerInput.Input);
-		}
-
-		if (handInputs.empty()) return {};
-
-		const std::size_t remoteInputsToReplicate = _localPlayerInputs.size() - _lastRemotePlayerInputs.size();
-		const PlayerInput inputToReplicate = handInputs.back();
-
-		for (std::size_t i = 0; i < remoteInputsToReplicate; i++)
-		{
-			handInputs.push_back(inputToReplicate);
-		}
-	}
-
-	if (handInputs.empty()) return {};
-
-	if (frame < handInputs.size())
-	{
-		return handInputs[frame];
-	}
-
-	return handInputs.back();
+	return inputsAsked.back();
 }
 
 short RollbackManager::GetCurrentFrame() const
@@ -284,9 +226,4 @@ void RollbackManager::CheckIntegrity(int frame)
 	if (frame < 0 || frame >= _confirmedFrames.size() || _confirmedFrames.size() < 2) return;
 
 	_integrityIsOk = _confirmedGameData.GenerateChecksum() == _confirmedFrames[frame].Checksum;
-}
-
-void RollbackManager::SwitchRoles()
-{
-	_playerRole = _playerRole == PlayerRole::PLAYER ? PlayerRole::GHOST : PlayerRole::PLAYER;
 }

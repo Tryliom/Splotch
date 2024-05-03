@@ -43,8 +43,8 @@ void GameServer::Update()
 			const auto frame = game.GetLastFrame();
 			const auto checksum = game.LastGameData.GenerateChecksum();
 
-			const auto p1ConfirmedPacket = new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.GhostRoleInputs, checksum);
-			const auto p2ConfirmedPacket = new MyPackets::ConfirmInputPacket(frame.PlayerRoleInputs, frame.GhostRoleInputs, checksum);
+			const auto p1ConfirmedPacket = new MyPackets::ConfirmInputPacket(frame.Player1Input, frame.Player2Input, checksum);
+			const auto p2ConfirmedPacket = new MyPackets::ConfirmInputPacket(frame.Player1Input, frame.Player2Input, checksum);
 
 			// Send the frame to the players
 			_serverNetworkInterface.SendPacket(p1ConfirmedPacket, game.Players[0], Protocol::TCP);
@@ -54,13 +54,6 @@ void GameServer::Update()
 		if (game.LastGameData.IsGameOver())
 		{
 			game.Reset();
-		}
-		else if (game.LastGameData.IsPlayerDead)
-		{
-			_serverNetworkInterface.SendPacket(new MyPackets::SwitchRolePacket(), game.Players[0], Protocol::TCP);
-			_serverNetworkInterface.SendPacket(new MyPackets::SwitchRolePacket(), game.Players[1], Protocol::TCP);
-
-			game.SwitchRoles();
 		}
 	}
 }
@@ -243,8 +236,8 @@ void GameServer::StartNewGame(ServerData::Game& game, ServerData::Lobby& lobby)
 	game.FromLobby(lobby);
 
 	// Send a message to the players that the game is starting
-	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(game.PlayerRoleClientIndex == 0), lobby.Players[0], Protocol::TCP);
-	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(game.PlayerRoleClientIndex == 1), lobby.Players[1], Protocol::TCP);
+	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(true, game.LastGameData.FirstPlayerRole == PlayerRole::PLAYER), lobby.Players[0], Protocol::TCP);
+	_serverNetworkInterface.SendPacket(new MyPackets::StartGamePacket(false, game.LastGameData.FirstPlayerRole == PlayerRole::GHOST), lobby.Players[1], Protocol::TCP);
 
 	// Remove the lobby
 	lobby.Reset();

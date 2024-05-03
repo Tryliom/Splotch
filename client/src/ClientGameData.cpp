@@ -1,11 +1,12 @@
 #include "ClientGameData.h"
 
-void ClientGameData::SetPlayersRole(bool isLocalPlayer)
+void ClientGameData::SetLocalPlayerRole(PlayerRole playerRole, bool isFirstPlayer)
 {
-	Players[0].SetPlayerRole(PlayerRole::PLAYER, isLocalPlayer);
-	Players[1].SetPlayerRole(PlayerRole::GHOST, !isLocalPlayer);
+	Players[0].SetPlayerRole(PlayerRole::PLAYER, playerRole == PlayerRole::PLAYER);
+	Players[1].SetPlayerRole(PlayerRole::GHOST, playerRole == PlayerRole::GHOST);
 
-	PlayerRole = isLocalPlayer ? PlayerRole::PLAYER : PlayerRole::GHOST;
+	LocalPlayerRole = playerRole;
+	IsFirstPlayer = isFirstPlayer;
 }
 
 void ClientGameData::UpdatePlayersAnimations(sf::Time elapsed, sf::Time elapsedSinceLastFixed)
@@ -83,7 +84,7 @@ void ClientGameData::UpdatePlayersAnimations(sf::Time elapsed, sf::Time elapsedS
 
 void ClientGameData::SetInputs(PlayerInput player1Input, PlayerInput player1PreviousInput, PlayerInput player2Input, PlayerInput player2PreviousInput)
 {
-	if (PlayerRole == PlayerRole::PLAYER)
+	if (IsFirstPlayer && LocalPlayerRole == PlayerRole::PLAYER || !IsFirstPlayer && LocalPlayerRole == PlayerRole::GHOST)
 	{
 		_playerInputs = player1Input;
 		_previousPlayerInputs = player1PreviousInput;
@@ -101,5 +102,8 @@ void ClientGameData::SetInputs(PlayerInput player1Input, PlayerInput player1Prev
 
 void ClientGameData::OnSwitchPlayerAndGhost()
 {
-	PlayerRole = PlayerRole == PlayerRole::PLAYER ? PlayerRole::GHOST : PlayerRole::PLAYER;
+	LocalPlayerRole = LocalPlayerRole == PlayerRole::PLAYER ? PlayerRole::GHOST : PlayerRole::PLAYER;
+
+	Players[0].SetPlayerRole(PlayerRole::PLAYER, LocalPlayerRole == PlayerRole::PLAYER);
+	Players[1].SetPlayerRole(PlayerRole::GHOST, LocalPlayerRole == PlayerRole::GHOST);
 }
