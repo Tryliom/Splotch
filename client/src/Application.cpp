@@ -8,9 +8,7 @@
 #include "MyPackets/JoinLobbyPacket.h"
 #include "MyPackets/PlayerInputPacket.h"
 #include "MyPackets/LeaveGamePacket.h"
-#include "Logger.h"
 #include "MyPackets/LeaveLobbyPacket.h"
-#include "MyPackets/StartGamePacket.h"
 
 #include <SFML/Graphics.hpp>
 #include <utility>
@@ -91,8 +89,6 @@ void Application::FixedUpdate()
 				{
 					_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
 				}
-
-				if (!_rollbackManager.IsIntegrityOk()) IntegrityLog();
 			}
 
 			_rollbackManager.RollbackDone();
@@ -101,8 +97,6 @@ void Application::FixedUpdate()
 		// Update the game with the current frame
 		UpdateGame(_rollbackManager.GetCurrentFrame());
 		_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
-
-		if (!_rollbackManager.IsIntegrityOk()) IntegrityLog();
 
 		if (_gameManager.GetGameData().BricksLeft == 0)
 		{
@@ -114,11 +108,6 @@ void Application::FixedUpdate()
 	{
 		_renderer->FixedUpdate(elapsed);
 	}
-}
-
-void Application::IntegrityLog()
-{
-	LOG("Application data is corrupted");
 }
 
 void Application::Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)
@@ -221,5 +210,5 @@ void Application::UpdateGame(int frame)
 	const auto currentPlayer2Inputs = _rollbackManager.GetPlayerInput(PlayerNumber::PLAYER2, frame);
 	const auto previousPlayer2Inputs = _rollbackManager.GetPlayerInput(PlayerNumber::PLAYER2, previousFrame);
 
-	_gameManager.Update(currentPlayer1Inputs, previousPlayer1Inputs, currentPlayer2Inputs, previousPlayer2Inputs);
+	_gameManager.FixedUpdate(currentPlayer1Inputs, previousPlayer1Inputs, currentPlayer2Inputs, previousPlayer2Inputs);
 }

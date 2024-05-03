@@ -56,10 +56,5 @@ public:
 	[[nodiscard]] bool NeedToRollback() const;
 	void RollbackDone();
 
-	/**
-	 * @brief Check the integrity of the last confirmed game data with the last server checksum
-	 * @return true if the last confirmed game data is valid
-	 */
-	[[nodiscard]] bool IsIntegrityOk() const;
 	void CheckIntegrity(int frame);
 };

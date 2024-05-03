@@ -23,7 +23,7 @@ class GameManager
 
 	[[nodiscard]] PlayerRole GetLocalPlayerRole() const;
 
-	void Update(PlayerInput player1Input, PlayerInput player1PreviousInput, PlayerInput player2Input, PlayerInput player2PreviousInput);
+	void FixedUpdate(PlayerInput player1Input, PlayerInput player1PreviousInput, PlayerInput player2Input, PlayerInput player2PreviousInput);
 	void UpdatePlayerAnimations(sf::Time elapsed, sf::Time elapsedSinceLastFixed);
 
 	[[nodiscard]] ClientGameData GetGameData() const;

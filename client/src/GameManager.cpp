@@ -21,7 +21,7 @@ PlayerRole GameManager::GetLocalPlayerRole() const
 	return _gameData.LocalPlayerRole;
 }
 
-void GameManager::Update(PlayerInput player1Input, PlayerInput player1PreviousInput, PlayerInput player2Input, PlayerInput player2PreviousInput)
+void GameManager::FixedUpdate(PlayerInput player1Input, PlayerInput player1PreviousInput, PlayerInput player2Input, PlayerInput player2PreviousInput)
 {
 	_gameData.SetInputs(player1Input, player1PreviousInput, player2Input, player2PreviousInput);
 	_gameData.FixedUpdate();

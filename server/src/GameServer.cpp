@@ -7,7 +7,6 @@
 #include "MyPackets/LeaveGamePacket.h"
 #include "MyPackets/PlayerInputPacket.h"
 #include "MyPackets/ConfirmationInputPacket.h"
-#include "MyPackets/SwitchRolePacket.h"
 
 GameServer::GameServer(ServerNetworkInterface& serverNetworkInterface)
 	: _serverNetworkInterface(serverNetworkInterface) {}

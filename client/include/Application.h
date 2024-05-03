@@ -77,6 +77,4 @@ class Application
 	void OnPacketReceived(Packet& packet);
 	void UpdateGame(int frame);
 	void SetState(GameState state);
-
-	static void IntegrityLog();
 };

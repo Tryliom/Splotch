@@ -7,7 +7,6 @@
 #include "MyPackets/StartGamePacket.h"
 #include "MyPackets/PlayerInputPacket.h"
 #include "MyPackets/ConfirmationInputPacket.h"
-#include "MyPackets/SwitchRolePacket.h"
 
 namespace MyPackets
 {
@@ -19,6 +18,5 @@ namespace MyPackets
 		PacketManager::RegisterPacketType(new StartGamePacket());
 		PacketManager::RegisterPacketType(new PlayerInputPacket());
 		PacketManager::RegisterPacketType(new ConfirmInputPacket());
-		PacketManager::RegisterPacketType(new SwitchRolePacket());
 	}
 }

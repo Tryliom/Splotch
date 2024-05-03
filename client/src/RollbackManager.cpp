@@ -4,6 +4,7 @@
 #include "MyPackets/ConfirmationInputPacket.h"
 #include "MyPackets/PlayerInputPacket.h"
 #include "MyPackets/StartGamePacket.h"
+#include "Logger.h"
 
 #include <utility>
 
@@ -20,7 +21,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 
 		_confirmedFrames.push_back({
 			{ confirmationInputPacket.Player1Input, confirmationInputPacket.Player2Input },
-		  { confirmationInputPacket.CurrentChecksum }
+		    { confirmationInputPacket.CurrentChecksum }
 		});
 
 		if (!_localPlayerInputs.empty())
@@ -46,7 +47,7 @@ void RollbackManager::OnPacketReceived(Packet& packet)
 			// If we don't have any remote inputs, we need to check if last remote inputs are the same as the last confirmed inputs
 			const auto otherPlayerNumber = _localPlayerNumber == PlayerNumber::PLAYER1 ? PlayerNumber::PLAYER2 : PlayerNumber::PLAYER1;
 			PlayerInput currentInput = _localPlayerNumber == PlayerNumber::PLAYER1 ? confirmationInputPacket.Player2Input : confirmationInputPacket.Player1Input;
-			PlayerInput lastInput = GetPlayerInput(otherPlayerNumber, _confirmedFrames.size() - 1);
+			PlayerInput lastInput = GetPlayerInput(otherPlayerNumber, _confirmedFrames.size() - 2);
 
 			if (lastInput != currentInput)
 			{
@@ -216,14 +217,11 @@ void RollbackManager::RollbackDone()
 	_lastConfirmedFrame = static_cast<int>(_confirmedFrames.size());
 }
 
-bool RollbackManager::IsIntegrityOk() const
-{
-	return _integrityIsOk;
-}
-
 void RollbackManager::CheckIntegrity(int frame)
 {
 	if (frame < 0 || frame >= _confirmedFrames.size() || _confirmedFrames.size() < 2) return;
 
 	_integrityIsOk = _confirmedGameData.GenerateChecksum() == _confirmedFrames[frame].Checksum;
+
+	if (!_integrityIsOk) LOG("Integrity check failed");
 }
