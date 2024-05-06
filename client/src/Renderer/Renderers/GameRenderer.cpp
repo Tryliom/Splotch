@@ -6,16 +6,8 @@
 GameRenderer::GameRenderer(Application& application, GameManager& gameManager, ScreenSizeValue width, ScreenSizeValue height) :
 	_application(application), _gameManager(gameManager), _height(height), _width(width)
 {
-	std::array<std::string_view, LINES_COUNT> lines;
-
-	if (_gameManager.GetLocalPlayerRole() == PlayerRole::PLAYER)
-	{
-		lines = { START_PLAYER_COLOR_INFO, START_PLAYER_MESSAGE_LINE_0, START_PLAYER_MESSAGE_LINE_1 };
-	}
-	else
-	{
-		lines = { START_PLAYER_COLOR_INFO, START_GHOST_MESSAGE_LINE_0, START_GHOST_MESSAGE_LINE_1 };
-	}
+	// Set the texts to display at the start of the game on each lines
+	std::array<std::string_view, LINES_COUNT> lines = _gameManager.GetLocalPlayerRole() == PlayerRole::PLAYER ? START_PLAYER_MESSAGE : START_GHOST_MESSAGE;
 
 	_texts.push_back(Text(
 		sf::Vector2f(_width.Value / 2.f, _height.Value / 2.f),
@@ -45,6 +37,7 @@ void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) con
 {
 	ClientGameData gameData = _gameManager.GetGameData();
 
+	// Draw platform
 	static sf::RectangleShape platform;
 	platform.setSize(sf::Vector2f(PLATFORM_SIZE.X * _width, PLATFORM_SIZE.Y * _height));
 	platform.setFillColor(sf::Color::White);
@@ -55,6 +48,7 @@ void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) con
 
 	target.draw(platform, states);
 
+	// Draw players
 	for (auto& player : gameData.Players)
 	{
 		target.draw(player, states);
@@ -114,6 +108,7 @@ void GameRenderer::OnDraw(sf::RenderTarget& target, sf::RenderStates states) con
 
 	if (!gameData.IsGameOver()) return;
 
+	// Draw a black rectangle to darken the screen when the game is over
 	sf::RectangleShape rectangle(sf::Vector2f(_width.Value, _height.Value));
 	rectangle.setFillColor(sf::Color(0, 0, 0, 200));
 	target.draw(rectangle);
@@ -135,7 +130,7 @@ void GameRenderer::OnUpdate(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf
 
 	_messageTimer -= elapsed.asSeconds();
 
-	_texts[0].SetColor(LerpColor(START_COLOR, END_COLOR, 1.f - _messageTimer / MESSAGE_TIMER));
+	_texts[0].SetColor(LerpColor(MESSAGE_START_COLOR, MESSAGE_END_COLOR, 1.f - _messageTimer / MESSAGE_TIMER));
 
 	if (_messageTimer <= 0.f)
 	{

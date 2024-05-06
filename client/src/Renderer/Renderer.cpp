@@ -2,8 +2,10 @@
 
 void Renderer::draw(sf::RenderTarget& target, const sf::RenderStates states) const
 {
+	// Call the derived class's draw method
 	OnDraw(target, states);
 
+	// Draw buttons and texts
 	for (auto& button : _buttons)
 	{
 		if (!button.IsDisabled())
@@ -18,13 +20,9 @@ void Renderer::draw(sf::RenderTarget& target, const sf::RenderStates states) con
 	}
 }
 
-void Renderer::FixedUpdate(const sf::Time elapsed)
-{
-	OnFixedUpdate(elapsed);
-}
-
 void Renderer::Update(const sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::Vector2f mousePosition)
 {
+	// Update buttons by checking if the mouse is hovering over them
 	for (auto& button : _buttons)
 	{
 		if (button.IsDisabled())
@@ -50,13 +48,16 @@ void Renderer::Update(const sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf
 		}
 	}
 
+	// Call the derived class's update method
 	OnUpdate(elapsed, elapsedSinceLastFixed, mousePosition);
 }
 
 void Renderer::Input(sf::Event event)
 {
+	// Call the derived class's input method
 	OnInput(event);
 
+	// Handle button clicks
 	if (event.type == sf::Event::MouseButtonPressed)
 	{
 		if (event.mouseButton.button == sf::Mouse::Left)

@@ -30,6 +30,7 @@ void Application::AddLocalPlayerInput(PlayerInput playerInput)
 {
 	if (_state != GameState::GAME || _gameManager.GetGameData().IsGameOver()) return;
 
+	// Save the local player input for the current frame and send it to the server
 	_rollbackManager.AddPlayerInputs(playerInput);
 	_networkManager.SendPacket(new MyPackets::PlayerInputPacket(_rollbackManager.GetLastLocalPlayerInputs()), Protocol::UDP);
 }
@@ -38,8 +39,10 @@ void Application::FixedUpdate()
 {
 	sf::Time elapsed = sf::seconds(FIXED_TIME_STEP);
 
+	// Process all packets received from the server since the last fixed update
 	while (Packet* packet = _networkManager.PopPacket())
 	{
+		// Special case for UDP connection confirmation
 		if (packet->Type == static_cast<char>(PacketType::ConfirmUDPConnection))
 		{
 			_readyToPlay = true;
@@ -48,12 +51,13 @@ void Application::FixedUpdate()
 			continue;
 		}
 
+		// Dispatch the packet to the rollback manager, game manager and the application
 		_rollbackManager.OnPacketReceived(*packet);
 		_gameManager.OnPacketReceived(*packet);
 		OnPacketReceived(*packet);
 
+		// Delete the packet if it is a valid packet
 		auto packetTypeValue = packet->Type;
-
 		if (packetTypeValue >= 0 && packetTypeValue <= static_cast<char>(MyPackets::MyPacketType::COUNT))
 		{
 			delete packet;
@@ -62,6 +66,7 @@ void Application::FixedUpdate()
 
 	if (_state == GameState::GAME && _renderer != nullptr)
 	{
+		// Rollback if needed before updating the game
 		if (_rollbackManager.NeedToRollback())
 		{
 			// The confirmed frame of the last set of confirmed game data
@@ -98,15 +103,11 @@ void Application::FixedUpdate()
 		UpdateGame(_rollbackManager.GetCurrentFrame());
 		_rollbackManager.AddUnconfirmedGameData(_gameManager.GetGameData());
 
+		// Check if the game is over
 		if (_gameManager.GetGameData().BricksLeft == 0)
 		{
 			_renderer->OnEvent(_gameManager.GetLocalPlayerRole() == PlayerRole::PLAYER ? Event::WIN_GAME : Event::LOSE_GAME);
 		}
-	}
-
-	if (_renderer != nullptr)
-	{
-		_renderer->FixedUpdate(elapsed);
 	}
 }
 
@@ -117,6 +118,7 @@ void Application::Update(sf::Time elapsed, sf::Time elapsedSinceLastFixed, sf::V
 		_renderer->Update(elapsed, elapsedSinceLastFixed, mousePosition);
 	}
 
+	// Send a UDP acknowledgment packet every _timeBeforeSendUdpAck seconds
 	if (!_readyToPlay)
 	{
 		_elapsedTime += elapsed;
@@ -204,7 +206,6 @@ void Application::Quit()
 void Application::UpdateGame(int frame)
 {
 	const auto previousFrame = frame - 1;
-
 	const auto currentPlayer1Inputs = _rollbackManager.GetPlayerInput(PlayerNumber::PLAYER1, frame);
 	const auto previousPlayer1Inputs = _rollbackManager.GetPlayerInput(PlayerNumber::PLAYER1, previousFrame);
 	const auto currentPlayer2Inputs = _rollbackManager.GetPlayerInput(PlayerNumber::PLAYER2, frame);

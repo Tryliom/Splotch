@@ -7,6 +7,7 @@ LobbyRenderer::LobbyRenderer(Application& application, ScreenSizeValue width, Sc
 	_height(height),
 	_width(width)
 {
+	// Create leave button
 	auto leaveButton = Button(
 			sf::Vector2f(_width.Value / 2.f, ScreenPercentage(0.9f) * _height),
 			sf::Vector2f(200, 50),
@@ -22,7 +23,7 @@ LobbyRenderer::LobbyRenderer(Application& application, ScreenSizeValue width, Sc
 
 	// Create texts
 	auto title = Text(
-			sf::Vector2f(_width.Value / 2.f, ScreenPercentage { 0.1f} * width),
+			sf::Vector2f(_width.Value / 2.f, ScreenPercentage{0.1f} * height),
 			{ TextLine({ CustomText{ .Text = "Lobby", .Size = 50 }}) }
 	);
 	auto waiting = Text(

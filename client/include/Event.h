@@ -1,5 +1,8 @@
 #pragma once
 
+/**
+ * Event that can be triggered by the game
+ */
 enum class Event
 {
 	PLAYER_LEAVE_GAME,

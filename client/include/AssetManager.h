@@ -12,10 +12,12 @@ constexpr auto GHOST_IDLE_FRAMES = 2;
 constexpr float PLAYER_IDLE_FRAME_DURATION = 1.f / 6.f;
 constexpr float PLAYER_WALK_FRAME_DURATION = 1.f / 20.f;
 constexpr float PLAYER_JUMP_FRAME_DURATION = 1.f / 7.f;
-constexpr float GHOST_IDLE_FRAME_DURATION = 1.f / 6.f;
 
 namespace AssetManager
 {
+	/**
+	 * @brief Initialize the AssetManager with all assets
+	 */
 	void Initialize();
 
 	sf::Font& GetMainFont();

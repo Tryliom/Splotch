@@ -48,6 +48,7 @@ void MenuRenderer::OnEvent(Event event)
 {
 	if (event != Event::READY_TO_PLAY) return;
 
+	// Change play button text and allow to click on it when ready to play
 	_buttons[0].SetText({
 		TextLine({CustomText{.Text = "PLAY", .Style = sf::Text::Style::Bold, .Size = 24}})
 	});

@@ -13,7 +13,7 @@ struct PacketProtocol
 };
 
 /**
- * Receive and send packet from/to server
+ * @brief Receive and send packet from/to server
  */
 class NetworkClientManager final : public ClientNetworkInterface
 {
