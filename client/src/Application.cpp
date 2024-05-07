@@ -13,6 +13,10 @@
 #include <SFML/Graphics.hpp>
 #include <utility>
 
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
+
 Application::Application(RollbackManager& rollbackManager, GameManager& gameManager, ClientNetworkInterface& clientNetworkInterface, ScreenSizeValue width, ScreenSizeValue height) :
 	_rollbackManager(rollbackManager), _gameManager(gameManager), _networkManager(clientNetworkInterface), _width(width), _height(height)
 {
@@ -37,6 +41,10 @@ void Application::AddLocalPlayerInput(PlayerInput playerInput)
 
 void Application::FixedUpdate()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
+
 	sf::Time elapsed = sf::seconds(FIXED_TIME_STEP);
 
 	// Process all packets received from the server since the last fixed update
@@ -69,6 +77,9 @@ void Application::FixedUpdate()
 		// Rollback if needed before updating the game
 		if (_rollbackManager.NeedToRollback())
 		{
+#ifdef TRACY_ENABLE
+			ZoneNamedN(rollbackZone, "Rollback", true);
+#endif
 			// The confirmed frame of the last set of confirmed game data
 			const auto oldConfirmedFrame = _rollbackManager.GetConfirmedFrame();
 			const auto confirmedInputFrame = _rollbackManager.GetConfirmedInputFrame();

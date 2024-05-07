@@ -61,7 +61,6 @@ You need to install CLion. You can follow the instructions on the [official docu
 
 You need to create cmake profile with the following settings.
 #### Debug-windows
-![Debug-_client](./documentation/images/debug-_client.png)
 
 Fill the CMAKE options with the following values:
 ```
@@ -75,7 +74,6 @@ Example:
 ```
 
 #### Release-windows
-![Release-_client](./documentation/images/release-_client.png)
 
 Fill the CMAKE options with the following values:
 ```
@@ -83,7 +81,6 @@ Fill the CMAKE options with the following values:
 ```
 
 #### Release-linux
-![Release-server](./documentation/images/release-server.png)
 
 Fill the CMAKE options with the following values:
 ```

@@ -110,6 +110,16 @@ set_target_properties(NetworkServer PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(NetworkServer INTERFACE network/server/include/)
 target_link_libraries(NetworkServer INTERFACE NetworkCommon)
 
+# Tracy
+if (USE_TRACY)
+    add_subdirectory(libs/tracy-0.10) # target: TracyClient or alias Tracy::TracyClient
+    # Link Tracy::TracyClient to any target where you use Tracy for profiling:
+    target_link_libraries(ClientPart PUBLIC Tracy::TracyClient)
+    target_link_libraries(ServerPart PUBLIC Tracy::TracyClient)
+    target_link_libraries(Common PUBLIC Tracy::TracyClient)
+    target_link_libraries(PhysicsEngine PUBLIC Tracy::TracyClient)
+endif()
+
 # Linking
 target_link_libraries(Common PUBLIC NetworkCommon)
 
